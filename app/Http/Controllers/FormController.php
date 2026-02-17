@@ -19,13 +19,14 @@ class FormController extends Controller
 
     public function index(Request $request): View|Factory|Application
     {
-        $forms = Form::where('status', 'published')
+        $query = Form::where('status', 'published')
             ->whereIn('visibility', ['public', 'authenticated'])
-            ->latest()
-            ->take(6)
-            ->get();
+            ->latest();
 
-        return view('index', compact('forms'));
+        $totalForms = $query->count();
+        $forms = $query->take(6)->get();
+
+        return view('index', compact('forms', 'totalForms'));
     }
     public function publicIndex(Request $request): View|Factory|Application
     {

@@ -1,4 +1,4 @@
-@props(['forms'])
+@props(['forms', 'totalForms' => 0])
 
 {{-- Section A: Hero --}}
 <div class="relative overflow-hidden bg-gradient-to-br from-[#0A1745] to-[#113885] dark:from-[#060E2B] dark:to-[#0A1745]">
@@ -67,11 +67,13 @@
             @endforelse
         </div>
 
+        @if($totalForms > 6)
         <div class="mt-8 text-center">
             <a href="{{ route('forms.public_index') }}" class="inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium">
                 View all available forms
                 <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
         </div>
+        @endif
     </div>
 </div>
