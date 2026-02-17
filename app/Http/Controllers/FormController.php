@@ -22,7 +22,8 @@ class FormController extends Controller
         $forms = Form::where('status', 'published')
             ->whereIn('visibility', ['public', 'authenticated'])
             ->latest()
-            ->paginate(10);
+            ->take(6)
+            ->get();
 
         return view('index', compact('forms'));
     }
