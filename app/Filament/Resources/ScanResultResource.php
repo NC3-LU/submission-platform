@@ -117,7 +117,6 @@ class ScanResultResource extends Resource
                 Tables\Filters\SelectFilter::make('scanner_used')
                     ->options([
                         'pandora' => 'Pandora',
-                        'clamav' => 'ClamAV',
                     ]),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
