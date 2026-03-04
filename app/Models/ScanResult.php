@@ -1,4 +1,5 @@
 <?php
+
 // app/Models/ScanResult.php
 
 namespace App\Models;
@@ -12,7 +13,7 @@ class ScanResult extends Model
 {
     use HasFactory;
     use HasUuids;
-    
+
     protected $fillable = [
         'submission_id',
         'submission_value_id',
@@ -21,12 +22,12 @@ class ScanResult extends Model
         'scanner_used',
         'filename',
     ];
-    
+
     protected $casts = [
         'is_malicious' => 'boolean',
         'scan_results' => 'array',
     ];
-    
+
     /**
      * Get the submission value this scan belongs to
      */
@@ -34,7 +35,7 @@ class ScanResult extends Model
     {
         return $this->belongsTo(SubmissionValues::class, 'submission_value_id');
     }
-    
+
     /**
      * Get the submission this scan belongs to
      */
@@ -42,4 +43,4 @@ class ScanResult extends Model
     {
         return $this->belongsTo(Submission::class);
     }
-} 
+}

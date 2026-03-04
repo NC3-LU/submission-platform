@@ -26,7 +26,7 @@ class ScanResultFactory extends Factory
             'is_malicious' => false,
             'scan_results' => ['status' => 'CLEAN', 'taskId' => $this->faker->uuid()],
             'scanner_used' => 'pandora',
-            'filename' => $this->faker->word() . '.pdf',
+            'filename' => $this->faker->word().'.pdf',
         ];
     }
 

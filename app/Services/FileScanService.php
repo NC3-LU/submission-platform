@@ -11,7 +11,9 @@ use Illuminate\Support\Str;
 class FileScanService
 {
     protected string $pandoraUrl;
+
     protected int $timeout;
+
     protected int $pollInterval;
 
     public function __construct()
@@ -30,7 +32,7 @@ class FileScanService
     public function scanFile(UploadedFile $file): array
     {
         try {
-            $uniqueFilename = Str::uuid()->toString() . '_' . $file->getClientOriginalName();
+            $uniqueFilename = Str::uuid()->toString().'_'.$file->getClientOriginalName();
             $tempPath = $file->storeAs('temp/scans', $uniqueFilename);
             $fullPath = Storage::path($tempPath);
 
@@ -41,7 +43,7 @@ class FileScanService
 
             Storage::delete($tempPath);
 
-            if (!$submitResponse->successful()) {
+            if (! $submitResponse->successful()) {
                 Log::error('Pandora submit failed', [
                     'status' => $submitResponse->status(),
                     'body' => $submitResponse->body(),
@@ -55,6 +57,7 @@ class FileScanService
 
             if (empty($submitData['taskId'])) {
                 Log::error('Pandora submit returned no taskId', ['response' => $submitData]);
+
                 return ['success' => false, 'message' => 'Pandora returned no task ID'];
             }
 
@@ -74,7 +77,7 @@ class FileScanService
                 'file' => $file->getClientOriginalName(),
             ]);
 
-            return ['success' => false, 'message' => 'Error scanning file: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Error scanning file: '.$e->getMessage()];
         }
     }
 
@@ -94,12 +97,13 @@ class FileScanService
             $response = Http::timeout(10)
                 ->get("{$this->pandoraUrl}/task_status", $query);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning('Pandora task_status request failed', [
                     'taskId' => $taskId,
                     'status' => $response->status(),
                 ]);
                 sleep($this->pollInterval);
+
                 continue;
             }
 

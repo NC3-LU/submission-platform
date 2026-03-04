@@ -16,13 +16,13 @@ class ScanResultResource extends Resource
     protected static ?string $model = ScanResult::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
-    
+
     protected static ?string $navigationGroup = 'Security';
-    
+
     protected static ?int $navigationSort = 10;
-    
+
     protected static ?string $modelLabel = 'File Scan Result';
-    
+
     protected static ?string $pluralModelLabel = 'File Scan Results';
 
     // Read-only resource - scans are created automatically
@@ -30,12 +30,12 @@ class ScanResultResource extends Resource
     {
         return false;
     }
-    
+
     public static function canEdit(Model $record): bool
     {
         return false;
     }
-    
+
     public static function canDelete(Model $record): bool
     {
         return auth()->user()->isAdmin();
@@ -60,14 +60,14 @@ class ScanResultResource extends Resource
                             ->label('Scanned At')
                             ->disabled(),
                     ])->columns(2),
-                    
+
                 Forms\Components\Section::make('Related Submission')
                     ->schema([
                         Forms\Components\Select::make('submission_id')
                             ->relationship('submission', 'id')
                             ->disabled(),
                     ]),
-                    
+
                 Forms\Components\Section::make('Scan Results (Raw)')
                     ->schema([
                         Forms\Components\Textarea::make('scan_results')
@@ -162,16 +162,18 @@ class ScanResultResource extends Resource
             'view' => Pages\ViewScanResult::route('/{record}'),
         ];
     }
-    
+
     public static function getNavigationBadge(): ?string
     {
         $maliciousCount = static::getModel()::where('is_malicious', true)->count();
+
         return $maliciousCount > 0 ? (string) $maliciousCount : null;
     }
-    
+
     public static function getNavigationBadgeColor(): ?string
     {
         $maliciousCount = static::getModel()::where('is_malicious', true)->count();
+
         return $maliciousCount > 0 ? 'danger' : 'success';
     }
 }

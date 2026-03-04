@@ -2,15 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ScanResult;
 use App\Models\Submission;
 use App\Models\SubmissionValues;
-use App\Models\FormField;
-use App\Models\ScanResult;
 use App\Services\FileScanService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ScanSubmissionFiles extends Command
 {
@@ -33,8 +32,9 @@ class ScanSubmissionFiles extends Command
      */
     public function handle(FileScanService $scanService): int
     {
-        if (!config('services.pandora.enabled', false)) {
+        if (! config('services.pandora.enabled', false)) {
             $this->error('Pandora scanning is disabled. Set PANDORA_ENABLED=true to enable.');
+
             return Command::FAILURE;
         }
 
@@ -45,14 +45,16 @@ class ScanSubmissionFiles extends Command
         }
 
         $submissionId = $this->argument('submission_id');
-        if (!$submissionId) {
+        if (! $submissionId) {
             $this->error('Please provide a submission ID or use the --all option.');
+
             return Command::INVALID;
         }
 
         $submission = Submission::find($submissionId);
-        if (!$submission) {
+        if (! $submission) {
             $this->error("Submission with ID {$submissionId} not found.");
+
             return Command::FAILURE;
         }
 
@@ -96,15 +98,16 @@ class ScanSubmissionFiles extends Command
         foreach ($fileValues as $value) {
             $existingResult = ScanResult::where('submission_value_id', $value->id)->first();
 
-            if ($existingResult && !$forceScan) {
+            if ($existingResult && ! $forceScan) {
                 continue;
             }
 
             $filePathInStorage = $value->value;
             $filename = basename($filePathInStorage);
 
-            if (!Storage::disk('private')->exists($filePathInStorage)) {
+            if (! Storage::disk('private')->exists($filePathInStorage)) {
                 $this->line(" Skipping missing file: {$filename}");
+
                 continue;
             }
 

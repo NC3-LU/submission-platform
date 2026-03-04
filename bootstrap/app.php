@@ -16,8 +16,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -29,12 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             FormAccessMiddleware::class,
         ]);
-        
+
         // API middleware
         $middleware->alias([
             'api.token.ip' => ApiTokenIPMiddleware::class,
         ]);
-        
+
         // Add API log middleware to the API group
         $middleware->api(append: ApiLogMiddleware::class);
     })
@@ -49,7 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // API-specific exception handling
         $exceptions->renderable(function (\Throwable $e, Request $request) {
             // Only apply to API requests
-            if (!$request->is('api/*')) {
+            if (! $request->is('api/*')) {
                 return null;
             }
 
@@ -86,7 +86,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             // For all other exceptions in production, return generic message
-            if (!config('app.debug')) {
+            if (! config('app.debug')) {
                 return response()->json([
                     'message' => 'Server error',
                 ], 500);
