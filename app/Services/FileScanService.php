@@ -38,7 +38,7 @@ class FileScanService
 
             // Step 1: Submit file to Pandora
             $submitResponse = Http::timeout($this->timeout)
-                ->attach('file', file_get_contents($fullPath), $file->getClientOriginalName())
+                ->attach('file', fopen($fullPath, 'r'), $file->getClientOriginalName())
                 ->post("{$this->pandoraUrl}/submit", ['validity' => 0]);
 
             Storage::delete($tempPath);
@@ -110,7 +110,17 @@ class FileScanService
             $data = $response->json();
             $status = strtoupper($data['status'] ?? '');
 
-            if (in_array($status, ['CLEAN', 'WARN', 'ALERT', 'ERROR', 'OVERWRITE'])) {
+            if (in_array($status, ['ERROR', 'OVERWRITE'])) {
+                Log::warning('Pandora scan returned error status', [
+                    'taskId' => $taskId,
+                    'status' => $status,
+                    'filename' => $filename,
+                ]);
+
+                return ['success' => false, 'message' => "Pandora scan returned status: {$status}"];
+            }
+
+            if (in_array($status, ['CLEAN', 'WARN', 'ALERT'])) {
                 $isMalicious = in_array($status, ['ALERT', 'WARN']);
 
                 Log::info('Pandora scan complete', [

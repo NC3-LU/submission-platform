@@ -163,6 +163,28 @@ class FileScanServiceTest extends TestCase
         $this->assertStringContainsString('timed out', $result['message']);
     }
 
+    public function test_treats_error_status_as_scan_failure(): void
+    {
+        Http::fake([
+            '*/submit' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-error',
+                'seed' => 'test-seed',
+            ]),
+            '*/task_status*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-error',
+                'status' => 'ERROR',
+            ]),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $result = $this->service->scanFile($file);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('ERROR', $result['message']);
+    }
+
     public function test_cleans_up_temp_files_on_success(): void
     {
         Http::fake([
