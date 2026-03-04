@@ -3,7 +3,6 @@
 use App\Http\Middleware\ApiLogMiddleware;
 use App\Http\Middleware\ApiTokenIPMiddleware;
 use App\Http\Middleware\FormAccessMiddleware;
-use App\Http\Middleware\ScanUploadedFiles;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -29,7 +28,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // Web middleware
         $middleware->web(append: [
             FormAccessMiddleware::class,
-            ScanUploadedFiles::class,
         ]);
         
         // API middleware
