@@ -675,17 +675,10 @@ class SubmissionForm extends Component
                                 'submission_id' => $this->submission->id,
                                 'filename' => $originalName,
                             ]);
-                            
-                            // Remove the file
+
                             Storage::disk('private')->delete($newPath);
-                            
-                            // You might want to update the submission value to indicate the file was removed
                             $submissionValue->update(['value' => '[REMOVED-MALICIOUS]: ' . $originalName]);
-                            
-                            // In a real implementation, you might want to:
-                            // 1. Notify the user via email
-                            // 2. Add a system message to the submission
-                            // 3. Flag the submission for review
+                            $this->dispatch('error', 'The file "' . $originalName . '" was flagged as malicious and has been removed.');
                         }
                     }
                 }
