@@ -1,16 +1,19 @@
 services:
   redis:
     image: redis:7
+    profiles: [pandora]
     networks: [app_network]
     restart: unless-stopped
 
   kvrocks:
     image: apache/kvrocks:latest
+    profiles: [pandora]
     networks: [app_network]
     restart: unless-stopped
 
   clamav:
     image: clamav/clamav
+    profiles: [pandora]
     volumes:
       - clamav-socket:/var/run/clamav
       - ./docker/pandora/config/clamav/clamd.conf:/etc/clamav/clamd.conf:ro
@@ -20,7 +23,7 @@ services:
     - HTTP_PROXY=${PROXY}
     - HTTPS_PROXY=${PROXY}
     - http_proxy=${PROXY}
-    - https_proxy=${PROXY}    
+    - https_proxy=${PROXY}
     healthcheck:
       test: ["CMD", "clamdscan", "--ping", "1"]
       start_period: 180s
@@ -31,6 +34,7 @@ services:
 
   pandora:
     image: ghcr.io/pandora-analysis/pandora:latest
+    profiles: [pandora]
     depends_on: [redis, kvrocks, clamav]
     expose: ["6100"]
     environment:
@@ -54,20 +58,14 @@ services:
     env_file:
       - ./docker/pandora/pandora.env
     volumes:
-      # Persistent runtime data
       - pandora_cache:/pandora/cache
       - pandora_storage:/pandora/storage
       - clamav-socket:/var/run/clamav
-      
       - ./docker/pandora/config/generic.json:/pandora/config/generic.json:ro
       - ./docker/pandora/workers:/pandora/pandora/workers:ro
       - ./docker/pandora/yara_rules:/pandora/yara_rules:ro
     networks: [app_network]
     restart: unless-stopped
-
-networks:
-  app_network:
-    external: true
 
 volumes:
   pandora_cache:
