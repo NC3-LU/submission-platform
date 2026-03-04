@@ -5,7 +5,7 @@
             <div class="relative rounded-md shadow-sm">
                 <input type="text"
                        wire:model.live.debounce.300ms="search"
-                       class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 pr-10 dark:text-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 pr-10 dark:text-gray-300 focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
                        placeholder="Search submissions...">
                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
@@ -43,7 +43,7 @@
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" wire:click="sortBy('id')">
                         ID
@@ -86,7 +86,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs rounded-full
                                     @if($submission->status === 'draft') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
-                                    @elseif($submission->status === 'ongoing') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                    @elseif($submission->status === 'ongoing') bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300
                                     @elseif($submission->status === 'submitted') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
                                     @elseif($submission->status === 'under_review') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
                                     @elseif($submission->status === 'completed') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200
@@ -138,7 +138,7 @@
                                         </a>
                                         
                                         <a href="{{ route('submissions.export.single.json', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                           class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                           class="text-sky-600 hover:text-sky-900 dark:text-sky-400 dark:hover:text-sky-300">
                                             Export JSON
                                         </a>
                                     @endcan

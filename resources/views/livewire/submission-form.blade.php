@@ -31,7 +31,7 @@
                         {{ $this->currentStepData['name'] }}
                     </h2>
                     <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
                         {{ $currentStep }}/{{ $totalSteps }}
                     </span>
                 </div>
@@ -48,7 +48,7 @@
         <div class="relative">
             <div class="overflow-hidden mb-8 w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700">
                 <div
-                    class="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500 ease-out dark:from-blue-600 dark:to-blue-700"
+                    class="h-2 rounded-full bg-gradient-to-r from-sky-500 to-sky-600 transition-all duration-500 ease-out dark:from-sky-600 dark:to-sky-700"
                     style="width: {{ $totalSteps > 1 ? (($currentStep - 1) / ($totalSteps - 1)) * 100 : ($currentStep == 1 ? 0 : 100) }}%">
                 </div>
             </div>
@@ -61,8 +61,8 @@
                             <button wire:click="$set('currentStep', {{ $index + 1 }})"
                                     @if($currentStep <= $index + 1) disabled @endif
                                     class="w-6 h-6 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center
-                                    {{ $currentStep > $index + 1 ? 'bg-blue-600 hover:bg-blue-700' : '' }}
-                                    {{ $currentStep === $index + 1 ? 'ring-4 ring-white dark:ring-gray-800 bg-blue-600 scale-110' : '' }}
+                                    {{ $currentStep > $index + 1 ? 'bg-sky-600 hover:bg-sky-700' : '' }}
+                                    {{ $currentStep === $index + 1 ? 'ring-4 ring-white dark:ring-gray-800 bg-sky-600 scale-110' : '' }}
                                     {{ $currentStep < $index + 1 ? 'bg-gray-300 dark:bg-gray-600' : '' }}">
                                 <span
                                     class="text-xs font-medium {{ $currentStep >= $index + 1 ? 'text-white' : 'text-gray-600 dark:text-gray-300' }}">
