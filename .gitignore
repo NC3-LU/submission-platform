@@ -21,4 +21,6 @@ yarn-error.log
 /.zed
 docker-compose.env
 .cursor
-.CLAUDE.md
+CLAUDE.md
+**/CLAUDE.md
+.claude/
