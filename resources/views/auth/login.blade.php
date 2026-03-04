@@ -35,14 +35,14 @@
             <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between mt-4">
                 <div class="flex flex-col space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     @if (Route::has('password.request'))
-                        <a class="underline hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
+                        <a class="underline hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
                             {{ __('Forgot your password?') }}
                         </a>
                     @endif
                     @if (Route::has('register'))
                         <span>
                             {{ __('No account yet?') }}
-                            <a class="underline hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('register') }}">
+                            <a class="underline hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-gray-800" href="{{ route('register') }}">
                                 {{ __('Register now') }}
                             </a>
                         </span>

@@ -77,7 +77,7 @@
         @livewireScripts
 
         <!-- Footer -->
-        <footer class="bg-slate-50 dark:bg-slate-900 border-t-2 border-teal-500 mt-auto">
+        <footer class="bg-slate-50 dark:bg-slate-900 border-t-2 border-sky-500 mt-auto">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <!-- Brand -->
@@ -94,12 +94,12 @@
                     <div>
                         <h4 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Quick Links</h4>
                         <ul class="space-y-2">
-                            <li><a href="{{ url('/') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Home</a></li>
-                            <li><a href="{{ route('forms.public_index') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Forms</a></li>
+                            <li><a href="{{ url('/') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Home</a></li>
+                            <li><a href="{{ route('forms.public_index') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Forms</a></li>
                             @auth
-                            <li><a href="{{ route('dashboard') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Dashboard</a></li>
+                            <li><a href="{{ route('dashboard') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Dashboard</a></li>
                             @endauth
-                            <li><a href="https://nc3.lu" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">NC3 Website</a></li>
+                            <li><a href="https://nc3.lu" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">NC3 Website</a></li>
                         </ul>
                     </div>
 
@@ -107,11 +107,11 @@
                     <div>
                         <h4 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Legal</h4>
                         <ul class="space-y-2">
-                            <li><a href="{{ route('terms.show') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Terms of Service</a></li>
-                            <li><a href="{{ route('policy.show') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Privacy Policy</a></li>
+                            <li><a href="{{ route('terms.show') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Terms of Service</a></li>
+                            <li><a href="{{ route('policy.show') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Privacy Policy</a></li>
                             <li>
                                 <button onclick="localStorage.removeItem('cookie_consent_acknowledged'); location.reload();"
-                                        class="text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+                                        class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                                     Cookie Settings
                                 </button>
                             </li>

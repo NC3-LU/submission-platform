@@ -88,7 +88,7 @@
                                     @endif
                                     @if($form->status === 'published')
                                         <span class="text-gray-300 dark:text-gray-500 mx-1">|</span>
-                                        <a href="{{ route('forms.preview', $form) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                        <a href="{{ route('forms.preview', $form) }}" class="text-sky-600 dark:text-sky-400 hover:underline">
                                             Preview
                                         </a>
                                     @endif

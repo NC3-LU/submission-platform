@@ -6,7 +6,7 @@
     <img src="{{ asset('img/nc3-logo-no-text-no-bg.png') }}" alt="" class="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 opacity-[0.07] pointer-events-none select-none" aria-hidden="true">
 
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-        <span class="text-teal-400 text-sm font-semibold tracking-wider uppercase">NC3 Submission Platform</span>
+        <span class="text-sky-400 text-sm font-semibold tracking-wider uppercase">NC3 Submission Platform</span>
 
         <h1 class="mt-4 text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-tight">
             Secure Submissions for Luxembourg's Cybersecurity Ecosystem
@@ -16,7 +16,7 @@
             Submit applications, track progress, and collaborate with NC3 through our streamlined and secure platform.
         </p>
 
-        <a href="#forms" class="mt-8 inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-lg transition-colors shadow-lg shadow-teal-600/20">
+        <a href="#forms" class="mt-8 inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg transition-colors shadow-lg shadow-sky-600/20">
             Browse Available Forms
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
@@ -31,7 +31,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             @forelse($forms as $form)
-                <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-teal-500 p-6 hover:shadow-md transition-shadow">
+                <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-sky-500 p-6 hover:shadow-md transition-shadow">
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ $form->title }}</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mt-2">{{ $form->description }}</p>
                     <div class="mt-4 flex items-center justify-between">
@@ -44,7 +44,7 @@
                             <span class="text-xs text-slate-400">{{ $form->created_at->diffForHumans() }}</span>
                         </div>
                         @if($form->visibility === 'public' || auth()->check())
-                            <a href="{{ route('submissions.create', $form) }}" class="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium text-sm inline-flex items-center">
+                            <a href="{{ route('submissions.create', $form) }}" class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium text-sm inline-flex items-center">
                                 Apply
                                 <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </a>
@@ -69,7 +69,7 @@
 
         @if($totalForms > 6)
         <div class="mt-8 text-center">
-            <a href="{{ route('forms.public_index') }}" class="inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium">
+            <a href="{{ route('forms.public_index') }}" class="inline-flex items-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium">
                 View all available forms
                 <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>

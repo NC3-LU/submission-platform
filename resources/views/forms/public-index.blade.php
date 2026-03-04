@@ -18,7 +18,7 @@
             @else
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($forms as $form)
-                        <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-teal-500 p-6 hover:shadow-md transition-shadow">
+                        <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-sky-500 p-6 hover:shadow-md transition-shadow">
                             <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ $form->title }}</h3>
                             <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mt-2">{{ $form->description }}</p>
                             <div class="mt-4 flex items-center justify-between">
@@ -31,7 +31,7 @@
                                     <span class="text-xs text-slate-400">{{ $form->created_at->diffForHumans() }}</span>
                                 </div>
                                 @if($form->visibility === 'public' || auth()->check())
-                                    <a href="{{ route('submissions.create', $form) }}" class="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium text-sm inline-flex items-center">
+                                    <a href="{{ route('submissions.create', $form) }}" class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium text-sm inline-flex items-center">
                                         Apply
                                         <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                     </a>

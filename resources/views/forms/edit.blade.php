@@ -42,7 +42,7 @@
             <nav class="flex gap-8" aria-label="Tabs">
                 <button @click="activeTab = 'fields'" 
                         :class="activeTab === 'fields' 
-                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                            ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                         class="flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +52,7 @@
                 </button>
                 <button @click="activeTab = 'settings'" 
                         :class="activeTab === 'settings' 
-                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                            ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                         class="flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@
                 </button>
                 <button @click="activeTab = 'access'" 
                         :class="activeTab === 'access' 
-                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                            ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                         class="flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,8 +83,8 @@
         <div x-show="activeTab === 'settings'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
             <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                    <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
@@ -106,7 +106,7 @@
                                 Form Title *
                             </label>
                             <input type="text" name="title" value="{{ old('title', $form->title) }}"
-                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                    required>
                             @error('title')
                             <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
@@ -119,7 +119,7 @@
                                 Description
                             </label>
                             <textarea name="description" rows="4"
-                                      class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none">{{ old('description', $form->description) }}</textarea>
+                                      class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none">{{ old('description', $form->description) }}</textarea>
                             @error('description')
                             <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                             @enderror
@@ -131,7 +131,7 @@
                                 Status
                             </label>
                             <select name="status"
-                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                 <option value="draft" {{ $form->status === 'draft' ? 'selected' : '' }}>Draft</option>
                                 <option value="published" {{ $form->status === 'published' ? 'selected' : '' }}>Published</option>
                                 <option value="archived" {{ $form->status === 'archived' ? 'selected' : '' }}>Archived</option>
@@ -147,7 +147,7 @@
                                 Visibility
                             </label>
                             <select name="visibility"
-                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                 <option value="public" {{ $form->visibility === 'public' ? 'selected' : '' }}>Public</option>
                                 <option value="authenticated" {{ $form->visibility === 'authenticated' ? 'selected' : '' }}>Authenticated Users Only</option>
                                 <option value="private" {{ $form->visibility === 'private' ? 'selected' : '' }}>Private</option>
@@ -161,7 +161,7 @@
                     <!-- Submit Button -->
                     <div class="flex justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors">
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
@@ -197,8 +197,8 @@
                                 @foreach($form->appointedUsers as $assignedUser)
                                     <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                                                <span class="text-sm font-medium text-indigo-600 dark:text-indigo-400">{{ substr($assignedUser->name, 0, 1) }}</span>
+                                            <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                                                <span class="text-sm font-medium text-sky-600 dark:text-sky-400">{{ substr($assignedUser->name, 0, 1) }}</span>
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $assignedUser->name }}</p>

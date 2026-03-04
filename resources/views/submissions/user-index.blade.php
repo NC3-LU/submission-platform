@@ -73,7 +73,7 @@
                                                 </a>
                                             @else
                                                 <a href="{{ route('submissions.show', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                                   class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                   class="text-sky-600 hover:text-sky-900 dark:text-sky-400 dark:hover:text-sky-300">
                                                     View
                                                 </a>
                                             @endif

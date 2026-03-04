@@ -15,37 +15,37 @@
                 <div class="hidden space-x-1 lg:flex lg:ml-8 lg:items-center">
                     <a href="{{ url('/') }}"
                        @if(request()->is('/')) aria-current="page" @endif
-                       class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->is('/') ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->is('/') ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
                         {{ __('Home') }}
                     </a>
                     <a href="{{ route('forms.public_index') }}"
                        @if(request()->routeIs('forms.public_index')) aria-current="page" @endif
-                       class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('forms.public_index') ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('forms.public_index') ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
                         {{ __('Forms') }}
                     </a>
                     @auth
                         <a href="{{ route('dashboard') }}"
                            @if(request()->routeIs('dashboard')) aria-current="page" @endif
-                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
                             {{ __('Dashboard') }}
                         </a>
                         @if(auth()->user()->role === 'internal_evaluator' || auth()->user()->isAdmin() || auth()->user()->role === 'external_evaluator')
                         <a href="{{ route('forms.user_index') }}"
                            @if(request()->routeIs('forms.user_index')) aria-current="page" @endif
-                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('forms.user_index') ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('forms.user_index') ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
                             {{ __('My Forms') }}
                         </a>
                         @endif
                         @if(auth()->user()->isAdmin())
                         <a href="{{ url('/admin') }}"
                            @if(request()->is('admin*')) aria-current="page" @endif
-                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->is('admin*') ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->is('admin*') ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
                             {{ __('Admin') }}
                         </a>
                         @endif
                         <a href="{{ route('submissions.user') }}"
                            @if(request()->routeIs('submissions.user')) aria-current="page" @endif
-                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('submissions.user') ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                           class="inline-flex items-center px-3 py-2 text-sm font-medium border-b-2 transition-colors duration-200 {{ request()->routeIs('submissions.user') ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
                             {{ __('Submissions') }}
                         </a>
                     @endauth
@@ -58,7 +58,7 @@
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200">
-                                <div class="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center mr-2 text-xs font-bold text-white">
+                                <div class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center mr-2 text-xs font-bold text-white">
                                     {{ substr(Auth::user()->name, 0, 1) }}
                                 </div>
                                 {{ Auth::user()->name }}
@@ -87,7 +87,7 @@
                     <a href="{{ route('login') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors duration-200">
                         {{ __('Login') }}
                     </a>
-                    <a href="{{ route('register') }}" class="inline-flex items-center bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200">
+                    <a href="{{ route('register') }}" class="inline-flex items-center bg-sky-600 hover:bg-sky-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200">
                         {{ __('Register') }}
                     </a>
                 </div>
@@ -98,7 +98,7 @@
                 <button @click="open = !open"
                         aria-label="Toggle navigation menu"
                         :aria-expanded="open.toString()"
-                        class="inline-flex items-center justify-center p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition duration-200">
+                        class="inline-flex items-center justify-center p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition duration-200">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': !open }" class="inline-flex"
                               stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -115,32 +115,32 @@
     <div :class="{'block': open, 'hidden': !open}" class="hidden lg:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
         <div class="pt-2 pb-3 space-y-1 px-3">
             <a href="{{ url('/') }}"
-               class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->is('/') ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
+               class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->is('/') ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
                 {{ __('Home') }}
             </a>
             <a href="{{ route('forms.public_index') }}"
-               class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('forms.public_index') ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
+               class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('forms.public_index') ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
                 {{ __('Forms') }}
             </a>
             @auth
                 <a href="{{ route('dashboard') }}"
-                   class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
+                   class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
                     {{ __('Dashboard') }}
                 </a>
                 @if(auth()->user()->role === 'internal_evaluator' || auth()->user()->isAdmin() || auth()->user()->role === 'external_evaluator')
                     <a href="{{ route('forms.user_index') }}"
-                       class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('forms.user_index') ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
+                       class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('forms.user_index') ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
                         {{ __('My Forms') }}
                     </a>
                 @endif
                 @if(auth()->user()->isAdmin())
                     <a href="{{ url('/admin') }}"
-                       class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->is('admin*') ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
+                       class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->is('admin*') ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
                         {{ __('Admin') }}
                     </a>
                 @endif
                 <a href="{{ route('submissions.user') }}"
-                   class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('submissions.user') ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
+                   class="block px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('submissions.user') ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800' }}">
                     {{ __('Submissions') }}
                 </a>
             @endauth
@@ -150,7 +150,7 @@
             <!-- Responsive Settings Options -->
             <div class="pt-4 pb-3 border-t border-slate-200 dark:border-slate-700">
                 <div class="px-4 flex items-center">
-                    <div class="w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center mr-3 text-sm font-bold text-white">
+                    <div class="w-10 h-10 rounded-full bg-sky-600 flex items-center justify-center mr-3 text-sm font-bold text-white">
                         {{ substr(Auth::user()->name, 0, 1) }}
                     </div>
                     <div>
@@ -183,7 +183,7 @@
                     {{ __('Login') }}
                 </a>
                 <a href="{{ route('register') }}"
-                   class="block text-center px-4 py-2 text-base font-medium bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors duration-200">
+                   class="block text-center px-4 py-2 text-base font-medium bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors duration-200">
                     {{ __('Register') }}
                 </a>
             </div>
