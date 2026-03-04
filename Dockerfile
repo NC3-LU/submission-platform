@@ -65,33 +65,39 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-
 RUN composer run-script post-autoload-dump
 
 # Stage 3: Production image
-FROM php:8.3-fpm-alpine
+FROM php:8.3-apache
 ARG PROXY
 ENV http_proxy=$PROXY \
     HTTP_PROXY=$PROXY \
     https_proxy=$PROXY \
-    HTTPS_PROXY=$PROXY
+    HTTPS_PROXY=$PROXY \
+    APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 WORKDIR /var/www/html
 
 # Install system dependencies
-RUN apk update && apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     libpng-dev \
-    oniguruma-dev \
+    libonig-dev \
     libxml2-dev \
     libzip-dev \
     zip \
     unzip \
-    bash \
-    icu-dev \
-    mysql-client
+    libicu-dev \
+    default-mysql-client \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
     docker-php-ext-configure intl && \
     docker-php-ext-install intl
+
+# Enable Apache modules and set document root
+RUN a2enmod rewrite && \
+    sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
+    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # Configure opcache
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
@@ -107,6 +113,5 @@ RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
 
 VOLUME /var/www/html/storage
 
-# Expose port and start PHP-FPM
-EXPOSE 9000
-CMD ["php-fpm"]
+EXPOSE 80
+CMD ["apache2-foreground"]
