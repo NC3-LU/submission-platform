@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust proxies (Traefik/reverse proxy) for correct HTTPS detection
+        $middleware->trustProxies(at: '*');
+
         // Web middleware
         $middleware->web(append: [
             FormAccessMiddleware::class,
