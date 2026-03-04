@@ -5,6 +5,7 @@ use App\Http\Middleware\ApiTokenIPMiddleware;
 use App\Http\Middleware\FormAccessMiddleware;
 use App\Http\Middleware\ScanUploadedFiles;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -40,6 +41,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: ApiLogMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Handle DecryptException on 2FA routes — stale sessions after APP_KEY change
+        $exceptions->renderable(function (DecryptException $e, Request $request) {
+            if ($request->is('two-factor-challenge*')) {
+                return redirect()->route('login')->with('status', 'Your session has expired. Please log in again.');
+            }
+        });
+
         // API-specific exception handling
         $exceptions->renderable(function (\Throwable $e, Request $request) {
             // Only apply to API requests
