@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Fix storage permissions (volume mount overrides build-time chown)
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
 # Clear and rebuild caches on every container start
 # This ensures fresh deploys don't serve stale config/views
 php artisan config:cache
