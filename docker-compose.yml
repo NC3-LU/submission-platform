@@ -86,10 +86,15 @@ services:
     image: redis:7
     profiles: [pandora]
     working_dir: /cache
-    command: ./cache.conf --daemonize no
+    command:
+      - /bin/sh
+      - -c
+      - |
+          cp /etc/redis/cache.conf /cache/cache.conf
+          redis-server /cache/cache.conf --daemonize no
     volumes:
       - pandora_cache:/cache
-      - ./docker/pandora/config/cache.conf:/cache/cache.conf:ro
+      - ./docker/pandora/config/cache.conf:/etc/redis/cache.conf:ro
     networks: [app_network]
     healthcheck:
       test: ["CMD", "redis-cli", "-s", "/cache/cache.sock", "ping"]
@@ -117,6 +122,7 @@ services:
   kvrocks-indexing:
     image: apache/kvrocks:latest
     profiles: [pandora]
+    user: root
     volumes:
       - pandora_indexing:/var/lib/kvrocks
       - pandora_indexing_sock:/pandora-sock
