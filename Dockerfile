@@ -112,7 +112,11 @@ RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 VOLUME /var/www/html/storage
 
 EXPOSE 80
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["apache2-foreground"]
