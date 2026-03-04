@@ -38,7 +38,7 @@ docker-compose up        # MySQL + PHP-FPM app
 
 # Custom Artisan commands
 php artisan app:create-user        # Create a user
-php artisan app:scan-submissions   # Scan existing submission files via Pandora
+php artisan app:scan-files         # Scan existing submission files via Pandora
 ```
 
 ## Architecture
@@ -56,7 +56,7 @@ php artisan app:scan-submissions   # Scan existing submission files via Pandora
 - `app/Filament/` — Admin panel resources: Users, API Tokens, API Logs
 - `app/Services/` — `FileScanService` (Pandora integration), `DashboardStatisticsService`
 - `app/Policies/` — `FormPolicy`, `SubmissionPolicy`, `FormAccessLinkPolicy`
-- `app/Http/Middleware/` — `FormAccessMiddleware` (visibility gate), `ApiLogMiddleware`, `ScanUploadedFiles`, `ValidateApiTokenIp`
+- `app/Http/Middleware/` — `FormAccessMiddleware` (visibility gate), `ApiLogMiddleware`, `ValidateApiTokenIp`
 - `app/Http/Resources/` — API JSON resources
 
 ### Data Model
@@ -72,7 +72,7 @@ php artisan app:scan-submissions   # Scan existing submission files via Pandora
 
 - **Visibility levels:** Forms have public/authenticated/private visibility, enforced by `FormAccessMiddleware`
 - **API token auth:** Tokens are SHA-256 hashed in DB; plaintext only returned on creation. IP restrictions stored as comma-separated list
-- **File scanning:** Pandora integration is optional (`PANDORA_ENABLED`). `ScanUploadedFiles` middleware intercepts uploads; `FileScanService` handles temp files, retries, UUID filename generation
+- **File scanning:** Pandora integration is optional (`PANDORA_ENABLED`). `FileScanService` submits files to Pandora's async API (submit → poll task_status), invoked from `SubmissionForm::handleFileUploads()`
 - **Markdown rendering:** Form descriptions support Markdown via `MarkdownHelper` (auto-loaded in composer.json) and `@tailwindcss/typography`
 - **Field ordering:** Categories and fields have an `order` column with move-up/move-down swap logic in Livewire components
 - **Export throttling:** PDF/JSON exports use separate rate limiters (`throttle:export`, `throttle:bulk-export`)
@@ -81,12 +81,12 @@ php artisan app:scan-submissions   # Scan existing submission files via Pandora
 
 - Tests use MySQL (or optionally SQLite in-memory — see `phpunit.xml` comments)
 - Pandora is disabled in tests by default; mock `FileScanService` when testing file scanning
-- Factories available: `UserFactory`, `FormFactory` (with `published()`, `public()` states), `SubmissionFactory` (with `submitted()` state)
+- Factories available: `UserFactory`, `FormFactory` (with `published()`, `public()` states), `SubmissionFactory` (with `submitted()` state), `ScanResultFactory` (with `malicious()` state)
 - Test structure: `tests/Feature/Api/` for API endpoints, `tests/Feature/` for middleware, `tests/Unit/` for services
 
 ### Environment
 
 Key non-standard env vars (see `.env.example`):
-- `PANDORA_ENABLED`, `PANDORA_URL`, `PANDORA_TIMEOUT`, `PANDORA_BLOCK_MALICIOUS` — file scanning config
+- `PANDORA_ENABLED`, `PANDORA_URL`, `PANDORA_TIMEOUT`, `PANDORA_POLL_INTERVAL`, `PANDORA_BLOCK_MALICIOUS` — file scanning config
 - `API_DOCS_ALLOWED_DOMAINS` — restrict Scramble API docs access
 - `CORS_ALLOWED_ORIGINS` — CORS whitelist
