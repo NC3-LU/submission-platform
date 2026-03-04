@@ -85,13 +85,50 @@ services:
   redis:
     image: redis:7
     profiles: [pandora]
+    working_dir: /cache
+    command: ./cache.conf --daemonize no
+    volumes:
+      - pandora_cache:/cache
+      - ./docker/pandora/config/cache.conf:/cache/cache.conf:ro
     networks: [app_network]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-s", "/cache/cache.sock", "ping"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
 
   kvrocks:
     image: apache/kvrocks:latest
     profiles: [pandora]
+    volumes:
+      - pandora_storage:/var/lib/kvrocks
+    command: ["--log-dir", "stdout"]
     networks: [app_network]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "127.0.0.1", "-p", "6101", "ping"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  kvrocks-indexing:
+    image: apache/kvrocks:latest
+    profiles: [pandora]
+    volumes:
+      - pandora_indexing:/var/lib/kvrocks
+      - pandora_indexing_sock:/pandora-sock
+      - ./docker/pandora/config/kvrocks-indexing.conf:/etc/kvrocks/kvrocks.conf:ro
+    command: ["-c", "/etc/kvrocks/kvrocks.conf"]
+    networks: [app_network]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-s", "/pandora-sock/kvrocks_index.sock", "ping"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
   clamav:
@@ -118,11 +155,9 @@ services:
   pandora:
     image: ghcr.io/pandora-analysis/pandora:latest
     profiles: [pandora]
-    depends_on: [redis, kvrocks, clamav]
+    depends_on: [redis, kvrocks, kvrocks-indexing, clamav]
     expose: ["6100"]
     environment:
-      - PANDORA_REDIS_HOST=redis
-      - PANDORA_KVROCKS_HOST=kvrocks
       - HTTP_PROXY=${PROXY}
       - HTTPS_PROXY=${PROXY}
       - http_proxy=${PROXY}
@@ -143,6 +178,7 @@ services:
     volumes:
       - pandora_cache:/pandora/cache
       - pandora_storage:/pandora/storage
+      - pandora_indexing_sock:/pandora/indexing
       - clamav-socket:/var/run/clamav
       - ./docker/pandora/config/generic.json:/pandora/config/generic.json:ro
       - ./docker/pandora/workers:/pandora/pandora/workers:ro
@@ -159,4 +195,6 @@ volumes:
   storage_data:
   pandora_cache:
   pandora_storage:
+  pandora_indexing:
+  pandora_indexing_sock:
   clamav-socket:

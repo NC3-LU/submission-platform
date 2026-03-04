@@ -7,7 +7,7 @@
     "cache_db_hostname": "redis",
     "cache_db_port": 6379,
     "storage_db_hostname": "kvrocks",
-    "storage_db_port": 6666,
+    "storage_db_port": 6101,
     "session_expire": 36000,
     "tasks_max_len": 5000,
     "max_file_size": 500,
