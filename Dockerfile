@@ -94,10 +94,11 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
     docker-php-ext-configure intl && \
     docker-php-ext-install intl
 
-# Enable Apache modules and set document root
+# Enable Apache modules, set document root, and allow .htaccess
 RUN a2enmod rewrite && \
     sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
-    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf && \
+    sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
 # Configure opcache
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
