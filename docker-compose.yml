@@ -82,13 +82,13 @@ services:
   # Activate with: COMPOSE_PROFILES=pandora docker compose up -d
   # Or in Dokploy: add COMPOSE_PROFILES=pandora to environment variables
 
-  pandora-redis:
+  redis:
     image: redis:7
     profiles: [pandora]
     networks: [app_network]
     restart: unless-stopped
 
-  pandora-kvrocks:
+  kvrocks:
     image: apache/kvrocks:latest
     profiles: [pandora]
     networks: [app_network]
@@ -118,11 +118,11 @@ services:
   pandora:
     image: ghcr.io/pandora-analysis/pandora:latest
     profiles: [pandora]
-    depends_on: [pandora-redis, pandora-kvrocks, clamav]
+    depends_on: [redis, kvrocks, clamav]
     expose: ["6100"]
     environment:
-      - PANDORA_REDIS_HOST=pandora-redis
-      - PANDORA_KVROCKS_HOST=pandora-kvrocks
+      - PANDORA_REDIS_HOST=redis
+      - PANDORA_KVROCKS_HOST=kvrocks
       - HTTP_PROXY=${PROXY}
       - HTTPS_PROXY=${PROXY}
       - http_proxy=${PROXY}
