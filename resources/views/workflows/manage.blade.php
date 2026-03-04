@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-xl">
                 <div class="p-6">
                     {{-- Workflow Manager Livewire Component --}}
                     @livewire('workflow-manager', ['form' => $form])
@@ -16,7 +16,7 @@
 
             {{-- Display current workflow if it exists --}}
             @if($workflow)
-                <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+                <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow rounded-xl p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                             Current Workflow
@@ -44,7 +44,7 @@
                                         @endif
                                         <div class="relative flex space-x-3">
                                             <div>
-                                                <span class="h-8 w-8 rounded-full bg-gray-400 dark:bg-gray-600 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
+                                                <span class="h-8 w-8 rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
                                                     {{ $loop->iteration }}
                                                 </span>
                                             </div>
