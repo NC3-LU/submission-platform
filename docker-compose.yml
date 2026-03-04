@@ -107,6 +107,7 @@ services:
   kvrocks:
     image: apache/kvrocks:latest
     profiles: [pandora]
+    user: root
     volumes:
       - pandora_storage:/var/lib/kvrocks
     command: ["--log-dir", "stdout"]
