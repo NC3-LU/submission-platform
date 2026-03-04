@@ -71,7 +71,6 @@ services:
       PROXY: ${PROXY}
     volumes:
       - storage_data:/var/www/html/storage
-      - ./public:/var/www/html/public
     depends_on:
       db:
         condition: service_healthy
