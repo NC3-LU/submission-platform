@@ -28,8 +28,8 @@ services:
       args:
         PROXY: ${PROXY}
     container_name: nc3_app
-    ports:
-      - "127.0.0.1:80:80"
+    expose:
+      - "80"
     restart: unless-stopped
     environment:
       DB_HOST: db
