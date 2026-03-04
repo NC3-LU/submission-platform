@@ -102,16 +102,11 @@ COPY --from=node-builder /app/public/build /var/www/html/public/build
 
 RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
     && mkdir -p /var/www/html/storage/logs \
-    && mkdir -p /var/www/html/public-shared \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
 
 VOLUME /var/www/html/storage
 
 # Expose port and start PHP-FPM
 EXPOSE 9000
-ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]

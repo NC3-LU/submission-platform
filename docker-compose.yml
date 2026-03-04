@@ -1,13 +1,14 @@
 services:
   db:
     image: mysql:8.0.36-debian
+    container_name: nc3_db
     restart: unless-stopped
     command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-submission_platform}
-      MYSQL_USER: ${DB_USERNAME:-app}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - dbdata:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -26,49 +27,20 @@ services:
       dockerfile: Dockerfile
       args:
         PROXY: ${PROXY}
+    container_name: nc3_app
+    ports:
+      - "127.0.0.1:9000:9000"
     restart: unless-stopped
-    env_file:
-      - path: docker-compose.env
-        required: false
     environment:
-      APP_NAME: ${APP_NAME:-Laravel}
-      APP_ENV: ${APP_ENV:-production}
-      APP_KEY: ${APP_KEY}
-      APP_DEBUG: ${APP_DEBUG:-false}
-      APP_URL: ${APP_URL:-http://localhost}
-      APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
-      DB_CONNECTION: ${DB_CONNECTION:-mysql}
       DB_HOST: db
       DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-submission_platform}
-      DB_USERNAME: ${DB_USERNAME:-app}
-      DB_PASSWORD: ${DB_PASSWORD}
-      LOG_CHANNEL: ${LOG_CHANNEL:-stack}
-      SESSION_DRIVER: ${SESSION_DRIVER:-database}
-      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
-      CACHE_STORE: ${CACHE_STORE:-database}
-      MAIL_MAILER: ${MAIL_MAILER:-log}
-      PANDORA_ENABLED: ${PANDORA_ENABLED:-false}
-      PANDORA_URL: ${PANDORA_URL:-http://pandora:6100}
+      PROXY: ${PROXY}
     volumes:
       - storage_data:/var/www/html/storage
-      - public_data:/var/www/html/public-shared
+      - ./public:/var/www/html/public
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - app_network
-
-  nginx:
-    image: nginx:alpine
-    restart: unless-stopped
-    ports:
-      - "${APP_PORT:-80}:80"
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - public_data:/var/www/html/public:ro
-    depends_on:
-      - app
     networks:
       - app_network
 
@@ -79,4 +51,3 @@ networks:
 volumes:
   dbdata:
   storage_data:
-  public_data:
