@@ -1,0 +1,11 @@
+meta:
+  name: Abstract module
+  description: Base module for all the workers, manages the multiprocessing stuff.
+  replicas: 1
+
+settings:
+  cache: 1h
+  timeout: 1m
+  required: false
+  run_by_default: true
+  disabled: false
