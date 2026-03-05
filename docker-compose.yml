@@ -161,7 +161,15 @@ services:
   pandora:
     image: ghcr.io/pandora-analysis/pandora:latest
     profiles: [pandora]
-    depends_on: [redis, kvrocks, kvrocks-indexing, clamav]
+    depends_on:
+      redis:
+        condition: service_started
+      kvrocks:
+        condition: service_started
+      kvrocks-indexing:
+        condition: service_started
+      clamav:
+        condition: service_healthy
     expose: ["6100"]
     mem_limit: 2g
     environment:
