@@ -180,7 +180,7 @@ services:
       - pandora_indexing_sock:/pandora/indexing
       - clamav-socket:/var/run/clamav
       - ./docker/pandora/config/generic.json:/pandora/config/generic.json:ro
-      - ./docker/pandora/workers:/pandora/pandora/workers:ro
+      - ./docker/pandora/workers/clamav.yml:/pandora/pandora/workers/clamav.yml:ro
       - ./docker/pandora/yara_rules:/pandora/yara_rules:ro
     restart: unless-stopped
 
