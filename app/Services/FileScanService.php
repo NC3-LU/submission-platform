@@ -38,6 +38,7 @@ class FileScanService
 
             // Step 1: Submit file to Pandora
             $submitResponse = Http::timeout($this->timeout)
+                ->withOptions(['proxy' => ''])
                 ->attach('file', fopen($fullPath, 'r'), $file->getClientOriginalName())
                 ->post("{$this->pandoraUrl}/submit", ['validity' => 0]);
 
@@ -95,6 +96,7 @@ class FileScanService
             }
 
             $response = Http::timeout(10)
+                ->withOptions(['proxy' => ''])
                 ->get("{$this->pandoraUrl}/task_status", $query);
 
             if (! $response->successful()) {
