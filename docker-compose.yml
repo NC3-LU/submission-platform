@@ -68,6 +68,9 @@ services:
       PANDORA_POLL_INTERVAL: ${PANDORA_POLL_INTERVAL:-2}
       PANDORA_BLOCK_MALICIOUS: ${PANDORA_BLOCK_MALICIOUS:-true}
       PROXY: ${PROXY}
+    networks:
+      - default
+      - dokploy-network
     volumes:
       - storage_data:/var/www/html/storage
     depends_on:
@@ -187,6 +190,10 @@ services:
       - ./docker/pandora/workers/clamav.yml:/pandora/pandora/workers/clamav.yml:ro
       - ./docker/pandora/yara_rules:/pandora/yara_rules:ro
     restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true
 
 volumes:
   dbdata:
