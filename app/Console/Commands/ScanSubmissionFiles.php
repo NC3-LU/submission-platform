@@ -103,6 +103,11 @@ class ScanSubmissionFiles extends Command
             }
 
             $filePathInStorage = $value->value;
+
+            if (empty($filePathInStorage)) {
+                continue;
+            }
+
             $filename = basename($filePathInStorage);
 
             if (! Storage::disk('private')->exists($filePathInStorage)) {
