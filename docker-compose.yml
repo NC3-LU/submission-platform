@@ -77,6 +77,7 @@ services:
         condition: service_healthy
     networks:
       - app_network
+      - dokploy-network
 
   # --- Pandora file scanning stack (optional) ---
   # Activate with: COMPOSE_PROFILES=pandora docker compose up -d
@@ -196,6 +197,8 @@ services:
 networks:
   app_network:
     driver: bridge
+  dokploy-network:
+    external: true
 
 volumes:
   dbdata:
