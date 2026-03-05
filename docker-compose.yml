@@ -12,8 +12,6 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - app_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -75,9 +73,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - app_network
-      - dokploy-network
 
   # --- Pandora file scanning stack (optional) ---
   # Activate with: COMPOSE_PROFILES=pandora docker compose up -d
@@ -96,7 +91,6 @@ services:
     volumes:
       - pandora_cache:/cache
       - ./docker/pandora/config/cache.conf:/etc/redis/cache.conf:ro
-    networks: [app_network]
     healthcheck:
       test: ["CMD", "redis-cli", "-s", "/cache/cache.sock", "ping"]
       interval: 10s
@@ -112,7 +106,6 @@ services:
     volumes:
       - pandora_storage:/var/lib/kvrocks
     command: ["--log-dir", "stdout"]
-    networks: [app_network]
     healthcheck:
       test: ["CMD", "redis-cli", "-h", "127.0.0.1", "-p", "6101", "ping"]
       interval: 10s
@@ -130,7 +123,6 @@ services:
       - pandora_indexing_sock:/pandora-sock
       - ./docker/pandora/config/kvrocks-indexing.conf:/etc/kvrocks/kvrocks.conf:ro
     command: ["-c", "/etc/kvrocks/kvrocks.conf"]
-    networks: [app_network]
     healthcheck:
       test: ["CMD", "redis-cli", "-s", "/pandora-sock/kvrocks_index.sock", "ping"]
       interval: 10s
@@ -146,7 +138,6 @@ services:
       - clamav-socket:/var/run/clamav
       - ./docker/pandora/config/clamav/clamd.conf:/etc/clamav/clamd.conf:ro
       - ./docker/pandora/config/clamav/freshclam.conf:/etc/clamav/freshclam.conf:ro
-    networks: [app_network]
     environment:
       - HTTP_PROXY=${PROXY}
       - HTTPS_PROXY=${PROXY}
@@ -191,14 +182,7 @@ services:
       - ./docker/pandora/config/generic.json:/pandora/config/generic.json:ro
       - ./docker/pandora/workers:/pandora/pandora/workers:ro
       - ./docker/pandora/yara_rules:/pandora/yara_rules:ro
-    networks: [app_network]
     restart: unless-stopped
-
-networks:
-  app_network:
-    driver: bridge
-  dokploy-network:
-    external: true
 
 volumes:
   dbdata:
