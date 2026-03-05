@@ -156,6 +156,7 @@ services:
     profiles: [pandora]
     depends_on: [redis, kvrocks, kvrocks-indexing, clamav]
     expose: ["6100"]
+    mem_limit: 2g
     environment:
       - HTTP_PROXY=${PROXY}
       - HTTPS_PROXY=${PROXY}
@@ -169,6 +170,8 @@ services:
       - |
           echo "[pandora] waiting for dependencies..."
           sleep 60
+          echo "[pandora] reducing gunicorn workers to 2..."
+          sed -i "s/'-w', '10'/'-w', '2'/" /pandora/bin/start_website.py
           echo "[pandora] starting service"
           poetry run start
           tail -F ./LICENSE
