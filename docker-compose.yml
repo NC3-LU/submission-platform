@@ -184,12 +184,15 @@ services:
       - -c
       - |
           echo "[pandora] waiting for dependencies..."
-          sleep 60
+          sleep 30
           echo "[pandora] reducing gunicorn workers to 2..."
           sed -i "s/'-w', '10'/'-w', '2'/" /pandora/bin/start_website.py
-          echo "[pandora] starting service"
-          poetry run start
-          tail -F ./LICENSE
+          echo "[pandora] starting workers..."
+          poetry run workers_manager &
+          echo "[pandora] starting website on port 6100..."
+          poetry run start_website &
+          echo "[pandora] all services started"
+          wait
     env_file:
       - ./docker/pandora/pandora.env
     volumes:
