@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Form;
 use App\Models\FormCategory;
 use App\Models\FormField;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -298,12 +299,14 @@ class FormFieldManager extends Component
             ->first();
 
         if ($switchWith) {
-            $tempOrder = $category->order;
-            $category->order = $switchWith->order;
-            $switchWith->order = $tempOrder;
+            DB::transaction(function () use ($category, $switchWith) {
+                $tempOrder = $category->order;
+                $category->order = $switchWith->order;
+                $switchWith->order = $tempOrder;
 
-            $category->save();
-            $switchWith->save();
+                $category->save();
+                $switchWith->save();
+            });
 
             $this->loadCategories();
         }
@@ -318,12 +321,14 @@ class FormFieldManager extends Component
             ->first();
 
         if ($switchWith) {
-            $tempOrder = $category->order;
-            $category->order = $switchWith->order;
-            $switchWith->order = $tempOrder;
+            DB::transaction(function () use ($category, $switchWith) {
+                $tempOrder = $category->order;
+                $category->order = $switchWith->order;
+                $switchWith->order = $tempOrder;
 
-            $category->save();
-            $switchWith->save();
+                $category->save();
+                $switchWith->save();
+            });
 
             $this->loadCategories();
         }
@@ -338,12 +343,14 @@ class FormFieldManager extends Component
             ->first();
 
         if ($switchWith) {
-            $tempOrder = $field->order;
-            $field->order = $switchWith->order;
-            $switchWith->order = $tempOrder;
+            DB::transaction(function () use ($field, $switchWith) {
+                $tempOrder = $field->order;
+                $field->order = $switchWith->order;
+                $switchWith->order = $tempOrder;
 
-            $field->save();
-            $switchWith->save();
+                $field->save();
+                $switchWith->save();
+            });
 
             $this->loadCategories();
         }
@@ -358,12 +365,14 @@ class FormFieldManager extends Component
             ->first();
 
         if ($switchWith) {
-            $tempOrder = $field->order;
-            $field->order = $switchWith->order;
-            $switchWith->order = $tempOrder;
+            DB::transaction(function () use ($field, $switchWith) {
+                $tempOrder = $field->order;
+                $field->order = $switchWith->order;
+                $switchWith->order = $tempOrder;
 
-            $field->save();
-            $switchWith->save();
+                $field->save();
+                $switchWith->save();
+            });
 
             $this->loadCategories();
         }
