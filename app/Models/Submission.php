@@ -15,6 +15,7 @@ class Submission extends Model
     protected $fillable = [
         'form_id',
         'user_id',
+        'ip_address',
         'status',
         'status_metadata'
     ];
