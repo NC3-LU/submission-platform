@@ -11,7 +11,7 @@ class FormField extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['form_id', 'form_category_id', 'type', 'order', 'label', 'options', 'required', 'content', 'char_limit'];
+    protected $fillable = ['form_id', 'form_category_id', 'type', 'order', 'label', 'options', 'required', 'content', 'char_limit', 'depends_on_field_id', 'depends_on_value'];
 
     /**
      * Get the form that owns the field.
@@ -27,6 +27,14 @@ class FormField extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(FormCategory::class, 'form_category_id');
+    }
+
+    /**
+     * Get the field that this field depends on for conditional visibility.
+     */
+    public function dependsOnField(): BelongsTo
+    {
+        return $this->belongsTo(FormField::class, 'depends_on_field_id');
     }
 
     /**

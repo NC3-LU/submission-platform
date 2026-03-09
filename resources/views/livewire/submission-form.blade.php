@@ -109,6 +109,12 @@
              x-transition:enter-end="opacity-100 translate-y-0"
              class="space-y-5">
             @foreach($category->fields as $field)
+                @if($field->depends_on_field_id)
+                    <div x-show="$wire.fieldValues['{{ $field->depends_on_field_id }}'] == '{{ $field->depends_on_value }}'"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100">
+                @endif
                 @if($field->type === 'header')
                     <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 pt-2">
                         {{ $field->content }}
@@ -260,6 +266,9 @@
                                 {{ $used }}/{{ $limit }} characters
                             </p>
                         @endif
+                    </div>
+                @endif
+                @if($field->depends_on_field_id)
                     </div>
                 @endif
             @endforeach

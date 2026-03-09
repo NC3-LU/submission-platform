@@ -35,6 +35,12 @@
                             @endif
 
                             @foreach($category->fields as $field)
+                                @if($field->depends_on_field_id)
+                                    <div x-show="document.querySelector('[name=field_{{ $field->depends_on_field_id }}]:checked')?.value == '{{ $field->depends_on_value }}' || document.querySelector('[name=field_{{ $field->depends_on_field_id }}]')?.value == '{{ $field->depends_on_value }}'"
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0"
+                                         x-transition:enter-end="opacity-100">
+                                @endif
                                 @if($field->type === 'header')
                                     <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 pt-2">
                                         {{ $field->content }}
@@ -72,6 +78,9 @@
                                         <input type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 dark:text-gray-400 dark:file:bg-gray-700 dark:file:text-gray-300" {{ $field->required ? 'required' : '' }}>
                                     @endif
                                 </div>
+                                @endif
+                                @if($field->depends_on_field_id)
+                                    </div>
                                 @endif
                             @endforeach
                         </div>

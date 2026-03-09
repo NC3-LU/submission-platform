@@ -709,6 +709,15 @@ class SubmissionForm extends Component
 
         foreach ($this->form->categories as $category) {
             foreach ($category->fields as $field) {
+                // If field depends on another field, check if the condition is met
+                if ($field->depends_on_field_id && $field->depends_on_value !== null) {
+                    $parentValue = $this->fieldValues[$field->depends_on_field_id] ?? null;
+                    if ($parentValue != $field->depends_on_value) {
+                        // Condition not met — skip validation for this hidden field
+                        continue;
+                    }
+                }
+
                 $fieldValueRules = [];
                 // Base rules: required or nullable for fieldValues
                 if ($field->required) {

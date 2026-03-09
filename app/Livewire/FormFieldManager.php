@@ -29,7 +29,9 @@ class FormFieldManager extends Component
         'options' => '',
         'required' => false,
         'content' => '',
-        'char_limit' => null
+        'char_limit' => null,
+        'depends_on_field_id' => null,
+        'depends_on_value' => null,
     ];
 
     public $confirmingCategoryDeletion = false;
@@ -245,6 +247,10 @@ class FormFieldManager extends Component
             }
         }
 
+        // Conditional visibility
+        $fieldData['depends_on_field_id'] = ! empty($this->newField['depends_on_field_id']) ? $this->newField['depends_on_field_id'] : null;
+        $fieldData['depends_on_value'] = ! empty($this->newField['depends_on_field_id']) ? ($this->newField['depends_on_value'] ?? null) : null;
+
         FormField::create($fieldData);
 
         $this->reset('newField');
@@ -408,6 +414,8 @@ class FormFieldManager extends Component
             'options' => $field->options ?? '',
             'content' => $field->content ?? '',
             'char_limit' => $field->char_limit ?? null,
+            'depends_on_field_id' => $field->depends_on_field_id,
+            'depends_on_value' => $field->depends_on_value,
         ]);
         $this->editingField = true;
     }

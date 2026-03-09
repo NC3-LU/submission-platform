@@ -575,6 +575,23 @@
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">Users must fill this field to submit</p>
                                             </label>
                                         </div>
+
+                                        <!-- Conditional Visibility -->
+                                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Conditional Visibility</label>
+                                            <select wire:model.live="fieldBeingEdited.depends_on_field_id"
+                                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                <option value="">Always visible</option>
+                                                @foreach($form->fields()->where('id', '!=', $fieldBeingEdited['id'] ?? 0)->whereIn('type', ['select', 'radio', 'checkbox'])->orderBy('order')->get() as $parentField)
+                                                    <option value="{{ $parentField->id }}">{{ $parentField->label }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if(!empty($fieldBeingEdited['depends_on_field_id']))
+                                                <input type="text" wire:model.defer="fieldBeingEdited.depends_on_value"
+                                                       placeholder="Show when value equals..."
+                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
                                 
@@ -815,6 +832,23 @@
                                                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required field</span>
                                                         <p class="text-xs text-gray-500 dark:text-gray-400">Users must fill this field to submit</p>
                                                     </label>
+                                                </div>
+
+                                                <!-- Conditional Visibility -->
+                                                <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
+                                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Conditional Visibility</label>
+                                                    <select wire:model.live="newField.depends_on_field_id"
+                                                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                                                        <option value="">Always visible</option>
+                                                        @foreach($form->fields()->whereIn('type', ['select', 'radio', 'checkbox'])->orderBy('order')->get() as $parentField)
+                                                            <option value="{{ $parentField->id }}">{{ $parentField->label }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    @if(!empty($newField['depends_on_field_id']))
+                                                        <input type="text" wire:model.live="newField.depends_on_value"
+                                                               placeholder="Show when value equals..."
+                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                                                    @endif
                                                 </div>
                                             @endif
                                         </div>
