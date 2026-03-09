@@ -30,7 +30,15 @@
                                     @endif
                                     <span class="text-xs text-slate-400">{{ $form->created_at->diffForHumans() }}</span>
                                 </div>
-                                @if($form->visibility === 'public' || auth()->check())
+                                @if($form->availabilityState() === 'scheduled')
+                                    <span class="text-sm text-amber-600 dark:text-amber-400">
+                                        Opens {{ $form->available_from->format('M j, Y') }}
+                                    </span>
+                                @elseif($form->availabilityState() === 'closed')
+                                    <span class="text-sm text-red-600 dark:text-red-400">
+                                        Closed {{ $form->available_until->format('M j, Y') }}
+                                    </span>
+                                @elseif($form->visibility === 'public' || auth()->check())
                                     <a href="{{ route('submissions.create', $form) }}" class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium text-sm inline-flex items-center">
                                         Apply
                                         <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>

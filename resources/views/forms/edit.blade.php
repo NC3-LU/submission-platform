@@ -156,6 +156,34 @@
                             <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        <!-- Available From Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Available From
+                            </label>
+                            <input type="datetime-local" name="available_from"
+                                   value="{{ old('available_from', $form->available_from?->format('Y-m-d\TH:i')) }}"
+                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave blank to make available immediately</p>
+                            @error('available_from')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Available Until Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Available Until
+                            </label>
+                            <input type="datetime-local" name="available_until"
+                                   value="{{ old('available_until', $form->available_until?->format('Y-m-d\TH:i')) }}"
+                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave blank for no expiration</p>
+                            @error('available_until')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Submit Button -->

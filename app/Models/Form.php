@@ -35,7 +35,14 @@ class Form extends Model
         'title',
         'description',
         'status',
-        'visibility'
+        'visibility',
+        'available_from',
+        'available_until',
+    ];
+
+    protected $casts = [
+        'available_from' => 'datetime',
+        'available_until' => 'datetime',
     ];
 
     /**
@@ -106,6 +113,36 @@ class Form extends Model
         }
 
         return false;
+    }
+
+    public function isWithinAvailabilityWindow(): bool
+    {
+        $now = now();
+
+        if ($this->available_from && $now->lt($this->available_from)) {
+            return false;
+        }
+
+        if ($this->available_until && $now->gt($this->available_until)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function availabilityState(): string
+    {
+        $now = now();
+
+        if ($this->available_from && $now->lt($this->available_from)) {
+            return 'scheduled';
+        }
+
+        if ($this->available_until && $now->gt($this->available_until)) {
+            return 'closed';
+        }
+
+        return 'open';
     }
 
 // Add this relationship method to your Form model

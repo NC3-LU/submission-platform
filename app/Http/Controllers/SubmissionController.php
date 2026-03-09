@@ -32,6 +32,14 @@ class SubmissionController extends Controller
                 abort(404);
             }
 
+            if (!$form->isWithinAvailabilityWindow()) {
+                $state = $form->availabilityState();
+                if ($state === 'scheduled') {
+                    abort(403, 'This form is not yet open. It opens on ' . $form->available_from->format('M j, Y \a\t g:i A') . '.');
+                }
+                abort(403, 'This form is closed. It closed on ' . $form->available_until->format('M j, Y \a\t g:i A') . '.');
+            }
+
             // Get draft submission if exists
             $draftSubmission = null;
             if (auth()->check()) {
@@ -64,6 +72,10 @@ class SubmissionController extends Controller
     {
         if ($form->status !== 'published') {
             abort(404);
+        }
+
+        if (!$form->isWithinAvailabilityWindow()) {
+            abort(403, 'This form is not currently accepting submissions.');
         }
 
         $categories = $form->categories()->with('fields')->get();
