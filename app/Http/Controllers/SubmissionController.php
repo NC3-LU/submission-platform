@@ -315,6 +315,11 @@ class SubmissionController extends Controller
     {
         $this->authorize('generalPolicy', $submission);
 
+        // Reject path traversal and null bytes
+        if ($filename !== basename($filename) || str_contains($filename, "\0") || str_contains($filename, '..')) {
+            abort(403, 'Invalid filename.');
+        }
+
         // Determine the file path based on submission status
         $path = match ($submission->status) {
             'draft' => "temp-submissions/{$submission->id}/{$filename}",
