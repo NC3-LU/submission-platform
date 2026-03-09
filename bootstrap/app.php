@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Web middleware
         $middleware->web(append: [
             FormAccessMiddleware::class,
+            \App\Http\Middleware\RemoveServerHeaders::class,
         ]);
 
         // API middleware
@@ -36,7 +37,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Add API log middleware to the API group
-        $middleware->api(append: ApiLogMiddleware::class);
+        $middleware->api(append: [
+            ApiLogMiddleware::class,
+            \App\Http\Middleware\RemoveServerHeaders::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Handle DecryptException on 2FA routes — stale sessions after APP_KEY change
