@@ -29,6 +29,7 @@ class Submission extends Model
     }
     protected $casts = [
         'updated_at' => 'datetime',
+        'status_metadata' => 'array',
     ];
     /**
      * Get the form that owns the submission.
