@@ -11,6 +11,25 @@ class Form extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Form $form) {
+            $filePaths = \App\Models\SubmissionValues::whereIn(
+                'submission_id',
+                $form->submissions()->select('id')
+            )
+                ->whereHas('field', fn ($q) => $q->where('type', 'file'))
+                ->pluck('value')
+                ->filter();
+
+            foreach ($filePaths as $path) {
+                \Illuminate\Support\Facades\Storage::disk('private')->delete($path);
+                $tempPath = str_replace('submissions/', 'temp-submissions/', $path);
+                \Illuminate\Support\Facades\Storage::disk('private')->delete($tempPath);
+            }
+        });
+    }
+
     protected $fillable = [
         'user_id',
         'title',
