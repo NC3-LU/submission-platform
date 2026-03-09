@@ -19,7 +19,9 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
                 @if($form->description)
-                    <p class="mb-6 text-gray-600 dark:text-gray-400">{{ $form->description }}</p>
+                    <div class="mb-6 text-sm text-gray-600 dark:text-gray-400 prose prose-sm dark:prose-invert max-w-none">
+                        {!! \App\Helpers\MarkdownHelper::toHtml($form->description) !!}
+                    </div>
                 @endif
 
                 <form x-data="{ step: 1, totalSteps: {{ $form->categories->count() }} }">
@@ -27,10 +29,21 @@
                         <div x-show="step === {{ $index + 1 }}" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ $category->name }}</h3>
                             @if($category->description)
-                                <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ $category->description }}</p>
+                                <div class="mb-4 text-sm text-gray-500 dark:text-gray-400 prose prose-sm dark:prose-invert max-w-none">
+                                    {!! \App\Helpers\MarkdownHelper::toHtml($category->description) !!}
+                                </div>
                             @endif
 
                             @foreach($category->fields as $field)
+                                @if($field->type === 'header')
+                                    <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 pt-2">
+                                        {{ $field->content }}
+                                    </h4>
+                                @elseif($field->type === 'description')
+                                    <div class="text-sm text-gray-600 dark:text-gray-400 prose prose-sm dark:prose-invert max-w-none">
+                                        {!! \App\Helpers\MarkdownHelper::toHtml($field->content) !!}
+                                    </div>
+                                @else
                                 <div class="mb-4">
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ $field->label }}{{ $field->required ? ' *' : '' }}</label>
 
@@ -59,6 +72,7 @@
                                         <input type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 dark:text-gray-400 dark:file:bg-gray-700 dark:file:text-gray-300" {{ $field->required ? 'required' : '' }}>
                                     @endif
                                 </div>
+                                @endif
                             @endforeach
                         </div>
                     @endforeach
