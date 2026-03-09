@@ -79,6 +79,14 @@
                                             @if($form->status === 'published')
                                                 <a href="{{ route('forms.preview', $form) }}" class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">Preview</a>
                                             @endif
+                                            @can('duplicate', $form)
+                                                <form action="{{ route('forms.duplicate', $form) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors text-sm font-medium">
+                                                        Clone
+                                                    </button>
+                                                </form>
+                                            @endcan
                                             @if($form->user_id === Auth::id())
                                                 <form action="{{ route('forms.destroy', $form) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
                                                     @csrf

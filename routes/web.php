@@ -48,6 +48,7 @@ Route::middleware([
         Route::put('/{form}', [FormController::class, 'update'])->name('update');
         Route::delete('/{form}', [FormController::class, 'destroy'])->name('destroy');
         Route::get('/{form}/preview', [FormController::class, 'preview'])->name('preview');
+        Route::post('/{form}/duplicate', [FormController::class, 'duplicate'])->name('duplicate');
 
         // Form Access Management - protected actions
         Route::post('/{form}/assign-users', [FormAccessController::class, 'assignUsers'])->name('assign-users');
