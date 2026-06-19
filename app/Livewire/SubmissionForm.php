@@ -2,16 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Jobs\ScanSubmissionFileJob;
 use App\Models\Form;
 use App\Models\FormField;
-use App\Models\ScanResult;
 use App\Models\Submission;
-use App\Services\FileScanService;
 use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\UploadedFile as IlluminateUploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -612,15 +610,14 @@ class SubmissionForm extends Component
     }
 
     /**
-     * Handle permanent file storage after submission
+     * Handle permanent file storage after submission.
+     *
+     * Malware scanning is dispatched to a queued job (ScanSubmissionFileJob) so
+     * it never blocks the request. The job runs after the surrounding DB
+     * transaction commits and quarantines malicious/unscannable files.
      */
-    protected function handleFileUploads(?FileScanService $scanService = null): void
+    protected function handleFileUploads(): void
     {
-        // If no scan service was provided, try to resolve it from the container
-        if (! $scanService) {
-            $scanService = app(FileScanService::class);
-        }
-
         foreach ($this->fieldValues as $fieldId => $value) {
             // Skip if value is not a string (e.g., arrays from checkboxes)
             if (! is_string($value)) {
@@ -645,54 +642,16 @@ class SubmissionForm extends Component
 
                 $this->fieldValues[$fieldId] = $newPath; // Update component state
 
-                // After successfully moving the file, scan it
+                // Queue an asynchronous malware scan. afterCommit() ensures the
+                // worker only picks it up once the file's row is committed.
                 if (config('services.pandora.enabled', false)) {
-                    $fullStoragePath = Storage::disk('private')->path($newPath);
-                    $originalName = basename($newPath); // Or get original name if stored elsewhere
-                    $mimeType = Storage::disk('private')->mimeType($newPath);
-
-                    // Create an Illuminate\Http\UploadedFile instance for the scan service
-                    $uploadedFileForScan = new IlluminateUploadedFile(
-                        $fullStoragePath,
-                        $originalName,
-                        $mimeType,
-                        null, // Error code, null for no error
-                        true // Set to true to indicate this is a test file (prevents move attempts)
-                    );
-
-                    Log::info('Scanning file after upload', [
+                    Log::info('Queuing file scan after upload', [
                         'submission_id' => $this->submission->id,
                         'submission_value_id' => $submissionValue->id,
-                        'filename' => $originalName,
                         'path' => $newPath,
                     ]);
 
-                    $scanResultData = $scanService->scanFile($uploadedFileForScan);
-
-                    if ($scanResultData['success']) {
-                        // Store scan results
-                        ScanResult::create([
-                            'submission_id' => $this->submission->id,
-                            'submission_value_id' => $submissionValue->id,
-                            'is_malicious' => $scanResultData['is_malicious'],
-                            'scan_results' => $scanResultData['scan_results'],
-                            'scanner_used' => 'pandora',
-                            'filename' => $originalName,
-                        ]);
-
-                        // If the file is malicious and we're configured to block, we need to handle this
-                        // Since this happens after the file is stored, we'll need to delete it and notify the user
-                        if ($scanResultData['is_malicious'] && config('services.pandora.block_malicious', true)) {
-                            Log::warning('Detected malicious file after upload, removing', [
-                                'submission_id' => $this->submission->id,
-                                'filename' => $originalName,
-                            ]);
-
-                            Storage::disk('private')->delete($newPath);
-                            $submissionValue->update(['value' => '[REMOVED-MALICIOUS]: '.$originalName]);
-                            $this->dispatch('error', 'The file "'.$originalName.'" was flagged as malicious and has been removed.');
-                        }
-                    }
+                    ScanSubmissionFileJob::dispatch($submissionValue)->afterCommit();
                 }
             }
         }

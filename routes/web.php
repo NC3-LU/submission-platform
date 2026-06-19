@@ -1,12 +1,12 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormAccessController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\FormFieldController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\SubmissionExportController;
 use App\Http\Controllers\WorkflowController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\FormAccessMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [FormController::class, 'index'])
     ->name('homepage')
     ->middleware(FormAccessMiddleware::class);
-
 
 Route::get('/forms', [FormController::class, 'publicIndex'])
     ->name('forms.public_index')
@@ -27,7 +26,6 @@ Route::get('/forms/access/{token}', [FormAccessController::class, 'accessForm'])
 
 // Form submission routes - public facing but protected by FormAccessMiddleware
 Route::get('/forms/{form}/submit', [SubmissionController::class, 'show'])->name('submissions.create');
-Route::post('/forms/{form}/submit', [SubmissionController::class, 'store'])->name('submissions.store');
 Route::get('/thank-you', [SubmissionController::class, 'thankyou'])->name('submissions.thankyou');
 
 // Authenticated routes
@@ -73,7 +71,7 @@ Route::middleware([
         // User Removal from Form
         Route::delete('/{form}/users/{user}', [FormController::class, 'removeUser'])->name('remove-user');
     });
-    
+
     // Submission Management
     Route::prefix('submissions')->name('submissions.')->group(function () {
         Route::get('/my-submissions', [SubmissionController::class, 'showUserSubmission'])->name('user');
@@ -90,25 +88,24 @@ Route::middleware([
             Route::get('/submissions/edit/{submission}', [SubmissionController::class, 'edit'])->name('edit');
         });
     });
-    
+
     Route::get('forms/{form}/submissions/{submission}/export/pdf', [SubmissionExportController::class, 'exportSubmissionPdf'])
         ->middleware('throttle:export')
         ->name('submissions.export.single.pdf');
-    
+
     Route::get('forms/{form}/submissions/{submission}/export/json', [SubmissionExportController::class, 'exportSubmissionJson'])
         ->middleware('throttle:export')
         ->name('submissions.export.single.json');
-    
+
     Route::get('forms/{form}/export/json', [SubmissionExportController::class, 'exportFormJson'])
         ->middleware('throttle:bulk-export')
         ->name('submissions.export.form.json');
 
-        /*Route::prefix('forms/{form}/workflows')->name('workflows.')->middleware(['auth'])->group(function () {
-        Route::get('/manage', [WorkflowController::class, 'manage'])->name('manage');
-        Route::get('/{workflow}', [WorkflowController::class, 'show'])->name('show');
-        Route::delete('/steps/{step}', [WorkflowController::class, 'destroyStep'])->name('steps.destroy');
-        Route::delete('/{workflow}', [WorkflowController::class, 'destroy'])->name('destroy');
+    /*Route::prefix('forms/{form}/workflows')->name('workflows.')->middleware(['auth'])->group(function () {
+    Route::get('/manage', [WorkflowController::class, 'manage'])->name('manage');
+    Route::get('/{workflow}', [WorkflowController::class, 'show'])->name('show');
+    Route::delete('/steps/{step}', [WorkflowController::class, 'destroyStep'])->name('steps.destroy');
+    Route::delete('/{workflow}', [WorkflowController::class, 'destroy'])->name('destroy');
     });*/
 
-    });
-
+});

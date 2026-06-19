@@ -14,10 +14,19 @@ class ScanResult extends Model
     use HasFactory;
     use HasUuids;
 
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_CLEAN = 'clean';
+
+    public const STATUS_MALICIOUS = 'malicious';
+
+    public const STATUS_FAILED = 'failed';
+
     protected $fillable = [
         'submission_id',
         'submission_value_id',
         'is_malicious',
+        'status',
         'scan_results',
         'scanner_used',
         'filename',

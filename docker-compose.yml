@@ -33,7 +33,7 @@ services:
     expose:
       - "80"
     restart: unless-stopped
-    environment:
+    environment: &app_env
       APP_NAME: ${APP_NAME}
       APP_ENV: ${APP_ENV:-production}
       APP_KEY: ${APP_KEY}
@@ -81,12 +81,34 @@ services:
       db:
         condition: service_healthy
 
+  # Queue worker — processes background jobs (e.g. async malware scans).
+  # Without this, database-queued jobs never run.
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PROXY: ${PROXY}
+    container_name: nc3_queue
+    restart: unless-stopped
+    environment:
+      <<: *app_env
+    command: php artisan queue:work --tries=3 --sleep=3 --timeout=180 --max-time=3600
+    networks:
+      - default
+      - dokploy-network
+    volumes:
+      - storage_data:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
   # --- Pandora file scanning stack (optional) ---
   # Activate with: COMPOSE_PROFILES=pandora docker compose up -d
   # Or in Dokploy: add COMPOSE_PROFILES=pandora to environment variables
 
   redis:
-    image: redis:7
+    image: redis:7.4.9
     profiles: [pandora]
     working_dir: /cache
     command:
@@ -107,7 +129,7 @@ services:
     restart: unless-stopped
 
   kvrocks:
-    image: apache/kvrocks:latest
+    image: apache/kvrocks:2.15.0
     profiles: [pandora]
     user: root
     volumes:
@@ -122,7 +144,7 @@ services:
     restart: unless-stopped
 
   kvrocks-indexing:
-    image: apache/kvrocks:latest
+    image: apache/kvrocks:2.15.0
     profiles: [pandora]
     user: root
     volumes:
@@ -139,7 +161,7 @@ services:
     restart: unless-stopped
 
   clamav:
-    image: clamav/clamav
+    image: clamav/clamav:1.5.2
     profiles: [pandora]
     volumes:
       - clamav-socket:/var/run/clamav
@@ -159,7 +181,7 @@ services:
     restart: unless-stopped
 
   pandora:
-    image: ghcr.io/pandora-analysis/pandora:latest
+    image: ghcr.io/pandora-analysis/pandora:v1.12.2
     profiles: [pandora]
     depends_on:
       redis:

@@ -41,14 +41,27 @@
                                         <h5 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{{ $field['label'] }}</h5>
                                         @if($field['type'] === 'file')
                                             @if($field['displayValue'])
+                                                @php
+                                                    $scanResult = $field['scanResult'] ?? null;
+                                                    $scanStatus = $scanResult->status ?? 'pending';
+                                                    // The controller returns 423 for any non-clean file when
+                                                    // malicious blocking is enabled, so the download is unavailable.
+                                                    $downloadBlocked = config('services.pandora.enabled')
+                                                        && config('services.pandora.block_malicious')
+                                                        && $scanStatus !== 'clean';
+                                                @endphp
                                                 <div class="flex items-center gap-2">
-                                                    <a href="{{ $field['displayValue'] }}" target="_blank" class="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 font-medium transition-colors">
-                                                        {{ basename($field['value']) }}
-                                                    </a>
-                                                    @if(isset($field['scanResult']))
-                                                        <x-scan-result-badge :scanResult="$field['scanResult']" />
+                                                    @if($downloadBlocked)
+                                                        <span class="text-gray-400 dark:text-gray-500 font-medium cursor-not-allowed line-through" title="This file cannot be downloaded until it passes the malware scan.">
+                                                            {{ basename($field['value']) }}
+                                                        </span>
                                                     @else
-                                                        <x-scan-result-badge :scanResult="null" />
+                                                        <a href="{{ $field['displayValue'] }}" target="_blank" class="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 font-medium transition-colors">
+                                                            {{ basename($field['value']) }}
+                                                        </a>
+                                                    @endif
+                                                    @if(config('services.pandora.enabled'))
+                                                        <x-scan-result-badge :scanResult="$scanResult" />
                                                     @endif
                                                 </div>
                                             @else

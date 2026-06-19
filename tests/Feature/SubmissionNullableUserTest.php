@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\SubmissionForm;
 use App\Models\Form;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SubmissionNullableUserTest extends TestCase
@@ -27,14 +29,19 @@ class SubmissionNullableUserTest extends TestCase
             'order' => 1,
         ]);
 
-        $response = $this->post(route('submissions.store', $form), [
-            'field_' . $field->id => 'Test Value',
-        ]);
+        // Guests submit through the Livewire component (no authenticated user).
+        Livewire::test(SubmissionForm::class, ['form' => $form])
+            ->set('fieldValues.'.$field->id, 'Test Value')
+            ->call('submit')
+            ->assertRedirect(route('submissions.thankyou'));
 
-        $response->assertRedirect(route('submissions.thankyou'));
         $this->assertDatabaseHas('submissions', [
             'form_id' => $form->id,
             'user_id' => null,
+        ]);
+        $this->assertDatabaseHas('submission_values', [
+            'form_field_id' => $field->id,
+            'value' => 'Test Value',
         ]);
     }
 

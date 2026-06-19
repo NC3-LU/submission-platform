@@ -124,9 +124,12 @@ class ScanSubmissionFiles extends Command
             $stats['scanned']++;
 
             if ($scanResultData['success']) {
+                $status = $scanResultData['is_malicious'] ? ScanResult::STATUS_MALICIOUS : ScanResult::STATUS_CLEAN;
+
                 if ($existingResult) {
                     $existingResult->update([
                         'is_malicious' => $scanResultData['is_malicious'],
+                        'status' => $status,
                         'scan_results' => $scanResultData['scan_results'],
                         'scanner_used' => 'pandora',
                         'filename' => $filename,
@@ -137,6 +140,7 @@ class ScanSubmissionFiles extends Command
                         'submission_id' => $submission->id,
                         'submission_value_id' => $value->id,
                         'is_malicious' => $scanResultData['is_malicious'],
+                        'status' => $status,
                         'scan_results' => $scanResultData['scan_results'],
                         'scanner_used' => 'pandora',
                         'filename' => $filename,

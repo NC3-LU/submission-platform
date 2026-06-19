@@ -36,13 +36,23 @@ class FileScanService
             $tempPath = $file->storeAs('temp/scans', $uniqueFilename);
             $fullPath = Storage::path($tempPath);
 
-            // Step 1: Submit file to Pandora
-            $submitResponse = Http::timeout($this->timeout)
-                ->withOptions(['proxy' => ''])
-                ->attach('file', fopen($fullPath, 'r'), $file->getClientOriginalName())
-                ->post("{$this->pandoraUrl}/submit", ['validity' => 0]);
+            // Step 1: Submit file to Pandora.
+            // `validity` MUST be a query-string param — Pandora's ApiSubmit reads
+            // it from location='args'. Sent in the multipart body it is ignored,
+            // and no seed is issued for unauthenticated task_status polling.
+            $fileHandle = fopen($fullPath, 'r');
 
-            Storage::delete($tempPath);
+            try {
+                $submitResponse = Http::timeout($this->timeout)
+                    ->withOptions(['proxy' => ''])
+                    ->attach('file', $fileHandle, $file->getClientOriginalName())
+                    ->post("{$this->pandoraUrl}/submit?validity=0");
+            } finally {
+                if (is_resource($fileHandle)) {
+                    fclose($fileHandle);
+                }
+                Storage::delete($tempPath);
+            }
 
             if (! $submitResponse->successful()) {
                 Log::error('Pandora submit failed', [
@@ -112,7 +122,7 @@ class FileScanService
             $data = $response->json();
             $status = strtoupper($data['status'] ?? '');
 
-            if (in_array($status, ['ERROR', 'OVERWRITE'])) {
+            if ($status === 'ERROR') {
                 Log::warning('Pandora scan returned error status', [
                     'taskId' => $taskId,
                     'status' => $status,
@@ -122,7 +132,11 @@ class FileScanService
                 return ['success' => false, 'message' => "Pandora scan returned status: {$status}"];
             }
 
-            if (in_array($status, ['CLEAN', 'WARN', 'ALERT'])) {
+            // OVERWRITE is an analyst-forced terminal report status, not an error
+            // and not a worker failure. Treat it as a completed scan (the human
+            // override is authoritative) so it never triggers retries or failure
+            // alerts. WARN/ALERT remain the malicious verdicts.
+            if (in_array($status, ['CLEAN', 'WARN', 'ALERT', 'OVERWRITE'])) {
                 $isMalicious = in_array($status, ['ALERT', 'WARN']);
 
                 Log::info('Pandora scan complete', [

@@ -35,7 +35,7 @@ class FileScanServiceTest extends TestCase
     public function test_scans_clean_file_successfully(): void
     {
         Http::fake([
-            '*/submit' => Http::response([
+            '*/submit*' => Http::response([
                 'success' => true,
                 'taskId' => 'test-task-123',
                 'seed' => 'test-seed',
@@ -58,7 +58,7 @@ class FileScanServiceTest extends TestCase
     public function test_detects_malicious_file_alert_status(): void
     {
         Http::fake([
-            '*/submit' => Http::response([
+            '*/submit*' => Http::response([
                 'success' => true,
                 'taskId' => 'test-task-456',
                 'seed' => 'test-seed',
@@ -80,7 +80,7 @@ class FileScanServiceTest extends TestCase
     public function test_detects_malicious_file_warn_status(): void
     {
         Http::fake([
-            '*/submit' => Http::response([
+            '*/submit*' => Http::response([
                 'success' => true,
                 'taskId' => 'test-task-789',
                 'seed' => 'test-seed',
@@ -99,10 +99,47 @@ class FileScanServiceTest extends TestCase
         $this->assertTrue($result['is_malicious']);
     }
 
+    public function test_submit_sends_validity_as_query_param(): void
+    {
+        // Pandora's ApiSubmit parses `validity` from location='args' (the query
+        // string). If it is only present in the multipart body, Pandora never
+        // issues a seed and unauthenticated task_status polling fails.
+        Http::fake([
+            '*/submit*' => Http::response(['success' => true, 'taskId' => 't1', 'seed' => 's1']),
+            '*/task_status*' => Http::response(['success' => true, 'taskId' => 't1', 'status' => 'CLEAN']),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $this->service->scanFile($file);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/submit')
+                && str_contains($request->url(), 'validity=0');
+        });
+    }
+
+    public function test_poll_forwards_seed_from_submit_response(): void
+    {
+        // The seed returned by /submit must be forwarded to /task_status so an
+        // unauthenticated caller is allowed to read the report for that task.
+        Http::fake([
+            '*/submit*' => Http::response(['success' => true, 'taskId' => 't1', 'seed' => 'the-seed']),
+            '*/task_status*' => Http::response(['success' => true, 'taskId' => 't1', 'status' => 'CLEAN']),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $this->service->scanFile($file);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/task_status')
+                && str_contains($request->url(), 'seed=the-seed');
+        });
+    }
+
     public function test_handles_submit_failure(): void
     {
         Http::fake([
-            '*/submit' => Http::response('Server Error', 500),
+            '*/submit*' => Http::response('Server Error', 500),
         ]);
 
         $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
@@ -115,7 +152,7 @@ class FileScanServiceTest extends TestCase
     public function test_handles_missing_task_id(): void
     {
         Http::fake([
-            '*/submit' => Http::response(['success' => true]),
+            '*/submit*' => Http::response(['success' => true]),
         ]);
 
         $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
@@ -144,7 +181,7 @@ class FileScanServiceTest extends TestCase
         $this->service = app(FileScanService::class);
 
         Http::fake([
-            '*/submit' => Http::response([
+            '*/submit*' => Http::response([
                 'success' => true,
                 'taskId' => 'test-task-slow',
                 'seed' => 'test-seed',
@@ -163,10 +200,29 @@ class FileScanServiceTest extends TestCase
         $this->assertStringContainsString('timed out', $result['message']);
     }
 
+    public function test_overwrite_status_is_terminal_and_not_a_failure(): void
+    {
+        // OVERWRITE is an analyst-forced report status, not a worker error.
+        // It must be terminal (no retry loop) and must NOT be reported as a
+        // scan failure — otherwise legitimately-overridden files trigger
+        // futile retries and spurious "scan failed" alerts.
+        Http::fake([
+            '*/submit*' => Http::response(['success' => true, 'taskId' => 'ow', 'seed' => 's']),
+            '*/task_status*' => Http::response(['success' => true, 'taskId' => 'ow', 'status' => 'OVERWRITE']),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $result = $this->service->scanFile($file);
+
+        $this->assertTrue($result['success']);
+        $this->assertFalse($result['is_malicious']);
+        $this->assertEquals('OVERWRITE', $result['scan_results']['status']);
+    }
+
     public function test_treats_error_status_as_scan_failure(): void
     {
         Http::fake([
-            '*/submit' => Http::response([
+            '*/submit*' => Http::response([
                 'success' => true,
                 'taskId' => 'test-task-error',
                 'seed' => 'test-seed',
@@ -188,7 +244,7 @@ class FileScanServiceTest extends TestCase
     public function test_cleans_up_temp_files_on_success(): void
     {
         Http::fake([
-            '*/submit' => Http::response([
+            '*/submit*' => Http::response([
                 'success' => true,
                 'taskId' => 'test-cleanup',
                 'seed' => 'test-seed',
@@ -210,7 +266,7 @@ class FileScanServiceTest extends TestCase
     public function test_cleans_up_temp_files_on_failure(): void
     {
         Http::fake([
-            '*/submit' => Http::response('Error', 500),
+            '*/submit*' => Http::response('Error', 500),
         ]);
 
         $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');

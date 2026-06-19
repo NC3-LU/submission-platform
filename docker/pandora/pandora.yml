@@ -1,18 +1,18 @@
 services:
   redis:
-    image: redis:7
+    image: redis:7.4.9
     profiles: [pandora]
     networks: [app_network]
     restart: unless-stopped
 
   kvrocks:
-    image: apache/kvrocks:latest
+    image: apache/kvrocks:2.15.0
     profiles: [pandora]
     networks: [app_network]
     restart: unless-stopped
 
   clamav:
-    image: clamav/clamav
+    image: clamav/clamav:1.5.2
     profiles: [pandora]
     volumes:
       - clamav-socket:/var/run/clamav
@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
 
   pandora:
-    image: ghcr.io/pandora-analysis/pandora:latest
+    image: ghcr.io/pandora-analysis/pandora:v1.12.2
     profiles: [pandora]
     depends_on: [redis, kvrocks, clamav]
     expose: ["6100"]

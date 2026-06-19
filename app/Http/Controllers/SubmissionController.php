@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\FormUser;
+use App\Models\ScanResult;
 use App\Models\Submission;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -12,7 +13,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -32,12 +32,12 @@ class SubmissionController extends Controller
                 abort(404);
             }
 
-            if (!$form->isWithinAvailabilityWindow()) {
+            if (! $form->isWithinAvailabilityWindow()) {
                 $state = $form->availabilityState();
                 if ($state === 'scheduled') {
-                    abort(403, 'This form is not yet open. It opens on ' . $form->available_from->format('M j, Y \a\t g:i A') . '.');
+                    abort(403, 'This form is not yet open. It opens on '.$form->available_from->format('M j, Y \a\t g:i A').'.');
                 }
-                abort(403, 'This form is closed. It closed on ' . $form->available_until->format('M j, Y \a\t g:i A') . '.');
+                abort(403, 'This form is closed. It closed on '.$form->available_until->format('M j, Y \a\t g:i A').'.');
             }
 
             // Get draft submission if exists
@@ -52,78 +52,20 @@ class SubmissionController extends Controller
 
             \Log::info('About to render view', [
                 'view_exists' => view()->exists('submissions.create'),
-                'draft_exists' => !is_null($draftSubmission)
+                'draft_exists' => ! is_null($draftSubmission),
             ]);
 
             return view('submissions.create', [
                 'form' => $form,
-                'draftSubmission' => $draftSubmission
+                'draftSubmission' => $draftSubmission,
             ]);
         } catch (Exception $e) {
             \Log::error('Error in show method', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
         }
-    }
-
-    public function store(Request $request, Form $form): RedirectResponse
-    {
-        if ($form->status !== 'published') {
-            abort(404);
-        }
-
-        if (!$form->isWithinAvailabilityWindow()) {
-            abort(403, 'This form is not currently accepting submissions.');
-        }
-
-        $categories = $form->categories()->with('fields')->get();
-
-        $rules = [];
-        foreach ($categories as $category) {
-            foreach ($category->fields as $field) {
-                $rule = [];
-                if ($field->required) {
-                    $rule[] = 'required';
-                } else {
-                    $rule[] = 'nullable';
-                }
-
-                if ($field->type === 'file') {
-                    $rule[] = 'file';
-                    $rule[] = 'max:10240'; // 10MB max file size
-                    $rule[] = 'mimes:jpeg,png,pdf,doc,docx,xls,xlsx'; // Allowed file types
-                }
-
-                $rules['field_' . $field->id] = $rule;
-            }
-        }
-
-        $validatedData = $request->validate($rules);
-
-        $submission = $form->submissions()->create([
-            'user_id' => auth()->id(), // This will be null for guest users
-        ]);
-
-        foreach ($categories as $category) {
-            foreach ($category->fields as $field) {
-                $value = $validatedData['field_' . $field->id] ?? null;
-
-                if ($field->type === 'file' && $request->hasFile('field_' . $field->id)) {
-                    $file = $request->file('field_' . $field->id);
-                    $path = $file->store('submissions/' . $submission->id, 'private'); // Store in private storage
-                    $value = $path;
-                }
-
-                $submission->values()->create([
-                    'form_field_id' => $field->id,
-                    'value' => $value,
-                ]);
-            }
-        }
-
-        return redirect()->route('submissions.thankyou')->with('success', 'Submission successful.');
     }
 
     /**
@@ -133,14 +75,14 @@ class SubmissionController extends Controller
     {
         $this->authorize('update', $submission);
 
-        if (!in_array($submission->status, ['draft', 'ongoing'])) {
+        if (! in_array($submission->status, ['draft', 'ongoing'])) {
             return redirect()->route('submissions.show', ['form' => $form, 'submission' => $submission])
                 ->with('error', 'This submission can no longer be edited.');
         }
 
         return view('submissions.edit', [
             'form' => $form,
-            'submission' => $submission
+            'submission' => $submission,
         ]);
     }
 
@@ -154,16 +96,19 @@ class SubmissionController extends Controller
 
     /**
      * Display a listing of submissions for a form.
+     *
      * @throws AuthorizationException
      */
     public function index(Form $form): View|Factory|Application
     {
         $this->authorize('view', $form);
+
         return view('submissions.index', compact('form'));
     }
 
     /**
      * Display the specified submission.
+     *
      * @throws AuthorizationException
      */
     public function showSubmission(Form $form, Submission $submission): View
@@ -249,7 +194,7 @@ class SubmissionController extends Controller
             'form' => $form,
             'submission' => $submission,
             'categories' => $categories,
-            'backLink' => $backLink
+            'backLink' => $backLink,
         ]);
     }
 
@@ -264,12 +209,13 @@ class SubmissionController extends Controller
             ->paginate(10);
 
         return view('submissions.user-index', [
-            'submissions' => $submissions
+            'submissions' => $submissions,
         ]);
     }
 
     /**
      * Delete a draft submission and its associated files.
+     *
      * @throws AuthorizationException
      */
     public function destroy(Submission $submission): RedirectResponse
@@ -312,7 +258,7 @@ class SubmissionController extends Controller
             logger()->error('Failed to delete submission', [
                 'submission_id' => $submission->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
@@ -332,6 +278,20 @@ class SubmissionController extends Controller
             abort(403, 'Invalid filename.');
         }
 
+        // Malware-scan gate: when blocking is enabled, only serve files whose
+        // asynchronous scan has completed and come back clean. Pending, failed,
+        // or malicious files are withheld (fail-closed).
+        if (config('services.pandora.enabled', false) && config('services.pandora.block_malicious', true)) {
+            $scan = ScanResult::where('submission_id', $submission->id)
+                ->where('filename', $filename)
+                ->orderByDesc('created_at')
+                ->first();
+
+            if (! $scan || $scan->status !== ScanResult::STATUS_CLEAN) {
+                abort(423, 'This file is awaiting a malware scan or has been blocked.');
+            }
+        }
+
         // Determine the file path based on submission status
         $path = match ($submission->status) {
             'draft' => "temp-submissions/{$submission->id}/{$filename}",
@@ -339,7 +299,7 @@ class SubmissionController extends Controller
         };
 
         // Check if the file exists in private storage
-        if (!Storage::disk('private')->exists($path)) {
+        if (! Storage::disk('private')->exists($path)) {
             // If file not found in primary location and submission is draft/ongoing,
             // check the permanent location as fallback
             if (in_array($submission->status, ['draft'])) {
@@ -355,5 +315,4 @@ class SubmissionController extends Controller
         // Serve the file securely
         return Storage::disk('private')->download($path);
     }
-
 }

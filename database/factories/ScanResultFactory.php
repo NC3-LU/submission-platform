@@ -24,6 +24,7 @@ class ScanResultFactory extends Factory
             'submission_id' => Submission::factory(),
             'submission_value_id' => $this->faker->randomNumber(),
             'is_malicious' => false,
+            'status' => ScanResult::STATUS_CLEAN,
             'scan_results' => ['status' => 'CLEAN', 'taskId' => $this->faker->uuid()],
             'scanner_used' => 'pandora',
             'filename' => $this->faker->word().'.pdf',
@@ -37,6 +38,7 @@ class ScanResultFactory extends Factory
     {
         return $this->state(fn () => [
             'is_malicious' => true,
+            'status' => ScanResult::STATUS_MALICIOUS,
             'scan_results' => ['status' => 'ALERT', 'taskId' => $this->faker->uuid()],
         ]);
     }
