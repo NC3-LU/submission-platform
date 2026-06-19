@@ -110,7 +110,7 @@
              class="space-y-5">
             @foreach($category->fields as $field)
                 @if($field->depends_on_field_id)
-                    <div x-show="$wire.fieldValues['{{ $field->depends_on_field_id }}'] == '{{ $field->depends_on_value }}'"
+                    <div x-show="$wire.fieldValues[{{ (int) $field->depends_on_field_id }}] == @js($field->depends_on_value)"
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0"
                          x-transition:enter-end="opacity-100">

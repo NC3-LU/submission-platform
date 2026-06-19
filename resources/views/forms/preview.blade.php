@@ -36,7 +36,7 @@
 
                             @foreach($category->fields as $field)
                                 @if($field->depends_on_field_id)
-                                    <div x-show="document.querySelector('[name=field_{{ $field->depends_on_field_id }}]:checked')?.value == '{{ $field->depends_on_value }}' || document.querySelector('[name=field_{{ $field->depends_on_field_id }}]')?.value == '{{ $field->depends_on_value }}'"
+                                    <div x-show="document.querySelector('[name=field_' + {{ (int) $field->depends_on_field_id }} + ']:checked')?.value == @js($field->depends_on_value) || document.querySelector('[name=field_' + {{ (int) $field->depends_on_field_id }} + ']')?.value == @js($field->depends_on_value)"
                                          x-transition:enter="transition ease-out duration-200"
                                          x-transition:enter-start="opacity-0"
                                          x-transition:enter-end="opacity-100">
