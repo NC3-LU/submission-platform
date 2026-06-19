@@ -22,8 +22,8 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
@@ -54,8 +54,8 @@
                         </svg>
                         Add Section
                     </button>
-                    <button wire:click="openAddFieldPanel" 
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <button wire:click="openAddFieldPanel"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -144,14 +144,14 @@
                     <!-- Category Actions -->
                     <div class="flex items-center gap-1">
                         <button wire:click="openAddFieldPanel({{ $category['id'] }})" 
-                                class="p-2 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                                class="p-2 text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors"
                                 title="Add field to this section">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
                         </button>
                         <button wire:click="editCategory({{ $category['id'] }})" 
-                                class="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                class="p-2 text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors"
                                 title="Edit section">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -250,7 +250,7 @@
                                 <!-- Field Actions -->
                                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button wire:click="editField({{ $field['id'] }})" 
-                                            class="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                            class="p-1.5 text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded transition-colors"
                                             title="Edit field">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -281,8 +281,8 @@
                                     </svg>
                                 </div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">No fields in this section yet</p>
-                                <button wire:click="openAddFieldPanel({{ $category['id'] }})" 
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
+                                <button wire:click="openAddFieldPanel({{ $category['id'] }})"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
@@ -490,8 +490,8 @@
                             <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                         </div>
@@ -512,7 +512,7 @@
                                     <div>
                                         <label for="edit-field-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field Type</label>
                                         <select id="edit-field-type" wire:model.live="fieldBeingEdited.type"
-                                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                             @foreach($fieldTypes as $type => $config)
                                                 <option value="{{ $type }}">{{ $config['label'] }}</option>
                                             @endforeach
@@ -527,7 +527,7 @@
                                                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Supports **bold**, *italic*, and bullet points</p>
                                             @endif
                                             <textarea id="edit-field-content" wire:model.live="fieldBeingEdited.content" rows="4"
-                                                      class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                                                      class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"></textarea>
                                             @error('fieldBeingEdited.content') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                             
                                             @if($fieldBeingEdited['type'] === 'description' && !empty($fieldBeingEdited['content']))
@@ -543,7 +543,7 @@
                                         <div>
                                             <label for="edit-field-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field Label *</label>
                                             <input type="text" id="edit-field-label" wire:model.defer="fieldBeingEdited.label"
-                                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                             @error('fieldBeingEdited.label') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                         </div>
 
@@ -551,7 +551,7 @@
                                             <div>
                                                 <label for="edit-field-options" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Options *</label>
                                                 <input type="text" id="edit-field-options" wire:model.defer="fieldBeingEdited.options"
-                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate options with commas</p>
                                                 @error('fieldBeingEdited.options') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                             </div>
@@ -562,14 +562,14 @@
                                                 <label for="edit-field-char-limit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Character Limit</label>
                                                 <input type="number" id="edit-field-char-limit" wire:model.defer="fieldBeingEdited.char_limit"
                                                        min="1" placeholder="No limit"
-                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                                 @error('fieldBeingEdited.char_limit') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                             </div>
                                         @endif
 
                                         <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                             <input type="checkbox" id="edit-field-required" wire:model.defer="fieldBeingEdited.required"
-                                                   class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                                   class="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500">
                                             <label for="edit-field-required" class="flex-1">
                                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required field</span>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">Users must fill this field to submit</p>
@@ -580,7 +580,7 @@
                                         <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Conditional Visibility</label>
                                             <select wire:model.live="fieldBeingEdited.depends_on_field_id"
-                                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm">
                                                 <option value="">Always visible</option>
                                                 @foreach($form->fields()->where('id', '!=', $fieldBeingEdited['id'] ?? 0)->whereIn('type', ['select', 'radio', 'checkbox'])->orderBy('order')->get() as $parentField)
                                                     <option value="{{ $parentField->id }}">{{ $parentField->label }}</option>
@@ -589,7 +589,7 @@
                                             @if(!empty($fieldBeingEdited['depends_on_field_id']))
                                                 <input type="text" wire:model.defer="fieldBeingEdited.depends_on_value"
                                                        placeholder="Show when value equals..."
-                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm">
                                             @endif
                                         </div>
                                     @endif
@@ -603,7 +603,7 @@
                                             Cancel
                                         </button>
                                         <button type="submit"
-                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
                                             Save Changes
                                         </button>
                                     </div>
@@ -697,8 +697,8 @@
                             <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                             </svg>
                                         </div>
@@ -718,7 +718,7 @@
                                     <div>
                                         <label for="field-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section *</label>
                                         <select id="field-category" wire:model.live="newField.category_id"
-                                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                             <option value="">Select a section</option>
                                             @foreach($categories as $category)
                                                 <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
@@ -734,8 +734,8 @@
                                             @foreach($fieldTypes as $type => $config)
                                                 <button type="button" wire:click="$set('newField.type', '{{ $type }}')"
                                                         class="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-center
-                                                            {{ $newField['type'] === $type 
-                                                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' 
+                                                            {{ $newField['type'] === $type
+                                                                ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20'
                                                                 : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500' }}">
                                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center
                                                         {{ $type === 'header' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' : '' }}
@@ -783,7 +783,7 @@
                                                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Supports **bold**, *italic*, and bullet points</p>
                                                     @endif
                                                     <textarea id="field-content" wire:model.live="newField.content" rows="3"
-                                                              class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"></textarea>
+                                                              class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"></textarea>
                                                     @error('newField.content') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                                     
                                                     @if($newField['type'] === 'description' && $newField['content'])
@@ -800,7 +800,7 @@
                                                     <label for="field-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field Label *</label>
                                                     <input type="text" id="field-label" wire:model.live="newField.label"
                                                            placeholder="e.g., Email Address"
-                                                           class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                                                           class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                                     @error('newField.label') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                                 </div>
 
@@ -809,7 +809,7 @@
                                                         <label for="field-options" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Options *</label>
                                                         <input type="text" id="field-options" wire:model.live="newField.options"
                                                                placeholder="Option 1, Option 2, Option 3"
-                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate options with commas</p>
                                                         @error('newField.options') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                                     </div>
@@ -820,14 +820,14 @@
                                                         <label for="field-char-limit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Character Limit</label>
                                                         <input type="number" id="field-char-limit" wire:model.live="newField.char_limit"
                                                                min="1" placeholder="No limit"
-                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                                         @error('newField.char_limit') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                                     </div>
                                                 @endif
 
                                                 <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                                     <input type="checkbox" id="field-required" wire:model.live="newField.required"
-                                                           class="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                                           class="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500">
                                                     <label for="field-required" class="flex-1">
                                                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required field</span>
                                                         <p class="text-xs text-gray-500 dark:text-gray-400">Users must fill this field to submit</p>
@@ -838,7 +838,7 @@
                                                 <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
                                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Conditional Visibility</label>
                                                     <select wire:model.live="newField.depends_on_field_id"
-                                                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                                                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm">
                                                         <option value="">Always visible</option>
                                                         @foreach($form->fields()->whereIn('type', ['select', 'radio', 'checkbox'])->orderBy('order')->get() as $parentField)
                                                             <option value="{{ $parentField->id }}">{{ $parentField->label }}</option>
@@ -847,7 +847,7 @@
                                                     @if(!empty($newField['depends_on_field_id']))
                                                         <input type="text" wire:model.live="newField.depends_on_value"
                                                                placeholder="Show when value equals..."
-                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm">
                                                     @endif
                                                 </div>
                                             @endif
@@ -862,7 +862,7 @@
                                             Cancel
                                         </button>
                                         <button type="submit"
-                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors">
+                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
                                             Add Field
                                         </button>
                                     </div>

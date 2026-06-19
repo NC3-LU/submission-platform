@@ -18,7 +18,7 @@
         <!-- Status Filter -->
         <div class="flex-shrink-0">
             <select wire:model.live="statusFilter"
-                    class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm dark:text-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                    class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm dark:text-gray-300 focus:ring-sky-500 focus:border-sky-500">
                 <option value="all">All Submissions</option>
                 <option value="draft">Drafts</option>
                 <option value="ongoing">In Progress</option>
