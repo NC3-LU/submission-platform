@@ -110,12 +110,6 @@ class SubmissionForm extends Component
      */
     public function mount(Form $form, ?Submission $submission = null, bool $isEditMode = false): void
     {
-        Log::info('Mounting SubmissionForm', [
-            'form_id' => $form->id,
-            'submission_id' => $submission?->id,
-            'is_edit_mode' => $isEditMode,
-        ]);
-
         $this->form = $form->load([
             'categories' => fn ($query) => $query->orderBy('order'),
             'categories.fields' => fn ($query) => $query->orderBy('order'),
@@ -207,12 +201,6 @@ class SubmissionForm extends Component
             }
 
             if ($field->type === 'checkbox') {
-                // Log the values for debugging
-                Log::info('Loading checkbox values', [
-                    'field_id' => $field->id,
-                    'field_options' => $field->options,
-                    'stored_value' => $value->value,
-                ]);
 
                 // Convert stored comma-separated values back to array format for checkboxes
                 $options = array_map('trim', explode(',', $field->options));
@@ -232,11 +220,6 @@ class SubmissionForm extends Component
                     $this->fieldValues[$field->id][$index] = in_array($option, $selectedValues);
                 }
 
-                // Log the resulting array for debugging
-                Log::info('Checkbox array created', [
-                    'field_id' => $field->id,
-                    'result' => $this->fieldValues[$field->id],
-                ]);
             } else {
                 $this->fieldValues[$value->form_field_id] = $value->value;
             }
@@ -302,6 +285,21 @@ class SubmissionForm extends Component
         $fieldId = str_replace('field_', '', $key);
 
         try {
+            // Validate BEFORE the file is written to disk.
+            //
+            // This used to run only at submit(), which made the allowlist
+            // useless: the upload was stored here first and tempFiles[$key] was
+            // then set to null, so the later "nullable|file|mimes|max" rules
+            // validated a null and passed. Any file type, up to Livewire's
+            // default 12MB, reached permanent storage.
+            $this->validateOnly("tempFiles.{$key}", [
+                "tempFiles.{$key}" => [
+                    'file',
+                    'max:'.self::MAX_FILE_SIZE,
+                    'mimes:'.implode(',', self::ALLOWED_FILE_TYPES),
+                ],
+            ], $this->messages, $this->fieldLabels());
+
             $path = $value->store('temp-submissions', 'private');
             $this->fieldValues[$fieldId] = $path;
 
@@ -311,6 +309,11 @@ class SubmissionForm extends Component
 
             $this->dispatch('success', 'File uploaded successfully');
         } catch (ValidationException $e) {
+            // Drop the rejected upload so it cannot be picked up later.
+            if (array_key_exists($key, $this->tempFiles)) {
+                $this->tempFiles[$key] = null;
+            }
+            unset($this->fieldValues[$fieldId]);
 
             Log::error('Livewire file validation failed during upload for key: '.$key, [
                 'error' => $e->getMessage(),
@@ -802,26 +805,4 @@ class SubmissionForm extends Component
     /**
      * Debug method to log checkbox state
      */
-    public function debugCheckboxes(): void
-    {
-        Log::info('Current fieldValues state', [
-            'fieldValues' => $this->fieldValues,
-        ]);
-
-        // Find all checkbox fields
-        $checkboxFields = [];
-        foreach ($this->form->categories as $category) {
-            foreach ($category->fields->where('type', 'checkbox') as $field) {
-                $checkboxFields[$field->id] = [
-                    'label' => $field->label,
-                    'options' => $field->options,
-                    'value' => $this->fieldValues[$field->id] ?? null,
-                ];
-            }
-        }
-
-        Log::info('Checkbox fields', [
-            'checkboxFields' => $checkboxFields,
-        ]);
-    }
 }

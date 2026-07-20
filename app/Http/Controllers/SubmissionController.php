@@ -28,7 +28,6 @@ class SubmissionController extends Controller
 
         try {
             if ($form->status !== 'published') {
-                \Log::info('Form not published', ['status' => $form->status]);
                 abort(404);
             }
 
@@ -49,11 +48,6 @@ class SubmissionController extends Controller
                 ])->whereIn('status', ['draft', 'ongoing'])
                     ->first();
             }
-
-            \Log::info('About to render view', [
-                'view_exists' => view()->exists('submissions.create'),
-                'draft_exists' => ! is_null($draftSubmission),
-            ]);
 
             return view('submissions.create', [
                 'form' => $form,

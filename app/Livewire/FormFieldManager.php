@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Form;
 use App\Models\FormCategory;
 use App\Models\FormField;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -14,6 +15,8 @@ use Illuminate\Validation\Rule;
 
 class FormFieldManager extends Component
 {
+    use AuthorizesRequests;
+
     public $form;
     public $categories = [];
     public $newCategory = [
@@ -136,6 +139,11 @@ class FormFieldManager extends Component
 
     public function mount(Form $form): void
     {
+        // Defence in depth: this component exposes many mutating actions and
+        // otherwise relies entirely on the controller that renders it having
+        // authorised the caller.
+        $this->authorize('update', $form);
+
         $this->form = $form;
         $this->loadCategories();
     }

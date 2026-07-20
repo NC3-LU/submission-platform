@@ -37,11 +37,6 @@ class SubmissionIndex extends Component
             abort(403);
         }
         $this->form = $form;
-        Log::info('SubmissionIndex mounted', [
-            'form_id' => $form->id,
-            'initial_status_filter' => $this->statusFilter,
-            'initial_search' => $this->search
-        ]);
     }
 
     public function sortBy(string $field): void
@@ -56,13 +51,11 @@ class SubmissionIndex extends Component
 
     public function updatingSearch($value): void
     {
-        Log::info('Search updating', ['new_value' => $value]);
         $this->resetPage();
     }
 
     public function updatingStatusFilter($value): void
     {
-        Log::info('Status filter updating', ['new_value' => $value]);
         $this->resetPage();
     }
 
