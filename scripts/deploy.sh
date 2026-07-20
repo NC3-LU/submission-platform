@@ -111,6 +111,25 @@ docker-compose --env-file docker-compose.env exec -T app php artisan config:cach
 docker-compose --env-file docker-compose.env exec -T app php artisan route:cache
 docker-compose --env-file docker-compose.env exec -T app php artisan view:cache
 
+# Start the queue worker. QUEUE_CONNECTION=database, so without this process
+# queued jobs sit in the jobs table forever. That matters most for
+# ScanSubmissionFileJob: downloads are gated fail-closed on a completed scan,
+# so an unprocessed queue makes every newly uploaded file undownloadable.
+# 'docker-compose down' at the start of this script removes the container, so
+# 'restart: unless-stopped' does not bring it back on its own.
+echo "Starting queue worker..."
+docker-compose --env-file docker-compose.env up -d queue
+
+# Fail loudly rather than leaving a silently broken scanning pipeline.
+sleep 5
+if [ -z "$(docker-compose --env-file docker-compose.env ps -q queue)" ] || \
+   [ "$(docker inspect -f '{{.State.Running}}' "$(docker-compose --env-file docker-compose.env ps -q queue)" 2>/dev/null)" != "true" ]; then
+    echo "❌ Queue worker failed to start. Queued jobs will not be processed."
+    docker-compose --env-file docker-compose.env logs queue
+    exit 1
+fi
+echo "✅ Queue worker running."
+
 echo "✅ Deployment completed successfully!"
 
 # Show final status

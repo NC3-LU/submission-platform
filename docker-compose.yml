@@ -93,6 +93,9 @@ services:
     restart: unless-stopped
     environment:
       <<: *app_env
+      # The app container owns migrations; running them from both races on an
+      # unlocked schema. See docker/entrypoint.sh.
+      RUN_MIGRATIONS: "false"
     command: php artisan queue:work --tries=3 --sleep=3 --timeout=180 --max-time=3600
     networks:
       - default
