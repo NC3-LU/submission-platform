@@ -146,7 +146,12 @@
                             @endif
 
                             @if($submission->status === 'under_review' && auth()->user()->can('review', $submission))
-                                <a href="{{ route('submissions.review', ['form' => $form, 'submission' => $submission]) }}"
+                                {{-- There is no submissions.review route: the policy (SubmissionPolicy::review)
+                                     and the under_review status exist, but the review page was never built,
+                                     so this link raised RouteNotFoundException and 500'd the whole index for
+                                     any form holding an under_review submission. Pointing at the submission
+                                     view keeps reviewers able to act until a dedicated review page exists. --}}
+                                <a href="{{ route('submissions.show', ['form' => $form, 'submission' => $submission]) }}"
                                    class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300">
                                     Review
                                 </a>

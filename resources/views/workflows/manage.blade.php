@@ -22,7 +22,7 @@
                             Current Workflow
                         </h3>
 
-                        <form action="{{ route('workflows.destroy', [$form, $workflow]) }}"
+                        <form action="{{ route('forms.workflows.destroy', [$form, $workflow]) }}"
                               method="POST"
                               onsubmit="return confirm('Are you sure you want to delete this workflow?');">
                             @csrf
@@ -73,7 +73,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="whitespace-nowrap text-right text-sm text-gray-500 dark:text-gray-400">
-                                                    <form action="{{ route('workflows.steps.destroy', [$form, $step]) }}"
+                                                    <form action="{{ route('forms.workflows.steps.destroy', [$form, $step]) }}"
                                                           method="POST"
                                                           class="inline-block"
                                                           onsubmit="return confirm('Are you sure you want to delete this step?');">
