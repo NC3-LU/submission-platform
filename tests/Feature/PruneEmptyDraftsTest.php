@@ -80,6 +80,21 @@ class PruneEmptyDraftsTest extends TestCase
         $this->assertDatabaseCount('submissions', 1);
     }
 
+    public function test_untouched_only_spares_drafts_that_have_blank_value_rows(): void
+    {
+        [$user, $form, $field] = $this->makeForm();
+
+        $neverTouched = Submission::create(['form_id' => $form->id, 'user_id' => $user->id, 'status' => 'draft']);
+
+        $blankValues = Submission::create(['form_id' => $form->id, 'user_id' => $user->id, 'status' => 'draft']);
+        $blankValues->values()->create(['form_field_id' => $field->id, 'value' => '']);
+
+        $this->artisan('app:prune-empty-drafts --force --untouched-only')->assertSuccessful();
+
+        $this->assertDatabaseMissing('submissions', ['id' => $neverTouched->id]);
+        $this->assertDatabaseHas('submissions', ['id' => $blankValues->id]);
+    }
+
     public function test_days_option_spares_recent_drafts(): void
     {
         [$user, $form] = $this->makeForm();

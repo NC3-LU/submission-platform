@@ -16,7 +16,8 @@ class PruneEmptyDrafts extends Command
 {
     protected $signature = 'app:prune-empty-drafts
                             {--force : Actually delete. Without this the command only reports.}
-                            {--days=0 : Only prune drafts untouched for at least this many days.}';
+                            {--days=0 : Only prune drafts untouched for at least this many days.}
+                            {--untouched-only : Only prune drafts with no submission_values rows at all.}';
 
     protected $description = 'Delete draft submissions that have no non-empty field values';
 
@@ -81,8 +82,17 @@ class PruneEmptyDrafts extends Command
         return Submission::query()
             ->whereIn('status', ['draft', 'ongoing'])
             ->when($days > 0, fn (Builder $q) => $q->where('updated_at', '<=', now()->subDays($days)))
-            ->whereDoesntHave('values', function (Builder $q) {
-                $q->whereNotNull('value')->where('value', '<>', '');
-            });
+            // A draft that holds value rows which are *all* blank is a different
+            // animal from one that was never touched: it means fields were written
+            // but saved empty, which may indicate lost input rather than an
+            // abandoned form. --untouched-only excludes those from pruning so they
+            // can be investigated instead of silently discarded.
+            ->when(
+                $this->option('untouched-only'),
+                fn (Builder $q) => $q->whereDoesntHave('values'),
+                fn (Builder $q) => $q->whereDoesntHave('values', function (Builder $inner) {
+                    $inner->whereNotNull('value')->where('value', '<>', '');
+                })
+            );
     }
 }
