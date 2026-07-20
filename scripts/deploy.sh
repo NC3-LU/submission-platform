@@ -3,6 +3,7 @@ set -e
 
 echo "🚀 Starting deployment process..."
 
+
 # Source the environment variables from docker-compose.env
 if [ -f docker-compose.env ]; then
     echo "Loading environment variables from docker-compose.env..."
@@ -15,6 +16,12 @@ else
     exit 1
 fi
 
+if [ -n "$PROXY" ]; then
+    export HTTP_PROXY="$PROXY"
+    export HTTPS_PROXY="$PROXY"
+    export http_proxy="$PROXY"
+    export https_proxy="$PROXY"
+fi
 # Verify required variables are loaded
 required_vars=("DB_DATABASE" "DB_USERNAME" "DB_PASSWORD" "MYSQL_ROOT_PASSWORD")
 for var in "${required_vars[@]}"; do

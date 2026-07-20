@@ -56,7 +56,7 @@ jobs:
           cd /var/www/applications.nc3.lu
 
           # Create .env file
-          cat > .env << 'EOL'
+          cat > .env << EOL
           APP_NAME="NC3's Application Platform"
           APP_ENV=production
           APP_KEY=${{ secrets.APP_KEY }}

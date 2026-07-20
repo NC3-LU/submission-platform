@@ -26,7 +26,7 @@
 
                 <form x-data="{ step: 1, totalSteps: {{ $form->categories->count() }} }">
                     @foreach($form->categories as $index => $category)
-                        <div x-show="step === {{ $index + 1 }}" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                        <div x-show="step === {{ $index + 1 }}" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" wire:key="preview-category-{{ $category->id }}">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ $category->name }}</h3>
                             @if($category->description)
                                 <div class="mb-4 text-sm text-gray-500 dark:text-gray-400 prose prose-sm dark:prose-invert max-w-none">
@@ -35,12 +35,15 @@
                             @endif
 
                             @foreach($category->fields as $field)
-                                @if($field->depends_on_field_id)
-                                    <div x-show="document.querySelector('[name=field_' + {{ (int) $field->depends_on_field_id }} + ']:checked')?.value == @js($field->depends_on_value) || document.querySelector('[name=field_' + {{ (int) $field->depends_on_field_id }} + ']')?.value == @js($field->depends_on_value)"
+                                {{-- Unconditional wrapper so each iteration keeps a stable wire:key. --}}
+                                <div wire:key="preview-field-{{ $field->id }}"
+                                     @if($field->depends_on_field_id)
+                                         x-show="document.querySelector('[name=field_' + {{ (int) $field->depends_on_field_id }} + ']:checked')?.value == @js($field->depends_on_value) || document.querySelector('[name=field_' + {{ (int) $field->depends_on_field_id }} + ']')?.value == @js($field->depends_on_value)"
                                          x-transition:enter="transition ease-out duration-200"
                                          x-transition:enter-start="opacity-0"
-                                         x-transition:enter-end="opacity-100">
-                                @endif
+                                         x-transition:enter-end="opacity-100"
+                                     @endif
+                                >
                                 @if($field->type === 'header')
                                     <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 pt-2">
                                         {{ $field->content }}
@@ -79,9 +82,7 @@
                                     @endif
                                 </div>
                                 @endif
-                                @if($field->depends_on_field_id)
-                                    </div>
-                                @endif
+                                </div>
                             @endforeach
                         </div>
                     @endforeach

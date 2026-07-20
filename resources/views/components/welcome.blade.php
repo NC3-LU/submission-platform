@@ -33,7 +33,7 @@
             @forelse($forms as $form)
                 <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-sky-500 p-6 hover:shadow-md transition-shadow">
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ $form->title }}</h3>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mt-2">{{ $form->description }}</p>
+                    <div class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mt-2 prose prose-sm dark:prose-invert max-w-none">{!! \App\Helpers\MarkdownHelper::toHtml($form->description) !!}</div>
                     <div class="mt-4 flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             @if($form->visibility === 'public')

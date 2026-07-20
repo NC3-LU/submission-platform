@@ -107,14 +107,20 @@
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-4"
              x-transition:enter-end="opacity-100 translate-y-0"
-             class="space-y-5">
+             class="space-y-5"
+             wire:key="submission-category-{{ $category->id }}">
             @foreach($category->fields as $field)
-                @if($field->depends_on_field_id)
-                    <div x-show="$wire.fieldValues[{{ (int) $field->depends_on_field_id }}] == @js($field->depends_on_value)"
+                {{-- Wrapper is unconditional so every iteration carries a stable
+                     wire:key; without it Livewire's DOM morphing mismatches
+                     fields when categories are reordered. --}}
+                <div wire:key="submission-field-{{ $field->id }}"
+                     @if($field->depends_on_field_id)
+                         x-show="$wire.fieldValues[{{ (int) $field->depends_on_field_id }}] == @js($field->depends_on_value)"
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100">
-                @endif
+                         x-transition:enter-end="opacity-100"
+                     @endif
+                >
                 @if($field->type === 'header')
                     <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 pt-2">
                         {{ $field->content }}
@@ -268,9 +274,7 @@
                         @endif
                     </div>
                 @endif
-                @if($field->depends_on_field_id)
-                    </div>
-                @endif
+                </div>
             @endforeach
         </div>
     @endforeach
