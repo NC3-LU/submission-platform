@@ -1,0 +1,128 @@
+# Production compose for applications.nc3.lu.
+#
+# This is a STANDALONE file, not an override. It is used as:
+#   docker-compose -f docker-compose.prod.yml --env-file docker-compose.env ...
+#
+# It is deliberately separate from docker-compose.yml (which targets the
+# Dokploy test server) because the two environments serve PHP differently:
+#
+#   here            php-fpm on 127.0.0.1:9000. The host Apache vhost proxies
+#                   PHP via fastcgi and serves static assets itself from
+#                   /var/www/applications.nc3.lu/public.
+#   docker-compose  self-contained Apache on :80 behind Traefik, attached to
+#     .yml          the external dokploy network.
+#
+# Using an override would not work: compose merges service network lists, so
+# the external dokploy-network requirement would leak in and fail here, where
+# that network does not exist.
+#
+# The volume names must stay dbdata / storage_data. Combined with the compose
+# project name (derived from the directory, applicationsnc3lu) they resolve to
+# the existing applicationsnc3lu_dbdata and applicationsnc3lu_storage_data.
+# Renaming either would silently create empty volumes and present as data loss.
+
+# Pinned explicitly rather than derived from the directory name. Compose
+# normalises the directory to build the project name, and the project name
+# prefixes the volume names. If it ever drifted (directory renamed, deployed
+# from another path) compose would create EMPTY volumes and the app would come
+# up looking wiped. Pinning guarantees applicationsnc3lu_dbdata and
+# applicationsnc3lu_storage_data - the volumes production already uses.
+name: applicationsnc3lu
+
+services:
+  db:
+    image: mysql:8.0.36-debian
+    container_name: nc3_db
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    env_file:
+      - docker-compose.env
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 15
+      interval: 10s
+      start_period: 60s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime-fpm
+      args:
+        PROXY: ${PROXY}
+    container_name: nc3_app
+    ports:
+      - "127.0.0.1:9000:9000"
+    restart: unless-stopped
+    env_file:
+      - docker-compose.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      PROXY: ${PROXY}
+    volumes:
+      - storage_data:/var/www/html/storage
+      # The host Apache serves static assets from this directory and the
+      # fastcgi handler resolves /var/www/html/public/index.php, so the
+      # container must see the same public/ the host does.
+      - ./public:/var/www/html/public
+      # .env is deliberately excluded from the image by .dockerignore so
+      # secrets never land in an image layer. Production still needs it at
+      # runtime (APP_KEY, mail, session, Pandora), and docker-compose.env only
+      # carries database credentials - so mount the file the deploy workflow
+      # writes. Without this the app boots with no APP_KEY and every encrypted
+      # operation fails.
+      - ./.env:/var/www/html/.env:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime-fpm
+      args:
+        PROXY: ${PROXY}
+    container_name: nc3_queue
+    restart: unless-stopped
+    env_file:
+      - docker-compose.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      PROXY: ${PROXY}
+      # The app container owns migrations; running them from both races on an
+      # unlocked schema. See docker/entrypoint.sh.
+      RUN_MIGRATIONS: "false"
+    command: php artisan queue:work --tries=3 --sleep=3 --timeout=180 --max-time=3600
+    volumes:
+      - storage_data:/var/www/html/storage
+      # Same reasoning as the app service.
+      - ./.env:/var/www/html/.env:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  dbdata:
+  storage_data:

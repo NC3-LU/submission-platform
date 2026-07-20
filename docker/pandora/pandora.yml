@@ -1,34 +1,40 @@
 services:
   redis:
-    image: redis:7
+    image: redis:7.4.9
+    profiles: [pandora]
     networks: [app_network]
     restart: unless-stopped
 
   kvrocks:
-    image: apache/kvrocks:latest
+    image: apache/kvrocks:2.15.0
+    profiles: [pandora]
     networks: [app_network]
     restart: unless-stopped
 
   clamav:
-    image: clamav/clamav
+    image: clamav/clamav:1.5.2
+    profiles: [pandora]
     volumes:
-      - clamav-socket:/tmp
+      - clamav-socket:/var/run/clamav
+      - ./docker/pandora/config/clamav/clamd.conf:/etc/clamav/clamd.conf:ro
+      - ./docker/pandora/config/clamav/freshclam.conf:/etc/clamav/freshclam.conf:ro
     networks: [app_network]
     environment:
     - HTTP_PROXY=${PROXY}
     - HTTPS_PROXY=${PROXY}
     - http_proxy=${PROXY}
-    - https_proxy=${PROXY}    
+    - https_proxy=${PROXY}
     healthcheck:
-      test: ["CMD", "clamdscan", "--config=/etc/clamav/clamd.conf", "--ping", "1"]
-      start_period: 120s
-      interval:     10s
-      timeout:      1s
+      test: ["CMD", "clamdscan", "--ping", "1"]
+      start_period: 180s
+      interval:     30s
+      timeout:      5s
       retries:      3
     restart: unless-stopped
 
   pandora:
-    image: ghcr.io/pandora-analysis/pandora:latest
+    image: ghcr.io/pandora-analysis/pandora:v1.12.2
+    profiles: [pandora]
     depends_on: [redis, kvrocks, clamav]
     expose: ["6100"]
     environment:
@@ -42,39 +48,24 @@ services:
     tty: true
     command:
       - /bin/sh
-      - -lc
+      - -c
       - |
-          set -e
           echo "[pandora] waiting for dependencies..."
-          sleep 30
+          sleep 60
           echo "[pandora] starting service"
-          if command -v pandora >/dev/null 2>&1; then
-            exec pandora start
-          elif command -v python3 >/dev/null 2>&1; then
-            exec python3 -m pandora
-          elif command -v uvicorn >/dev/null 2>&1; then
-            exec uvicorn pandora.website.server:app --host 0.0.0.0 --port 6100
-          else
-            echo "No known start command found in image" >&2
-            sleep 5
-          fi
+          poetry run start
+          tail -F ./LICENSE
     env_file:
       - ./docker/pandora/pandora.env
     volumes:
-      # Persistent runtime data
       - pandora_cache:/pandora/cache
       - pandora_storage:/pandora/storage
       - clamav-socket:/var/run/clamav
-      
       - ./docker/pandora/config/generic.json:/pandora/config/generic.json:ro
       - ./docker/pandora/workers:/pandora/pandora/workers:ro
       - ./docker/pandora/yara_rules:/pandora/yara_rules:ro
     networks: [app_network]
     restart: unless-stopped
-
-networks:
-  app_network:
-    external: true
 
 volumes:
   pandora_cache:

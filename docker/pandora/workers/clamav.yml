@@ -1,0 +1,8 @@
+meta:
+  name: ClamAV
+  description: Local ClamAV scanner for malware detection
+  replicas: 1
+
+settings:
+  # Docker socket path - matches clamd.conf LocalSocket setting
+  socket_path: /var/run/clamav/clamd.sock

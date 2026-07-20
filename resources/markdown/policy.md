@@ -73,7 +73,28 @@ We process personal data in compliance with GDPR and relevant data protection la
 Personal data is processed lawfully, transparently, and only for legitimate purposes.
 
 ### Use of Cookies
-We use analytics tools to collect non-cookie-based usage information, such as IP addresses and browser details, to improve website functionality. All data remains within Luxembourg House of Cybersecurity's infrastructure.
+
+This website uses only essential cookies that are strictly necessary for the website to function properly. **No tracking, analytics, or third-party cookies are used.**
+
+#### Essential Cookies We Use
+
+| Cookie Name | Purpose | Duration | Type |
+|-------------|---------|----------|------|
+| Session Cookie | Maintains your login session and stores temporary data needed for your visit | Session (expires when browser closes) or up to 2 hours of inactivity | First-party, Essential |
+| XSRF-TOKEN | Protects against Cross-Site Request Forgery attacks by validating that form submissions originate from our website | Session | First-party, Essential |
+
+#### Why These Cookies Are Essential
+
+- **Session Cookie**: Required to keep you logged in and remember your actions during a browsing session (e.g., form submissions, authentication state).
+- **XSRF-TOKEN**: A security measure required by law to protect your data and prevent malicious attacks.
+
+#### Your Rights Regarding Cookies
+
+Under GDPR, essential cookies are exempt from the consent requirement as they are strictly necessary for the website to function. However, you have the right to:
+- Be informed about cookie usage (this policy)
+- Manage cookies through your browser settings
+- Request information about data processing
+
 
 ### Retention Period
 Personal data is retained only as long as necessary. Once the retention period expires, data is erased, destroyed, or anonymized, unless required by law to retain it longer.

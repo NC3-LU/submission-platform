@@ -11,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class FormController extends Controller
@@ -19,12 +20,14 @@ class FormController extends Controller
 
     public function index(Request $request): View|Factory|Application
     {
-        $forms = Form::where('status', 'published')
+        $query = Form::where('status', 'published')
             ->whereIn('visibility', ['public', 'authenticated'])
-            ->latest()
-            ->paginate(10);
+            ->latest();
 
-        return view('index', compact('forms'));
+        $totalForms = $query->count();
+        $forms = $query->take(6)->get();
+
+        return view('index', compact('forms', 'totalForms'));
     }
     public function publicIndex(Request $request): View|Factory|Application
     {
@@ -80,6 +83,8 @@ class FormController extends Controller
             'categories' => 'required|array|min:1',
             'categories.*.name' => 'required|string|max:255',
             'categories.*.description' => 'nullable|string',
+            'available_from' => 'nullable|date',
+            'available_until' => 'nullable|date|after_or_equal:available_from',
         ]);
 
         $form = Form::create([
@@ -88,6 +93,8 @@ class FormController extends Controller
             'visibility' => $validatedData['visibility'],
             'status' => 'draft',
             'user_id' => auth()->id(),
+            'available_from' => $validatedData['available_from'] ?? null,
+            'available_until' => $validatedData['available_until'] ?? null,
         ]);
 
         foreach ($validatedData['categories'] as $index => $categoryData) {
@@ -122,9 +129,11 @@ class FormController extends Controller
             'description' => 'nullable',
             'status' => 'required|in:draft,published,archived',
             'visibility' => 'required|in:public,authenticated,private',
+            'available_from' => 'nullable|date',
+            'available_until' => 'nullable|date|after_or_equal:available_from',
         ]);
 
-        $form->update($request->only('title', 'description', 'status', 'visibility'));
+        $form->update($request->only('title', 'description', 'status', 'visibility', 'available_from', 'available_until'));
 
         return redirect()->route('forms.user_index')->with('success', 'Form updated successfully.');
     }
@@ -171,5 +180,48 @@ class FormController extends Controller
 
         return redirect()->route('forms.edit', $form)
             ->with('success', 'User removed successfully.');
+    }
+
+    /**
+     * Duplicate a form with its categories and fields.
+     *
+     * @throws AuthorizationException
+     */
+    public function duplicate(Form $form): RedirectResponse
+    {
+        $this->authorize('duplicate', $form);
+
+        $newForm = DB::transaction(function () use ($form) {
+            $clone = $form->replicate(['id', 'created_at', 'updated_at']);
+            $clone->title = $form->title . ' (Copy)';
+            $clone->status = 'draft';
+            $clone->user_id = auth()->id();
+            $clone->save();
+
+            foreach ($form->categories()->orderBy('order')->get() as $category) {
+                $newCategory = $clone->categories()->create([
+                    'name' => $category->name,
+                    'description' => $category->description,
+                    'order' => $category->order,
+                ]);
+
+                foreach ($category->fields()->orderBy('order')->get() as $field) {
+                    $newCategory->fields()->create([
+                        'form_id' => $clone->id,
+                        'label' => $field->label,
+                        'type' => $field->type,
+                        'options' => $field->options,
+                        'required' => $field->required,
+                        'content' => $field->content,
+                        'char_limit' => $field->char_limit,
+                        'order' => $field->order,
+                    ]);
+                }
+            }
+
+            return $clone;
+        });
+
+        return redirect()->route('forms.edit', $newForm)->with('success', 'Form cloned successfully.');
     }
 }

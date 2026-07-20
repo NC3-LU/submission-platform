@@ -1,0 +1,52 @@
+{
+    "loglevel": "INFO",
+    "debug_web": false,
+    "website_listen_ip": "0.0.0.0",
+    "website_listen_port": 6100,
+    "public_url": "http://pandora:6100",
+    "cache_db_hostname": "redis",
+    "cache_db_port": 6379,
+    "storage_db_hostname": "kvrocks",
+    "storage_db_port": 6101,
+    "session_expire": 36000,
+    "tasks_max_len": 100,
+    "max_file_size": 100,
+    "max_days_index": 7,
+    "sample_password": "infected",
+    "default_share_time": 1,
+    "show_project_page": false,
+    "lookyloo_url": "",
+    "users": {},
+    "enable_imap_fetcher": false,
+    "channels": {
+        "enabled": false,
+        "channel_submission": "pandora_submissions"
+    },
+    "misp": {
+        "url": "",
+        "apikey": "",
+        "tls_verify": true,
+        "autosubmit": {
+            "status": "ALERT",
+            "enabled": false,
+            "autopublish": false
+        }
+    },
+    "email": {
+        "smtp_host": "localhost",
+        "smtp_port": "25",
+        "to": [],
+        "from": "Pandora <pandora@localhost>"
+    },
+    "email_smtp_auth": {
+        "auth": false,
+        "smtp_user": "",
+        "smtp_pass": "",
+        "smtp_use_starttls": false,
+        "verify_certificate": false
+    },
+    "weasyprint_fetch_ressources": false,
+    "disable_unoserver": true,
+    "exiftool_path": "",
+    "systemd_service_name": ""
+}

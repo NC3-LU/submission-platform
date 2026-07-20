@@ -2,15 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ScanResult;
 use App\Models\Submission;
 use App\Models\SubmissionValues;
-use App\Models\FormField;
-use App\Models\ScanResult;
 use App\Services\FileScanService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ScanSubmissionFiles extends Command
 {
@@ -33,126 +32,141 @@ class ScanSubmissionFiles extends Command
      */
     public function handle(FileScanService $scanService): int
     {
-        if (!config('services.pandora.enabled', false)) {
-            $this->error('Pandora scanning is disabled in the configuration.');
+        if (! config('services.pandora.enabled', false)) {
+            $this->error('Pandora scanning is disabled. Set PANDORA_ENABLED=true to enable.');
+
             return Command::FAILURE;
         }
-        
+
         $forceScan = $this->option('force');
 
         if ($this->option('all')) {
-            // Consider chunking for very large numbers of submissions
-            $submissions = Submission::all();
-            $this->info("Scanning files from all {$submissions->count()} submissions...");
-        } else {
-            $submissionId = $this->argument('submission_id');
-            if (!$submissionId) {
-                $this->error('Please provide a submission ID or use the --all option.');
-                return Command::INVALID;
-            }
-            
-            $submission = Submission::find($submissionId);
-            if (!$submission) {
-                $this->error("Submission with ID {$submissionId} not found.");
-                return Command::FAILURE;
-            }
-            $submissions = [$submission]; // Wrap in array for consistent processing
+            return $this->scanAll($scanService, $forceScan);
         }
-        
-        $scannedFilesCount = 0;
-        $createdResultsCount = 0;
-        $updatedResultsCount = 0;
-        $failedScansCount = 0;
 
-        foreach ($submissions as $submission) {
-            $this->line("Processing submission ID: {$submission->id}");
-            
-            $fileValues = SubmissionValues::where('submission_id', $submission->id)
-                ->whereHas('field', function ($query) {
-                    $query->where('type', 'file');
-                })
-                ->get();
-                
-            if ($fileValues->isEmpty()) {
-                $this->line("No files found for submission ID: {$submission->id}");
+        $submissionId = $this->argument('submission_id');
+        if (! $submissionId) {
+            $this->error('Please provide a submission ID or use the --all option.');
+
+            return Command::INVALID;
+        }
+
+        $submission = Submission::find($submissionId);
+        if (! $submission) {
+            $this->error("Submission with ID {$submissionId} not found.");
+
+            return Command::FAILURE;
+        }
+
+        $stats = ['scanned' => 0, 'created' => 0, 'updated' => 0, 'failed' => 0];
+        $this->scanSubmission($submission, $scanService, $forceScan, $stats);
+        $this->printSummary(1, $stats);
+
+        return Command::SUCCESS;
+    }
+
+    protected function scanAll(FileScanService $scanService, bool $forceScan): int
+    {
+        $total = Submission::count();
+        $this->info("Scanning files from {$total} submissions...");
+
+        $bar = $this->output->createProgressBar($total);
+        $bar->start();
+
+        $stats = ['scanned' => 0, 'created' => 0, 'updated' => 0, 'failed' => 0];
+
+        Submission::chunkById(100, function ($submissions) use ($scanService, $forceScan, &$stats, $bar) {
+            foreach ($submissions as $submission) {
+                $this->scanSubmission($submission, $scanService, $forceScan, $stats);
+                $bar->advance();
+            }
+        });
+
+        $bar->finish();
+        $this->newLine(2);
+        $this->printSummary($total, $stats);
+
+        return Command::SUCCESS;
+    }
+
+    protected function scanSubmission(Submission $submission, FileScanService $scanService, bool $forceScan, array &$stats): void
+    {
+        $fileValues = SubmissionValues::where('submission_id', $submission->id)
+            ->whereHas('field', fn ($q) => $q->where('type', 'file'))
+            ->get();
+
+        foreach ($fileValues as $value) {
+            $existingResult = ScanResult::where('submission_value_id', $value->id)->first();
+
+            if ($existingResult && ! $forceScan) {
                 continue;
             }
-            
-            $this->info("Found {$fileValues->count()} file entries to process for submission ID: {$submission->id}");
-            
-            foreach ($fileValues as $value) {
-                // Check if a scan result already exists for this submission value
-                $existingResult = ScanResult::where('submission_value_id', $value->id)->first();
-                
-                if ($existingResult && !$forceScan) {
-                    $this->line("Skipping file ID {$value->id} (filename: " . basename($value->value) . ") for submission {$submission->id} - already scanned. Use --force to re-scan.");
-                    continue;
-                }
 
-                $filename = basename($value->value);
-                $filePathInStorage = $value->value; // This should be the path relative to the storage disk ('private')
-                
-                if (!Storage::disk('private')->exists($filePathInStorage)) {
-                    $this->warn("File not found in private storage: {$filePathInStorage} for submission value ID {$value->id}. Skipping.");
-                    continue;
-                }
-                
-                $fullPath = Storage::disk('private')->path($filePathInStorage);
-                $mimeType = Storage::disk('private')->mimeType($filePathInStorage);
-                
-                $this->info("Scanning: {$filename} (SubmissionValue ID: {$value->id})");
-                
-                $uploadedFile = new UploadedFile(
-                    $fullPath,
-                    $filename,
-                    $mimeType,
-                    null, // No error
-                    true  // Mark as test to prevent moving
-                );
-                
-                $scanResultData = $scanService->scanFile($uploadedFile);
-                $scannedFilesCount++;
-                
-                if ($scanResultData['success']) {
-                    if ($existingResult) { // This implies --force was used
-                        $existingResult->update([
-                            'is_malicious' => $scanResultData['is_malicious'],
-                            'scan_results' => $scanResultData['scan_results'],
-                            'scanner_used' => 'pandora', // Ensure scanner_used is updated if it could change
-                            'filename' => $filename, // Ensure filename is updated if it could change
-                        ]);
-                        $this->info("Updated scan result: " . ($scanResultData['is_malicious'] ? 'MALICIOUS' : 'CLEAN'));
-                        $updatedResultsCount++;
-                    } else {
-                        ScanResult::create([
-                            'submission_id' => $submission->id,
-                            'submission_value_id' => $value->id,
-                            'is_malicious' => $scanResultData['is_malicious'],
-                            'scan_results' => $scanResultData['scan_results'],
-                            'scanner_used' => 'pandora',
-                            'filename' => $filename,
-                        ]);
-                        $this->info("Created scan result: " . ($scanResultData['is_malicious'] ? 'MALICIOUS' : 'CLEAN'));
-                        $createdResultsCount++;
-                    }
-                } else {
-                    $this->error("Scan failed for {$filename}: {$scanResultData['message']}");
-                    Log::error("CLI Scan failed for {$filename} (SubmissionValue ID: {$value->id})", [
-                        'error' => $scanResultData['message']
+            $filePathInStorage = $value->value;
+
+            if (empty($filePathInStorage)) {
+                continue;
+            }
+
+            $filename = basename($filePathInStorage);
+
+            if (! Storage::disk('private')->exists($filePathInStorage)) {
+                $this->line(" Skipping missing file: {$filename}");
+
+                continue;
+            }
+
+            $fullPath = Storage::disk('private')->path($filePathInStorage);
+            $mimeType = Storage::disk('private')->mimeType($filePathInStorage);
+
+            $uploadedFile = new UploadedFile($fullPath, $filename, $mimeType, null, true);
+            $scanResultData = $scanService->scanFile($uploadedFile);
+            $stats['scanned']++;
+
+            if ($scanResultData['success']) {
+                $status = $scanResultData['is_malicious'] ? ScanResult::STATUS_MALICIOUS : ScanResult::STATUS_CLEAN;
+
+                if ($existingResult) {
+                    $existingResult->update([
+                        'is_malicious' => $scanResultData['is_malicious'],
+                        'status' => $status,
+                        'scan_results' => $scanResultData['scan_results'],
+                        'scanner_used' => 'pandora',
+                        'filename' => $filename,
                     ]);
-                    $failedScansCount++;
+                    $stats['updated']++;
+                } else {
+                    ScanResult::create([
+                        'submission_id' => $submission->id,
+                        'submission_value_id' => $value->id,
+                        'is_malicious' => $scanResultData['is_malicious'],
+                        'status' => $status,
+                        'scan_results' => $scanResultData['scan_results'],
+                        'scanner_used' => 'pandora',
+                        'filename' => $filename,
+                    ]);
+                    $stats['created']++;
                 }
+            } else {
+                $this->line(" Scan failed for {$filename}: {$scanResultData['message']}");
+                Log::error("CLI scan failed for {$filename}", ['error' => $scanResultData['message']]);
+                $stats['failed']++;
             }
         }
-        
-        $this->info('----------------------------------------');
+    }
+
+    protected function printSummary(int $totalSubmissions, array $stats): void
+    {
         $this->info('Scanning Summary:');
-        $this->info("Total submissions processed: " . count($submissions));
-        $this->info("Total files scanned: {$scannedFilesCount}");
-        $this->info("New scan results created: {$createdResultsCount}");
-        $this->info("Existing scan results updated (due to --force): {$updatedResultsCount}");
-        $this->info("Failed scans: {$failedScansCount}");
-        $this->info('Scanning completed.');
-        return Command::SUCCESS;
+        $this->table(
+            ['Metric', 'Count'],
+            [
+                ['Submissions processed', $totalSubmissions],
+                ['Files scanned', $stats['scanned']],
+                ['New results', $stats['created']],
+                ['Updated results', $stats['updated']],
+                ['Failed scans', $stats['failed']],
+            ]
+        );
     }
 }

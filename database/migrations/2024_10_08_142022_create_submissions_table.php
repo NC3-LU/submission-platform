@@ -14,7 +14,7 @@ return new class extends Migration {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('form_id');
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->enum('status', ['draft', 'submitted'])->default('draft');
             $table->timestamp('last_edited_at')->nullable();
             $table->timestamps();

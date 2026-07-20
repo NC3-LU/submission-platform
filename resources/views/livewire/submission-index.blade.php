@@ -5,7 +5,7 @@
             <div class="relative rounded-md shadow-sm">
                 <input type="text"
                        wire:model.live.debounce.300ms="search"
-                       class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 pr-10 dark:text-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 pr-10 dark:text-gray-300 focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
                        placeholder="Search submissions...">
                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
@@ -18,7 +18,7 @@
         <!-- Status Filter -->
         <div class="flex-shrink-0">
             <select wire:model.live="statusFilter"
-                    class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm dark:text-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                    class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm dark:text-gray-300 focus:ring-sky-500 focus:border-sky-500">
                 <option value="all">All Submissions</option>
                 <option value="draft">Drafts</option>
                 <option value="ongoing">In Progress</option>
@@ -31,7 +31,7 @@
         <!-- Bulk Export Button -->
         <div class="flex-shrink-0">
             <button wire:click="exportAllAsJson"
-                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
@@ -43,7 +43,7 @@
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" wire:click="sortBy('id')">
                         ID
@@ -67,6 +67,9 @@
                         @endif
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Scan Status
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Actions
                     </th>
                 </tr>
@@ -83,7 +86,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs rounded-full
                                     @if($submission->status === 'draft') bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
-                                    @elseif($submission->status === 'ongoing') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                    @elseif($submission->status === 'ongoing') bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300
                                     @elseif($submission->status === 'submitted') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
                                     @elseif($submission->status === 'under_review') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
                                     @elseif($submission->status === 'completed') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200
@@ -94,10 +97,36 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {{ $submission->updated_at->diffForHumans() }}
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($submission->scanResults->count() > 0)
+                                @if($submission->scanResults->where('is_malicious', true)->count() > 0)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                        <svg class="mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                                            <circle cx="4" cy="4" r="3" />
+                                        </svg>
+                                        {{ $submission->scanResults->where('is_malicious', true)->count() }} Flagged
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        <svg class="mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                                            <circle cx="4" cy="4" r="3" />
+                                        </svg>
+                                        Clean
+                                    </span>
+                                @endif
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                    <svg class="mr-1.5 h-2 w-2 text-gray-400" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3" />
+                                    </svg>
+                                    Not Scanned
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             @if(!in_array($submission->status, ['draft', 'ongoing']))
                                 <a href="{{ route('submissions.show', ['form' => $form, 'submission' => $submission]) }}"
-                                   class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                   class="text-sky-600 hover:text-sky-900 dark:text-sky-400 dark:hover:text-sky-300">
                                     View
                                 </a>
 
@@ -109,7 +138,7 @@
                                         </a>
                                         
                                         <a href="{{ route('submissions.export.single.json', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                           class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                           class="text-sky-600 hover:text-sky-900 dark:text-sky-400 dark:hover:text-sky-300">
                                             Export JSON
                                         </a>
                                     @endcan
@@ -126,7 +155,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                             No submissions found.
                         </td>
                     </tr>

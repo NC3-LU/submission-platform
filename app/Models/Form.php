@@ -11,12 +11,38 @@ class Form extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Form $form) {
+            $filePaths = \App\Models\SubmissionValues::whereIn(
+                'submission_id',
+                $form->submissions()->select('id')
+            )
+                ->whereHas('field', fn ($q) => $q->where('type', 'file'))
+                ->pluck('value')
+                ->filter();
+
+            foreach ($filePaths as $path) {
+                \Illuminate\Support\Facades\Storage::disk('private')->delete($path);
+                $tempPath = str_replace('submissions/', 'temp-submissions/', $path);
+                \Illuminate\Support\Facades\Storage::disk('private')->delete($tempPath);
+            }
+        });
+    }
+
     protected $fillable = [
         'user_id',
         'title',
         'description',
         'status',
-        'visibility'
+        'visibility',
+        'available_from',
+        'available_until',
+    ];
+
+    protected $casts = [
+        'available_from' => 'datetime',
+        'available_until' => 'datetime',
     ];
 
     /**
@@ -87,6 +113,36 @@ class Form extends Model
         }
 
         return false;
+    }
+
+    public function isWithinAvailabilityWindow(): bool
+    {
+        $now = now();
+
+        if ($this->available_from && $now->lt($this->available_from)) {
+            return false;
+        }
+
+        if ($this->available_until && $now->gt($this->available_until)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function availabilityState(): string
+    {
+        $now = now();
+
+        if ($this->available_from && $now->lt($this->available_from)) {
+            return 'scheduled';
+        }
+
+        if ($this->available_until && $now->gt($this->available_until)) {
+            return 'closed';
+        }
+
+        return 'open';
     }
 
 // Add this relationship method to your Form model

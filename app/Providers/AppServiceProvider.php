@@ -62,7 +62,11 @@ class AppServiceProvider extends ServiceProvider
         }
         
         // Get allowed domains from database settings
-        $allowedDomainsStr = ApiSetting::get('api_docs_allowed_domains', env('API_DOCS_ALLOWED_DOMAINS', ''));
+        try {
+            $allowedDomainsStr = ApiSetting::get('api_docs_allowed_domains', env('API_DOCS_ALLOWED_DOMAINS', ''));
+        } catch (\Throwable $e) {
+            $allowedDomainsStr = env('API_DOCS_ALLOWED_DOMAINS', '');
+        }
         
         if (empty($allowedDomainsStr)) {
             return false;
@@ -81,84 +85,64 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerRateLimiters(): void
     {
-        $this->registerGeneralApiRateLimiter();
-        $this->registerApiAuthRateLimiter();
-        $this->registerApiSubmissionsRateLimiter();
-        $this->registerExportRateLimiters();
-    }
-
-    /**
-     * Register general API rate limiter.
-     *
-     * @return void
-     */
-    private function registerGeneralApiRateLimiter(): void
-    {
         RateLimiter::for('api', function (Request $request) {
             $apiToken = $request->attributes->get('api_token');
-            
-            if ($apiToken) {
-                $limit = max(1, (int) ApiSetting::get('rate_limit_api_authenticated'));
-                return Limit::perMinute($limit)->by('token:' . $apiToken->id);
+
+            try {
+                if ($apiToken) {
+                    $limit = max(1, (int) ApiSetting::get('rate_limit_api_authenticated', 60));
+                    return Limit::perMinute($limit)->by('token:' . $apiToken->id);
+                }
+
+                $limit = max(1, (int) ApiSetting::get('rate_limit_api_unauthenticated', 30));
+                return Limit::perMinute($limit)->by('ip:' . $request->ip());
+            } catch (\Throwable $e) {
+                $key = $apiToken ? 'token:' . $apiToken->id : 'ip:' . $request->ip();
+                return Limit::perMinute(60)->by($key);
             }
-            
-            $limit = max(1, (int) ApiSetting::get('rate_limit_api_unauthenticated'));
-            return Limit::perMinute($limit)->by('ip:' . $request->ip());
         });
-    }
 
-    /**
-     * Register API authentication rate limiter.
-     *
-     * @return void
-     */
-    private function registerApiAuthRateLimiter(): void
-    {
         RateLimiter::for('api-auth', function (Request $request) {
-            $limit = max(1, (int) ApiSetting::get('rate_limit_auth_attempts'));
-            return Limit::perMinute($limit)->by('ip:' . $request->ip());
+            try {
+                $limit = max(1, (int) ApiSetting::get('rate_limit_auth_attempts', 5));
+                return Limit::perMinute($limit)->by('ip:' . $request->ip());
+            } catch (\Throwable $e) {
+                return Limit::perMinute(5)->by('ip:' . $request->ip());
+            }
         });
-    }
 
-    /**
-     * Register API submissions rate limiter.
-     *
-     * @return void
-     */
-    private function registerApiSubmissionsRateLimiter(): void
-    {
         RateLimiter::for('api-submissions', function (Request $request) {
             $apiToken = $request->attributes->get('api_token');
             $identifier = $apiToken?->id ?? $request->ip();
-            
-            if ($request->isMethod('GET')) {
-                $limit = max(1, (int) ApiSetting::get('rate_limit_submissions_read'));
-                return Limit::perMinute($limit)->by('token:' . $identifier);
-            }
-            
-            $writeLimit = max(1, (int) ApiSetting::get('rate_limit_submissions_write'));
-            $dailyLimit = max(1, (int) ApiSetting::get('rate_limit_submissions_daily'));
-            
-            return [
-                Limit::perMinute($writeLimit)->by('token:' . $identifier),
-                Limit::perDay($dailyLimit)->by('daily:token:' . $identifier),
-            ];
-        });
-    }
 
-    /**
-     * Register export rate limiters.
-     *
-     * @return void
-     */
-    private function registerExportRateLimiters(): void
-    {
-        // Rate limiter for single export operations (PDF, JSON)
+            try {
+                if ($request->isMethod('GET')) {
+                    $limit = max(1, (int) ApiSetting::get('rate_limit_submissions_read', 60));
+                    return Limit::perMinute($limit)->by('token:' . $identifier);
+                }
+
+                $writeLimit = max(1, (int) ApiSetting::get('rate_limit_submissions_write', 30));
+                $dailyLimit = max(1, (int) ApiSetting::get('rate_limit_submissions_daily', 1000));
+
+                return [
+                    Limit::perMinute($writeLimit)->by('token:' . $identifier),
+                    Limit::perDay($dailyLimit)->by('daily:token:' . $identifier),
+                ];
+            } catch (\Throwable $e) {
+                if ($request->isMethod('GET')) {
+                    return Limit::perMinute(60)->by('token:' . $identifier);
+                }
+                return [
+                    Limit::perMinute(30)->by('token:' . $identifier),
+                    Limit::perDay(1000)->by('daily:token:' . $identifier),
+                ];
+            }
+        });
+
         RateLimiter::for('export', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        // Rate limiter for bulk export operations (all submissions)
         RateLimiter::for('bulk-export', function (Request $request) {
             return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
         });

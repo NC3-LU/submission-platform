@@ -37,7 +37,15 @@ class SubmissionExportController extends Controller
         $pdf = PDF::loadView('submissions.pdf', [
             'form' => $form,
             'submission' => $submissionData,
-        ]);
+        ])->setPaper('a4');
+
+        // Render and add page numbers (bottom-right)
+        $pdf->render();
+        $canvas = $pdf->getDomPDF()->getCanvas();
+        $w = $canvas->get_width();
+        $h = $canvas->get_height();
+        $font = $pdf->getDomPDF()->getFontMetrics()->get_font('DejaVu Sans', 'normal');
+        $canvas->page_text($w - 72, $h - 28, 'Page {PAGE_NUM} of {PAGE_COUNT}', $font, 9, [0.42, 0.45, 0.50]);
 
         return response($pdf->output(), 200, [
             'Content-Type' => 'application/pdf',

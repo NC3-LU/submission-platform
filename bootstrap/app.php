@@ -3,8 +3,8 @@
 use App\Http\Middleware\ApiLogMiddleware;
 use App\Http\Middleware\ApiTokenIPMiddleware;
 use App\Http\Middleware\FormAccessMiddleware;
-use App\Http\Middleware\ScanUploadedFiles;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,31 +16,44 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust proxies (Traefik/reverse proxy) for correct HTTPS detection
+        $middleware->trustProxies(at: '*');
+
         // Web middleware
         $middleware->web(append: [
             FormAccessMiddleware::class,
-            ScanUploadedFiles::class,
+            \App\Http\Middleware\RemoveServerHeaders::class,
         ]);
-        
+
         // API middleware
         $middleware->alias([
             'api.token.ip' => ApiTokenIPMiddleware::class,
         ]);
-        
+
         // Add API log middleware to the API group
-        $middleware->api(append: ApiLogMiddleware::class);
+        $middleware->api(append: [
+            ApiLogMiddleware::class,
+            \App\Http\Middleware\RemoveServerHeaders::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Handle DecryptException on 2FA routes — stale sessions after APP_KEY change
+        $exceptions->renderable(function (DecryptException $e, Request $request) {
+            if ($request->is('two-factor-challenge*')) {
+                return redirect()->route('login')->with('status', 'Your session has expired. Please log in again.');
+            }
+        });
+
         // API-specific exception handling
         $exceptions->renderable(function (\Throwable $e, Request $request) {
             // Only apply to API requests
-            if (!$request->is('api/*')) {
+            if (! $request->is('api/*')) {
                 return null;
             }
 
@@ -77,7 +90,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             // For all other exceptions in production, return generic message
-            if (!config('app.debug')) {
+            if (! config('app.debug')) {
                 return response()->json([
                     'message' => 'Server error',
                 ], 500);

@@ -1,0 +1,8 @@
+.env
+.env.*
+docker-compose.env
+node_modules
+.git
+.claude
+docs
+database/database.sqlite

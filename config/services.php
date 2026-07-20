@@ -38,7 +38,8 @@ return [
     'pandora' => [
         'url' => env('PANDORA_URL', 'http://pandora:6100'),
         'enabled' => env('PANDORA_ENABLED', false),
-        'timeout' => env('PANDORA_TIMEOUT', 15),
+        'timeout' => env('PANDORA_TIMEOUT', 30),
+        'poll_interval' => env('PANDORA_POLL_INTERVAL', 2),
         'block_malicious' => env('PANDORA_BLOCK_MALICIOUS', true),
     ],
 

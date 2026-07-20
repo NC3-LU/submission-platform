@@ -3,168 +3,84 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Submission {{ $submission['id'] }} - {{ $form->title }}</title>
+    <meta name="author" content="NC3 Luxembourg"/>
+    <meta name="subject" content="Form Submission"/>
     <style>
+        @page { size: A4; margin: 20mm; }
+
         body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
+            font-family: 'DejaVu Sans', sans-serif;
+            font-size: 11pt;
             line-height: 1.6;
-            color: #333;
+            color: #111827;
+            background: #ffffff;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-        }
+        h1 { font-size: 16pt; margin: 0 0 8px; font-weight: 700; }
+        h2 { font-size: 13pt; margin: 16px 0 8px; font-weight: 700; }
+        .small { font-size: 9pt; color: #6b7280; }
 
-        .form-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1a1a1a;
-            margin-bottom: 5px;
-        }
+        .header { margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; }
+        .meta { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        .meta td { padding: 2px 0; font-size: 10pt; }
 
-        .submission-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 5px;
-        }
+        .section { margin: 16px 0; page-break-inside: avoid; }
+        .section-title { font-weight: 700; border-left: 3px solid #2563eb; padding-left: 8px; }
+        .description { font-style: italic; color: #6b7280; margin: 6px 0 10px; }
 
-        .submission-id {
-            font-weight: bold;
-            color: #2563eb;
-            font-size: 14px;
-        }
+        .field { margin: 10px 0; }
+        .label { font-weight: 600; color: #374151; }
+        .value { margin-top: 4px; }
+        .value-block { white-space: pre-wrap; border: 1px solid #e5e7eb; padding: 8px; border-radius: 3px; background: #fafafa; }
+        .muted { color: #9ca3af; font-style: italic; }
 
-        .submission-date {
-            color: #666;
-        }
+        ul { padding-left: 20px; margin: 8px 0; }
+        li { margin-bottom: 4px; }
 
-        .category {
-            margin-bottom: 30px;
-        }
-
-        .category-name {
-            font-size: 16px;
-            font-weight: bold;
-            background-color: #f3f4f6;
-            padding: 8px 12px;
-            margin-bottom: 15px;
-            border-left: 4px solid #2563eb;
-            color: #1a1a1a;
-        }
-
-        .category-description {
-            color: #666;
-            margin-bottom: 15px;
-            font-style: italic;
-        }
-
-        /* Bullet point styling */
-        ul {
-            padding-left: 20px;
-            margin: 8px 0;
-        }
-        
-        li {
-            margin-bottom: 4px;
-        }
-
-        .field {
-            margin-bottom: 15px;
-            padding-left: 10px;
-        }
-
-        .field-label {
-            font-weight: bold;
-            color: #374151;
-            margin-bottom: 5px;
-        }
-
-        .field-value {
-            margin-top: 3px;
-            padding: 3px 0;
-        }
-
-        .file-link {
-            color: #2563eb;
-            text-decoration: underline;
-        }
-
-        .empty-value {
-            color: #999;
-            font-style: italic;
-        }
-
-        .footer {
-            margin-top: 40px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-            font-size: 10px;
-            color: #666;
-            text-align: center;
-        }
-
-        .textarea-value {
-            white-space: pre-wrap;
-            background-color: #f8f9fa;
-            padding: 8px;
-            border-radius: 4px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        td {
-            vertical-align: top;
-            padding: 4px 8px;
-        }
+        .footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 9pt; color: #6b7280; }
     </style>
-</head>
+    </head>
 <body>
-<div class="header">
-    <div class="form-title">{{ $form->title }}</div>
-</div>
 
-<div class="submission-info">
-    <table>
+<div class="header">
+    <h1>{{ $form->title }}</h1>
+    <table class="meta">
         <tr>
-            <td width="50%">
-                <span class="submission-id">Submission #{{ $submission['id'] }}</span>
-            </td>
-            <td width="50%" style="text-align: right;">
-                <span class="submission-date">Submitted: {{ $submission['created_at'] }}</span>
-            </td>
+            <td>Submission #{{ $submission['id'] }}</td>
+            <td style="text-align:right">Submitted: {{ $submission['created_at'] }}</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="small">Generated: {{ now()->format('Y-m-d H:i:s') }}</td>
         </tr>
     </table>
-</div>
+    </div>
 
 @foreach($submission['categories'] as $category)
-    <div class="category">
-        <div class="category-name">{{ $category['name'] }}</div>
-
+    <div class="section">
+        <div class="section-title">{{ $category['name'] }}</div>
         @if($category['description'])
-            <div class="category-description">{!! \App\Helpers\MarkdownHelper::toHtml($category['description']) !!}</div>
+            <div class="description">{!! \App\Helpers\MarkdownHelper::toHtml($category['description']) !!}</div>
         @endif
 
         @foreach($category['fields'] as $field)
             <div class="field">
-                <div class="field-label">{{ $field['label'] }}</div>
-                <div class="field-value">
+                <div class="label">{{ $field['label'] }}</div>
+                <div class="value">
                     @if($field['type'] === 'file')
                         @if($field['displayValue'])
-                            <span class="file-link">[File: {{ basename($field['displayValue']) }}]</span>
+                            {{ basename($field['displayValue']) }}
                         @else
-                            <span class="empty-value">No file uploaded</span>
+                            <span class="muted">—</span>
                         @endif
                     @elseif($field['type'] === 'textarea')
-                        <div class="textarea-value">{{ $field['displayValue'] ?: 'N/A' }}</div>
+                        @if($field['displayValue'])
+                            <div class="value-block">{{ $field['displayValue'] }}</div>
+                        @else
+                            <span class="muted">—</span>
+                        @endif
                     @elseif($field['type'] === 'checkbox')
-                        {{ $field['displayValue'] ?: 'No' }}
+                        {{ $field['displayValue'] ? 'Yes' : 'No' }}
                     @elseif($field['type'] === 'radio' || $field['type'] === 'select')
                         {{ $field['displayValue'] ?: 'Not selected' }}
                     @else
@@ -177,7 +93,10 @@
 @endforeach
 
 <div class="footer">
-    Generated on {{ now()->format('Y-m-d H:i:s') }}
-</div>
+    Luxembourg House of Cybersecurity • info@nc3.lu
+    <br/>
+    Generated: {{ now()->format('Y-m-d H:i:s') }}
+    </div>
+
 </body>
 </html>

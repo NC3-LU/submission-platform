@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Services\FileScanService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -10,196 +11,268 @@ use Tests\TestCase;
 
 class FileScanServiceTest extends TestCase
 {
-    // Skip these tests for now - HTTP multipart mocking is complex
-    // FileScanService is tested indirectly through integration tests
     protected FileScanService $service;
 
     protected function setUp(): void
     {
         parent::setUp();
-        // Use real storage for file operations
+        Storage::fake('local');
+        config(['services.pandora.url' => 'http://pandora:6100']);
+        config(['services.pandora.timeout' => 5]);
+        config(['services.pandora.poll_interval' => 0]);
         $this->service = app(FileScanService::class);
     }
 
     protected function tearDown(): void
     {
-        // Clean up any temp files after each test
         try {
             Storage::deleteDirectory('temp/scans');
         } catch (\Exception $e) {
-            // Ignore errors during cleanup
         }
         parent::tearDown();
     }
 
-    public function test_scans_file_successfully(): void
+    public function test_scans_clean_file_successfully(): void
     {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        Http::fake(function ($request) {
-            return Http::response([
-                'status' => 'clean',
-                'antivirus' => [
-                    'clamav' => []
-                ]
-            ], 200);
-        });
+        Http::fake([
+            '*/submit*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-123',
+                'seed' => 'test-seed',
+            ]),
+            '*/task_status*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-123',
+                'status' => 'CLEAN',
+            ]),
+        ]);
 
-        $file = UploadedFile::fake()->create('document.pdf', 100);
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
         $result = $this->service->scanFile($file);
 
         $this->assertTrue($result['success']);
         $this->assertFalse($result['is_malicious']);
-        $this->assertArrayHasKey('scan_results', $result);
+        $this->assertEquals('CLEAN', $result['scan_results']['status']);
     }
 
-    public function test_detects_malicious_file(): void
+    public function test_detects_malicious_file_alert_status(): void
     {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        Http::fake(function ($request) {
-            return Http::response([
-                'status' => 'malicious',
-                'antivirus' => [
-                    'clamav' => ['Win.Test.EICAR']
-                ]
-            ], 200);
-        });
+        Http::fake([
+            '*/submit*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-456',
+                'seed' => 'test-seed',
+            ]),
+            '*/task_status*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-456',
+                'status' => 'ALERT',
+            ]),
+        ]);
 
-        $file = UploadedFile::fake()->create('malware.exe', 100);
+        $file = UploadedFile::fake()->createWithContent('malware.exe', 'fake malware content');
         $result = $this->service->scanFile($file);
 
         $this->assertTrue($result['success']);
         $this->assertTrue($result['is_malicious']);
-        $this->assertArrayHasKey('scan_results', $result);
     }
 
-    public function test_handles_scan_service_failure(): void
+    public function test_detects_malicious_file_warn_status(): void
     {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        Http::fake(function ($request) {
-            return Http::response('Service Error', 500);
-        });
+        Http::fake([
+            '*/submit*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-789',
+                'seed' => 'test-seed',
+            ]),
+            '*/task_status*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-789',
+                'status' => 'WARN',
+            ]),
+        ]);
 
-        $file = UploadedFile::fake()->create('document.pdf', 100);
+        $file = UploadedFile::fake()->createWithContent('suspicious.doc', 'fake suspicious content');
+        $result = $this->service->scanFile($file);
+
+        $this->assertTrue($result['success']);
+        $this->assertTrue($result['is_malicious']);
+    }
+
+    public function test_submit_sends_validity_as_query_param(): void
+    {
+        // Pandora's ApiSubmit parses `validity` from location='args' (the query
+        // string). If it is only present in the multipart body, Pandora never
+        // issues a seed and unauthenticated task_status polling fails.
+        Http::fake([
+            '*/submit*' => Http::response(['success' => true, 'taskId' => 't1', 'seed' => 's1']),
+            '*/task_status*' => Http::response(['success' => true, 'taskId' => 't1', 'status' => 'CLEAN']),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $this->service->scanFile($file);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/submit')
+                && str_contains($request->url(), 'validity=0');
+        });
+    }
+
+    public function test_poll_forwards_seed_from_submit_response(): void
+    {
+        // The seed returned by /submit must be forwarded to /task_status so an
+        // unauthenticated caller is allowed to read the report for that task.
+        Http::fake([
+            '*/submit*' => Http::response(['success' => true, 'taskId' => 't1', 'seed' => 'the-seed']),
+            '*/task_status*' => Http::response(['success' => true, 'taskId' => 't1', 'status' => 'CLEAN']),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $this->service->scanFile($file);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/task_status')
+                && str_contains($request->url(), 'seed=the-seed');
+        });
+    }
+
+    public function test_handles_submit_failure(): void
+    {
+        Http::fake([
+            '*/submit*' => Http::response('Server Error', 500),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
         $result = $this->service->scanFile($file);
 
         $this->assertFalse($result['success']);
-        $this->assertArrayHasKey('message', $result);
-        $this->assertStringContainsString('Error scanning file', $result['message']);
+        $this->assertStringContainsString('failed to accept', $result['message']);
+    }
+
+    public function test_handles_missing_task_id(): void
+    {
+        Http::fake([
+            '*/submit*' => Http::response(['success' => true]),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $result = $this->service->scanFile($file);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('no task ID', $result['message']);
     }
 
     public function test_handles_connection_timeout(): void
     {
         Http::fake(function () {
-            throw new \Illuminate\Http\Client\ConnectionException('Connection timeout');
+            throw new ConnectionException('Connection timeout');
         });
 
-        $file = UploadedFile::fake()->create('document.pdf', 100);
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
         $result = $this->service->scanFile($file);
 
         $this->assertFalse($result['success']);
-        $this->assertArrayHasKey('message', $result);
         $this->assertStringContainsString('Error scanning file', $result['message']);
     }
 
-    public function test_cleans_up_temporary_files(): void
+    public function test_handles_poll_timeout(): void
     {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        Http::fake(function ($request) {
-            return Http::response([
-                'status' => 'clean',
-                'antivirus' => ['clamav' => []]
-            ], 200);
-        });
+        config(['services.pandora.timeout' => 1]);
+        $this->service = app(FileScanService::class);
 
-        $file = UploadedFile::fake()->create('document.pdf', 100);
-        $this->service->scanFile($file);
+        Http::fake([
+            '*/submit*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-slow',
+                'seed' => 'test-seed',
+            ]),
+            '*/task_status*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-slow',
+                'status' => 'RUNNING',
+            ]),
+        ]);
 
-        // Verify temp files are cleaned up
-        $files = Storage::allFiles('temp/scans');
-        $this->assertEmpty($files, 'Temporary scan files should be cleaned up after scanning');
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $result = $this->service->scanFile($file);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('timed out', $result['message']);
     }
 
-    public function test_uses_unique_filename_for_temp_storage(): void
+    public function test_overwrite_status_is_terminal_and_not_a_failure(): void
     {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        Http::fake(function ($request) {
-            return Http::response([
-                'status' => 'clean',
-                'antivirus' => ['clamav' => []]
-            ], 200);
-        });
+        // OVERWRITE is an analyst-forced report status, not a worker error.
+        // It must be terminal (no retry loop) and must NOT be reported as a
+        // scan failure — otherwise legitimately-overridden files trigger
+        // futile retries and spurious "scan failed" alerts.
+        Http::fake([
+            '*/submit*' => Http::response(['success' => true, 'taskId' => 'ow', 'seed' => 's']),
+            '*/task_status*' => Http::response(['success' => true, 'taskId' => 'ow', 'status' => 'OVERWRITE']),
+        ]);
 
-        $file1 = UploadedFile::fake()->create('document.pdf', 100);
-        $file2 = UploadedFile::fake()->create('document.pdf', 100);
-
-        // Scan two files with same name concurrently
-        $result1 = $this->service->scanFile($file1);
-        $result2 = $this->service->scanFile($file2);
-
-        // Both should succeed without conflicts
-        $this->assertTrue($result1['success']);
-        $this->assertTrue($result2['success']);
-    }
-
-    public function test_determines_file_is_clean_when_no_threats(): void
-    {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        Http::fake(function ($request) {
-            return Http::response([
-                'antivirus' => [
-                    'clamav' => []
-                ]
-            ], 200);
-        });
-
-        $file = UploadedFile::fake()->create('clean.txt', 50);
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
         $result = $this->service->scanFile($file);
 
         $this->assertTrue($result['success']);
         $this->assertFalse($result['is_malicious']);
+        $this->assertEquals('OVERWRITE', $result['scan_results']['status']);
     }
 
-    public function test_determines_file_is_malicious_when_clamav_detects_threat(): void
+    public function test_treats_error_status_as_scan_failure(): void
     {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        Http::fake(function ($request) {
-            return Http::response([
-                'antivirus' => [
-                    'clamav' => ['Eicar-Test-Signature']
-                ]
-            ], 200);
-        });
+        Http::fake([
+            '*/submit*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-error',
+                'seed' => 'test-seed',
+            ]),
+            '*/task_status*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-task-error',
+                'status' => 'ERROR',
+            ]),
+        ]);
 
-        $file = UploadedFile::fake()->create('eicar.txt', 50);
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
         $result = $this->service->scanFile($file);
 
-        $this->assertTrue($result['success']);
-        $this->assertTrue($result['is_malicious']);
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('ERROR', $result['message']);
     }
 
-    public function test_preserves_original_filename_in_scan_request(): void
+    public function test_cleans_up_temp_files_on_success(): void
     {
-        $this->markTestSkipped('HTTP multipart mocking is complex - tested via integration');
-        
-        $expectedFilename = 'my-document.pdf';
-        
-        Http::fake(function ($request) {
-            return Http::response([
-                'antivirus' => ['clamav' => []]
-            ], 200);
-        });
+        Http::fake([
+            '*/submit*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-cleanup',
+                'seed' => 'test-seed',
+            ]),
+            '*/task_status*' => Http::response([
+                'success' => true,
+                'taskId' => 'test-cleanup',
+                'status' => 'CLEAN',
+            ]),
+        ]);
 
-        $file = UploadedFile::fake()->createWithContent($expectedFilename, 'test content');
-        $result = $this->service->scanFile($file);
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $this->service->scanFile($file);
 
-        // Just verify the scan succeeded - HTTP assertion is complex with multipart
-        $this->assertTrue($result['success']);
+        $files = Storage::allFiles('temp/scans');
+        $this->assertEmpty($files);
+    }
+
+    public function test_cleans_up_temp_files_on_failure(): void
+    {
+        Http::fake([
+            '*/submit*' => Http::response('Error', 500),
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('document.pdf', 'fake pdf content');
+        $this->service->scanFile($file);
+
+        $files = Storage::allFiles('temp/scans');
+        $this->assertEmpty($files);
     }
 }

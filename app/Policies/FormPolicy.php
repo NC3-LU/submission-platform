@@ -217,7 +217,7 @@ class FormPolicy
             return true;
         }
 
-        return $user->role === 'internal_evaluator' || $user->role === 'external_evaluator' &&
+        return in_array($user->role, ['internal_evaluator', 'external_evaluator']) &&
             $form->appointedUsers()
                 ->where('user_id', $user->id)
                 ->where('can_edit', true)

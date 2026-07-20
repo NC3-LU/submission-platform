@@ -14,6 +14,14 @@ The NC3 Submission Platform is a sophisticated form management system designed f
 - File upload capabilities
 - Drafting before submitting
 
+### Security & File Scanning
+- **Pandora Integration** - Automated malware scanning for uploaded files using [CIRCL's Pandora](https://github.com/pandora-analysis/pandora)
+- ClamAV-based antivirus scanning
+- Automatic blocking of malicious file uploads (configurable)
+- Scan results displayed in submission views
+- Admin panel for viewing all scan results
+- CLI command to scan existing files: `php artisan app:scan-files --all`
+
 ## Requirements
 
 - PHP 8.2+
@@ -41,6 +49,19 @@ php artisan key:generate
 
 4. Update your `.env` file with appropriate settings
 
+### Pandora Configuration (Optional)
+
+To enable malware scanning for uploaded files, configure Pandora in your `.env`:
+
+```env
+PANDORA_ENABLED=true
+PANDORA_URL=http://pandora:6100
+PANDORA_TIMEOUT=15
+PANDORA_BLOCK_MALICIOUS=true
+```
+
+For Docker deployment, use `scripts/setup-pandora.sh` to start the Pandora stack alongside your application.
+
 ## API Documentation
 
 API documentation is automatically generated using Scramble and can be accessed at `/docs/api` when running the application. The OpenAPI specification is exported to `api.json`.
@@ -67,7 +88,6 @@ For general inquiries:
 
 
 ## Roadmap
-- Pandora integration for file uploads
 - Access links for specific emails which need to be confirmed via an unique code which is sent via mail
 - Custom Workflow definition after a submission
     - Who shall do what
@@ -76,3 +96,4 @@ For general inquiries:
     - etc
 - API extension
 - Encrypted file storage
+- Enhanced Pandora features (YARA rules, VirusTotal integration)

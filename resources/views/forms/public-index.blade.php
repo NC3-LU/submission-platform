@@ -1,59 +1,60 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Available Forms
+        <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight">
+            {{ __('Available Forms') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    @if($forms->isEmpty())
-                        <p>No forms are currently available.</p>
-                    @else
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            @foreach($forms as $form)
-                                <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6">
-                                    <h3 class="text-lg font-semibold mb-2">{{ $form->title }}</h3>
-                                    <p class="text-gray-600 dark:text-gray-300 mb-4">{{ Str::limit($form->description, 100) }}</p>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">
-                                            Created {{ $form->created_at->diffForHumans() }}
-                                        </span>
-
-                                        @if($form->visibility === 'public')
-                                            {{-- Public forms are always accessible with a link --}}
-                                            <a href="{{ route('submissions.create', $form) }}"
-                                               class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
-                                                View Form
-                                            </a>
-                                        @elseif($form->visibility === 'authenticated')
-                                            @auth
-                                                {{-- Authenticated users can access these forms --}}
-                                                <a href="{{ route('submissions.create', $form) }}"
-                                                   class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
-                                                    View Form
-                                                </a>
-                                            @else
-                                                {{-- Show login required button for guests --}}
-                                                <a href="{{ route('login') }}"
-                                                   class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-200">
-                                                    Login Required
-                                                </a>
-                                            @endauth
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <div class="mt-6">
-                            {{ $forms->links() }}
-                        </div>
-                    @endif
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if($forms->isEmpty())
+                <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-12 text-center">
+                    <svg class="mx-auto w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-semibold text-slate-900 dark:text-white">No Forms Available</h3>
+                    <p class="mt-2 text-slate-500 dark:text-slate-400">Check back later or contact support for more information.</p>
                 </div>
-            </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach($forms as $form)
+                        <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-sky-500 p-6 hover:shadow-md transition-shadow">
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ $form->title }}</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mt-2">{{ $form->description }}</p>
+                            <div class="mt-4 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    @if($form->visibility === 'public')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Public</span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Login Required</span>
+                                    @endif
+                                    <span class="text-xs text-slate-400">{{ $form->created_at->diffForHumans() }}</span>
+                                </div>
+                                @if($form->availabilityState() === 'scheduled')
+                                    <span class="text-sm text-amber-600 dark:text-amber-400">
+                                        Opens {{ $form->available_from->format('M j, Y') }}
+                                    </span>
+                                @elseif($form->availabilityState() === 'closed')
+                                    <span class="text-sm text-red-600 dark:text-red-400">
+                                        Closed {{ $form->available_until->format('M j, Y') }}
+                                    </span>
+                                @elseif($form->visibility === 'public' || auth()->check())
+                                    <a href="{{ route('submissions.create', $form) }}" class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium text-sm inline-flex items-center">
+                                        Fill
+                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm">Login to fill</a>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-8">
+                    {{ $forms->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

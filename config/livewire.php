@@ -65,7 +65,11 @@ return [
 
     'temporary_file_upload' => [
         'disk' => null,        // Example: 'local', 's3'              | Default: 'default'
-        'rules' => null,       // Example: ['file', 'mimes:png,jpg']  | Default: ['required', 'file', 'max:12288'] (12MB)
+        // Backstop enforced at Livewire's global upload endpoint, mirroring
+        // SubmissionForm::ALLOWED_FILE_TYPES / MAX_FILE_SIZE. Component-level
+        // validation is the primary gate; this ensures a disallowed file is
+        // rejected at the endpoint even if a component forgets to validate.
+        'rules' => ['required', 'file', 'max:10240', 'mimes:jpeg,jpg,webp,svg,png,pdf,doc,docx,xls,xlsx,md'],
         'directory' => null,   // Example: 'tmp'                      | Default: 'livewire-tmp'
         'middleware' => 'throttle:5,1',  // Example: 'throttle:5,1'             | Default: 'throttle:60,1'
         'preview_mimes' => [   // Supported file types for temporary pre-signed file URLs...

@@ -8,19 +8,19 @@
                 <div>
                     <label for="workflowName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Workflow Name</label>
                     <input type="text" id="workflowName" wire:model="workflowName"
-                           class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                           class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:border-sky-500 focus:ring-sky-500 sm:text-sm">
                     @error('workflowName') <span class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
                     <label for="workflowDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                     <textarea id="workflowDescription" wire:model="workflowDescription" rows="3"
-                              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:border-sky-500 focus:ring-sky-500 sm:text-sm"></textarea>
                     @error('workflowDescription') <span class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="flex justify-end">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
                         Create Workflow
                     </button>
                 </div>
@@ -39,7 +39,7 @@
                         @endif
                     </div>
                     <button wire:click="showAddStep" type="button"
-                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
                         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
@@ -63,8 +63,8 @@
                             </div>
 
                             <!-- Step Number -->
-                            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
-                                <span class="text-sm font-medium text-indigo-800 dark:text-indigo-200">{{ $index + 1 }}</span>
+                            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900">
+                                <span class="text-sm font-medium text-sky-800 dark:text-sky-200">{{ $index + 1 }}</span>
                             </div>
 
                             <!-- Step Content -->
@@ -100,7 +100,7 @@
                             <!-- Actions -->
                             <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button wire:click="editStep({{ $step['id'] }})" type="button"
-                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                        class="text-sky-600 hover:text-sky-900 dark:text-sky-400 dark:hover:text-sky-300">
                                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
