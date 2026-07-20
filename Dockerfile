@@ -64,8 +64,70 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-
 # Now run the post-install scripts
 RUN composer run-script post-autoload-dump
 
-# Stage 3: Production image
-FROM php:8.3-apache
+# ---------------------------------------------------------------------------
+# Two runtime targets, because the environments serve PHP differently:
+#
+#   runtime-fpm    production (applications.nc3.lu) - php-fpm on 9000, behind
+#                  the host Apache vhost which proxies via fastcgi and serves
+#                  static files from the host public/ directory.
+#                  Selected explicitly by docker-compose.prod.yml.
+#
+#   runtime-apache test / Dokploy - self-contained Apache on port 80, routed by
+#                  Traefik over the dokploy network.
+#
+# runtime-apache is deliberately LAST: `docker build` with no --target builds
+# the final stage, so Dokploy continues to build the Apache image unchanged.
+# ---------------------------------------------------------------------------
+
+# Stage 3a: Production runtime (php-fpm)
+FROM php:8.3-fpm-alpine AS runtime-fpm
+ARG PROXY
+ENV http_proxy=$PROXY \
+    HTTP_PROXY=$PROXY \
+    https_proxy=$PROXY \
+    HTTPS_PROXY=$PROXY
+
+WORKDIR /var/www/html
+
+RUN apk update && apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    bash \
+    icu-dev \
+    mysql-client
+
+# Extension set matches runtime-apache so the app behaves identically in both.
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
+    docker-php-ext-configure intl && \
+    docker-php-ext-install intl
+
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+COPY --from=composer-builder /app /var/www/html
+COPY --from=node-builder /app/public/build /var/www/html/public/build
+
+RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
+    && mkdir -p /var/www/html/storage/logs \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+VOLUME /var/www/html/storage
+
+EXPOSE 9000
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["php-fpm"]
+
+# Stage 3b: Test / Dokploy runtime (self-contained Apache). Must remain last.
+FROM php:8.3-apache AS runtime-apache
 ARG PROXY
 ENV http_proxy=$PROXY \
     HTTP_PROXY=$PROXY \
