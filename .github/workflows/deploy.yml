@@ -56,7 +56,11 @@ jobs:
           cd /var/www/applications.nc3.lu
 
           # Create .env file
-          cat > .env << EOL
+          # Quoted delimiter: every value here is substituted by GitHub Actions
+          # before the shell runs, so no expansion is needed. Leaving it
+          # unquoted lets a '$' or backtick inside a secret corrupt the value or
+          # command-substitute on the remote host.
+          cat > .env << 'EOL'
           APP_NAME="NC3's Application Platform"
           APP_ENV=production
           APP_KEY=${{ secrets.APP_KEY }}

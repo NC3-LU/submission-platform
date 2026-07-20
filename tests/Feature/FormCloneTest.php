@@ -53,7 +53,11 @@ class FormCloneTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'internal_evaluator']);
         $user = User::factory()->create(['role' => 'user']);
-        $form = Form::factory()->for($owner)->create();
+        // Visibility is pinned because FormFactory randomises it. A 'private'
+        // form is rejected by FormAccessMiddleware with a 403 before the
+        // controller's policy check runs, which made this test fail roughly one
+        // run in three. This asserts the policy, so the request must reach it.
+        $form = Form::factory()->for($owner)->create(['visibility' => 'authenticated']);
 
         $this->actingAs($user);
         $this->withoutExceptionHandling();
