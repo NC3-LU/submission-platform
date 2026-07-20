@@ -77,6 +77,13 @@ services:
       # fastcgi handler resolves /var/www/html/public/index.php, so the
       # container must see the same public/ the host does.
       - ./public:/var/www/html/public
+      # .env is deliberately excluded from the image by .dockerignore so
+      # secrets never land in an image layer. Production still needs it at
+      # runtime (APP_KEY, mail, session, Pandora), and docker-compose.env only
+      # carries database credentials - so mount the file the deploy workflow
+      # writes. Without this the app boots with no APP_KEY and every encrypted
+      # operation fails.
+      - ./.env:/var/www/html/.env:ro
     depends_on:
       db:
         condition: service_healthy
@@ -104,6 +111,8 @@ services:
     command: php artisan queue:work --tries=3 --sleep=3 --timeout=180 --max-time=3600
     volumes:
       - storage_data:/var/www/html/storage
+      # Same reasoning as the app service.
+      - ./.env:/var/www/html/.env:ro
     depends_on:
       db:
         condition: service_healthy

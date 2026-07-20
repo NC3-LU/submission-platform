@@ -563,6 +563,24 @@ class SubmissionForm extends Component
      */
     public function submit(): void
     {
+        // Re-check the availability window at the point of persistence.
+        //
+        // SubmissionController only enforces it when it renders the page, but
+        // Livewire posts straight to this component, so a form left open past
+        // available_until (or opened early) could still be submitted. Re-read
+        // the form so a window edited since mount is respected.
+        if (! $this->isEditMode) {
+            $form = $this->form->fresh();
+
+            if ($form && ! $form->isWithinAvailabilityWindow()) {
+                $this->dispatch('error', $form->availabilityState() === 'scheduled'
+                    ? 'This form is not open for submissions yet.'
+                    : 'This form is closed and no longer accepts submissions.');
+
+                return;
+            }
+        }
+
         try {
             // Validate all form data
             $this->validate($this->rules(), [], $this->fieldLabels());
