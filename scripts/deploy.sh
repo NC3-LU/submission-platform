@@ -67,8 +67,12 @@ for V in "$DB_VOL" "$ST_VOL"; do
         exit 1
     fi
 done
-PRE_STORAGE_FILES=$(docker run --rm -v "$ST_VOL":/data:ro alpine:3.20 sh -c 'find /data -type f | wc -l' 2>/dev/null || echo 0)
-echo "✅ Data volumes present (storage holds $PRE_STORAGE_FILES files)"
+# Count only uploaded submission files. The storage volume also holds
+# framework caches (compiled Blade views, sessions) which are ephemeral and
+# legitimately shrink when caches are rebuilt - counting those made this check
+# abort a deploy in which no user data had been lost at all.
+PRE_STORAGE_FILES=$(docker run --rm -v "$ST_VOL":/data:ro alpine:3.20 sh -c 'find /data -path "*submissions*" -type f | wc -l' 2>/dev/null || echo 0)
+echo "✅ Data volumes present ($PRE_STORAGE_FILES uploaded submission files)"
 
 # Stop existing containers (graceful).
 # NOTE: no -v / --volumes. Named volumes (dbdata, storage_data) must survive;
@@ -148,10 +152,10 @@ fi
 # successful deploy while actually having lost everything. Compare against what
 # was there before.
 echo "Verifying data survived the deploy..."
-POST_STORAGE_FILES=$(docker run --rm -v "$ST_VOL":/data:ro alpine:3.20 sh -c 'find /data -type f | wc -l' 2>/dev/null || echo 0)
+POST_STORAGE_FILES=$(docker run --rm -v "$ST_VOL":/data:ro alpine:3.20 sh -c 'find /data -path "*submissions*" -type f | wc -l' 2>/dev/null || echo 0)
 POST_USERS=$(docker-compose -f docker-compose.prod.yml --env-file docker-compose.env exec -T app \
     php -r '$p=new PDO("mysql:host=db;dbname='"${DB_DATABASE}"'","'"${DB_USERNAME}"'","'"${DB_PASSWORD}"'");echo $p->query("SELECT COUNT(*) FROM users")->fetchColumn();' 2>/dev/null || echo 0)
-echo "   storage files: $PRE_STORAGE_FILES before -> $POST_STORAGE_FILES after"
+echo "   uploaded submission files: $PRE_STORAGE_FILES before -> $POST_STORAGE_FILES after"
 echo "   users in database: $POST_USERS"
 if [ "$POST_STORAGE_FILES" -lt "$PRE_STORAGE_FILES" ]; then
     echo "❌ Uploaded files are missing after deploy ($PRE_STORAGE_FILES -> $POST_STORAGE_FILES). Restore from backup."
