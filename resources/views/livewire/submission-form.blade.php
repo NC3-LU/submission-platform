@@ -326,12 +326,27 @@
         </div>
     </div>
 
-    <!-- Auto-save script -->
-    <script>
-        document.addEventListener('livewire:init', () => {
-            setInterval(() => {
-                @this.autosaveDraft();
-            }, {{ $autoSaveInterval }});
-        });
-    </script>
+    <!-- Auto-save: silent periodic draft persistence.
+         Registered once per component instance and torn down on removal. A bare
+         setInterval() inside the component root gets re-registered on every DOM
+         morph / wire:navigate, stacking timers and firing several autosaves (and
+         previously several "Draft saved" toasts) at once. -->
+    @auth
+        <div
+            wire:ignore
+            x-data="{
+                timer: null,
+                init() {
+                    this.timer = setInterval(() => {
+                        // Skip while a request is already in flight to avoid overlap.
+                        if (this.$wire.__instance?.isProcessing) return;
+                        this.$wire.autosaveDraft();
+                    }, {{ $autoSaveInterval }});
+                },
+                destroy() {
+                    clearInterval(this.timer);
+                }
+            }"
+        ></div>
+    @endauth
 </div>

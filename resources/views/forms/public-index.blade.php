@@ -40,11 +40,11 @@
                                     </span>
                                 @elseif($form->visibility === 'public' || auth()->check())
                                     <a href="{{ route('submissions.create', $form) }}" class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium text-sm inline-flex items-center">
-                                        Apply
+                                        Fill
                                         <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                     </a>
                                 @else
-                                    <a href="{{ route('login') }}" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm">Login to apply</a>
+                                    <a href="{{ route('login') }}" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm">Login to fill</a>
                                 @endif
                             </div>
                         </div>

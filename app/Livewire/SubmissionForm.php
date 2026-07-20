@@ -261,15 +261,37 @@ class SubmissionForm extends Component
 
         if ($this->submission) {
             $this->loadSubmissionValues();
-        } else {
-            $this->submission = new Submission([
-                'form_id' => $this->form->id,
-                'user_id' => auth()->id(),
-                'status' => 'draft',
-            ]);
-            $this->submission->save();
-            $this->submission->touch();
         }
+
+        // No draft row is created here on purpose. Merely opening a form must not
+        // write to the database, otherwise every page view pollutes the submission
+        // list and exports with an empty draft. The row is created lazily by
+        // saveDraft() once the user has actually entered something.
+    }
+
+    /**
+     * Whether the user has entered anything worth persisting.
+     *
+     * Guards lazy draft creation: an untouched form must never produce a row.
+     */
+    protected function hasEnteredContent(): bool
+    {
+        foreach ($this->fieldValues as $value) {
+            if (is_array($value)) {
+                // Checkbox groups arrive as [optionIndex => bool]; any truthy entry counts.
+                if (array_filter($value)) {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (is_string($value) ? trim($value) !== '' : $value !== null) {
+                return true;
+            }
+        }
+
+        return ! empty($this->tempFiles);
     }
 
     /**
@@ -342,7 +364,9 @@ class SubmissionForm extends Component
         if (! auth()->check()) {
             return;
         }
-        $this->saveDraft(true);
+
+        // Silent by design: an unprompted toast every interval reads as a bug to users.
+        $this->saveDraft(false);
     }
 
     /**
@@ -365,16 +389,29 @@ class SubmissionForm extends Component
      */
     protected function saveDraft(bool $showNotification = true): void
     {
+        // Drafts belong to a user; guests only ever persist on submit().
+        if (! auth()->check()) {
+            return;
+        }
+
+        // Never materialise a row for an untouched form.
+        if ((! $this->submission || ! $this->submission->exists) && ! $this->hasEnteredContent()) {
+            return;
+        }
+
         try {
             DB::beginTransaction();
 
             if (! $this->submission || ! $this->submission->exists) {
-                $this->submission = new Submission([
-                    'form_id' => $this->form->id,
-                    'user_id' => auth()->id(),
-                    'status' => 'draft',
-                ]);
-                $this->submission->save();
+                // firstOrCreate keeps overlapping autosaves (and a remount racing an
+                // in-flight autosave) from each inserting their own draft row.
+                $this->submission = Submission::firstOrCreate(
+                    [
+                        'form_id' => $this->form->id,
+                        'user_id' => auth()->id(),
+                        'status' => 'draft',
+                    ]
+                );
             } else {
                 // Safeguard: ensure required fields are present on existing instance
                 if (empty($this->submission->form_id)) {
