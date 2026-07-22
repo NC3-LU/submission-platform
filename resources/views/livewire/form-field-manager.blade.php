@@ -618,67 +618,61 @@
 
     <!-- Add Section Slide-out Panel -->
     @if($showAddCategoryPanel)
-        <div class="fixed inset-0 z-[60] overflow-hidden"
+        <div class="fixed inset-0 z-[60] overflow-y-auto"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.closeAddCategoryPanel()">
-            <div class="absolute inset-0 overflow-hidden">
-                <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity z-40" wire:click="closeAddCategoryPanel"></div>
-                <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex z-50">
-                    <div class="w-screen max-w-md">
-                        <div class="h-full flex flex-col bg-white dark:bg-gray-800 shadow-2xl">
-                            <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                            </svg>
-                                        </div>
-                                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Section</h2>
-                                    </div>
-                                    <button wire:click="closeAddCategoryPanel" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 sm:p-0">
+                <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity z-40" wire:click="closeAddCategoryPanel"></div>
+                <div class="relative z-50 w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl text-left">
+                    <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
                                 </div>
-                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Sections help organize your form into logical groups.</p>
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Section</h2>
                             </div>
-                            
-                            <form wire:submit.prevent="addCategory" class="flex-1 flex flex-col">
-                                <div class="flex-1 px-6 py-5 space-y-5 overflow-y-auto">
-                                    <div>
-                                        <label for="new-category-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section Name *</label>
-                                        <input type="text" id="new-category-name" wire:model.defer="newCategory.name"
-                                               placeholder="e.g., Personal Information"
-                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
-                                        @error('newCategory.name') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
-                                    </div>
-                                    
-                                    <div>
-                                        <label for="new-category-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (optional)</label>
-                                        <textarea id="new-category-description" wire:model.defer="newCategory.description" rows="3"
-                                                  placeholder="Brief description of what this section contains..."
-                                                  class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"></textarea>
-                                        @error('newCategory.description') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-                                
-                                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                                    <div class="flex gap-3">
-                                        <button type="button" wire:click="closeAddCategoryPanel"
-                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
-                                            Cancel
-                                        </button>
-                                        <button type="submit"
-                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
-                                            Add Section
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                            <button wire:click="closeAddCategoryPanel" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
                         </div>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Sections help organize your form into logical groups.</p>
                     </div>
+
+                    <form wire:submit.prevent="addCategory">
+                        <div class="p-6 space-y-5">
+                            <div>
+                                <label for="new-category-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section Name *</label>
+                                <input type="text" id="new-category-name" wire:model.defer="newCategory.name"
+                                       placeholder="e.g., Personal Information"
+                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                                @error('newCategory.name') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="new-category-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (optional)</label>
+                                <textarea id="new-category-description" wire:model.defer="newCategory.description" rows="3"
+                                          placeholder="Brief description of what this section contains..."
+                                          class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"></textarea>
+                                @error('newCategory.description') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl flex gap-3 justify-end">
+                            <button type="button" wire:click="closeAddCategoryPanel"
+                                    class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
+                                Add Section
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -686,34 +680,32 @@
 
     <!-- Add Field Slide-out Panel -->
     @if($showAddFieldPanel)
-        <div class="fixed inset-0 z-[60] overflow-hidden"
+        <div class="fixed inset-0 z-[60] overflow-y-auto"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.closeAddFieldPanel()">
-            <div class="absolute inset-0 overflow-hidden">
-                <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity z-40" wire:click="closeAddFieldPanel"></div>
-                <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex z-50">
-                    <div class="w-screen max-w-lg">
-                        <div class="h-full flex flex-col bg-white dark:bg-gray-800 shadow-2xl">
-                            <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                            </svg>
-                                        </div>
-                                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Field</h2>
-                                    </div>
-                                    <button wire:click="closeAddFieldPanel" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 sm:p-0">
+                <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity z-40" wire:click="closeAddFieldPanel"></div>
+                <div class="relative z-50 w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl text-left flex flex-col max-h-[90vh]">
+                    <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 shrink-0">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
                                 </div>
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Field</h2>
                             </div>
-                            
-                            <form wire:submit.prevent="addField" class="flex-1 flex flex-col">
-                                <div class="flex-1 px-6 py-5 space-y-5 overflow-y-auto">
+                            <button wire:click="closeAddFieldPanel" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form wire:submit.prevent="addField" class="flex flex-col min-h-0 flex-1">
+                        <div class="flex-1 px-6 py-5 space-y-5 overflow-y-auto">
                                     <!-- Section Selection -->
                                     <div>
                                         <label for="field-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section *</label>
@@ -855,21 +847,17 @@
                                     @endif
                                 </div>
                                 
-                                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                                    <div class="flex gap-3">
-                                        <button type="button" wire:click="closeAddFieldPanel"
-                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
-                                            Cancel
-                                        </button>
-                                        <button type="submit"
-                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
-                                            Add Field
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl shrink-0 flex gap-3 justify-end">
+                            <button type="button" wire:click="closeAddFieldPanel"
+                                    class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
+                                Add Field
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
