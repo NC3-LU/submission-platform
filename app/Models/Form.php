@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Form extends Model
 {
@@ -34,6 +36,9 @@ class Form extends Model
         'user_id',
         'title',
         'description',
+        'header_image',
+        'header_image_position',
+        'header_theme_color',
         'status',
         'visibility',
         'available_from',
@@ -43,6 +48,7 @@ class Form extends Model
     protected $casts = [
         'available_from' => 'datetime',
         'available_until' => 'datetime',
+        'header_image_position' => 'integer',
     ];
 
     /**
@@ -143,6 +149,19 @@ class Form extends Model
         }
 
         return 'open';
+    }
+
+    /**
+     * Public URL of the header image, or null when unset.
+     * Form is not soft-deleted, so destroy() may hard-delete the file safely.
+     */
+    protected function headerImageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->header_image
+                ? Storage::disk('public')->url($this->header_image)
+                : null,
+        );
     }
 
 // Add this relationship method to your Form model

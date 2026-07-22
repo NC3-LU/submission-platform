@@ -24,6 +24,9 @@ class FormFactory extends Factory
             'user_id' => User::factory(),
             'title' => $this->faker->sentence(3),
             'description' => $this->faker->paragraph(),
+            'header_image' => null,
+            'header_image_position' => 50,
+            'header_theme_color' => null,
             'status' => $this->faker->randomElement(['draft', 'published', 'archived']),
             'visibility' => $this->faker->randomElement(['public', 'authenticated', 'private']),
         ];
@@ -66,6 +69,18 @@ class FormFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'visibility' => 'private',
+        ]);
+    }
+
+    /**
+     * Attach a header image to the form.
+     */
+    public function withHeaderImage(string $path = 'form-headers/test.jpg'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'header_image' => $path,
+            'header_theme_color' => '#3366cc',
+            'header_image_position' => 60,
         ]);
     }
 }
