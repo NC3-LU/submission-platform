@@ -17,4 +17,4 @@ class ViewApiLog extends ViewRecord
                 ->visible(fn () => auth()->user()->isAdmin()),
         ];
     }
-} 
+}

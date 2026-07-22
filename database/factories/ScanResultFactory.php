@@ -7,7 +7,7 @@ use App\Models\Submission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ScanResult>
+ * @extends Factory<ScanResult>
  */
 class ScanResultFactory extends Factory
 {

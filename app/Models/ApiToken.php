@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ApiToken extends Model
@@ -19,14 +19,14 @@ class ApiToken extends Model
         'allowed_ips',
         'last_used_at',
         'expires_at',
-        'usage_count'
+        'usage_count',
     ];
 
     protected $casts = [
         'abilities' => 'array',
         'last_used_at' => 'datetime',
         'expires_at' => 'datetime',
-        'usage_count' => 'integer'
+        'usage_count' => 'integer',
     ];
 
     /**
@@ -40,12 +40,12 @@ class ApiToken extends Model
     /**
      * Check if the token can perform a given ability.
      *
-     * @param string $ability
+     * @param  string  $ability
      * @return bool
      */
     public function can($ability)
     {
-        return in_array('*', $this->abilities) || 
+        return in_array('*', $this->abilities) ||
                in_array($ability, $this->abilities);
     }
 
@@ -62,7 +62,7 @@ class ApiToken extends Model
     /**
      * Check if request IP is allowed for this token.
      *
-     * @param string $ip
+     * @param  string  $ip
      * @return bool
      */
     public function isValidIp($ip)
@@ -73,6 +73,7 @@ class ApiToken extends Model
         }
 
         $allowedIps = explode(',', $this->allowed_ips);
+
         return in_array($ip, array_map('trim', $allowedIps));
     }
 
@@ -85,36 +86,36 @@ class ApiToken extends Model
     {
         $this->last_used_at = now();
         $this->increment('usage_count');
+
         return $this->save();
     }
 
     /**
      * Get the API token from the request attribute.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return ApiToken|null
      */
     public static function fromRequest($request)
     {
         return $request->attributes->get('api_token');
     }
-    
+
     /**
      * Check if the token has been inactive for a specified period.
      *
-     * @param int $days Number of days of inactivity to consider stale
-     * @return bool
+     * @param  int  $days  Number of days of inactivity to consider stale
      */
     public function isStale(int $days = 90): bool
     {
-        if (!$this->last_used_at) {
+        if (! $this->last_used_at) {
             // If never used, check against created_at
             return $this->created_at->addDays($days)->isPast();
         }
-        
+
         return $this->last_used_at->addDays($days)->isPast();
     }
-    
+
     /**
      * Rotate the token with a new value.
      *
@@ -124,18 +125,18 @@ class ApiToken extends Model
     {
         // Generate new token
         $plainTextToken = Str::random(40);
-        
+
         // Hash the token for storage
         $this->token = hash('sha256', $plainTextToken);
-        
+
         // Reset usage statistics
         $this->usage_count = 0;
         $this->last_used_at = null;
-        
+
         // Save the changes
         $this->save();
-        
+
         // Return the plaintext token for one-time display to the user
         return $plainTextToken;
     }
-} 
+}

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Form;
+use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -11,7 +12,7 @@ class FileDownloadSecurityTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function createSubmissionForUser(User $user): \App\Models\Submission
+    private function createSubmissionForUser(User $user): Submission
     {
         $form = Form::factory()->for($user)->create(['status' => 'published']);
 

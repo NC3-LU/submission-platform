@@ -4,16 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\Submission;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubmissionExportController extends Controller
 {
     use AuthorizesRequests;
+
     /**
      * Export single submission to PDF
      *
@@ -34,7 +35,7 @@ class SubmissionExportController extends Controller
         // Prepare submission data
         $submissionData = $this->prepareSubmissionData($submission);
 
-        $pdf = PDF::loadView('submissions.pdf', [
+        $pdf = Pdf::loadView('submissions.pdf', [
             'form' => $form,
             'submission' => $submissionData,
         ])->setPaper('a4');
@@ -49,7 +50,7 @@ class SubmissionExportController extends Controller
 
         return response($pdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="submission-' . $submission->id . '.pdf"',
+            'Content-Disposition' => 'attachment; filename="submission-'.$submission->id.'.pdf"',
         ]);
     }
 
@@ -85,12 +86,12 @@ class SubmissionExportController extends Controller
         // Build headers from form structure
         foreach ($form->categories as $category) {
             foreach ($category->fields as $field) {
-                $headers[] = $category->name . ' - ' . $field->label;
+                $headers[] = $category->name.' - '.$field->label;
                 $fieldIds[] = $field->id;
             }
         }
 
-        $callback = function() use ($submissions, $headers, $fieldIds) {
+        $callback = function () use ($submissions, $headers, $fieldIds) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $headers);
 
@@ -125,7 +126,7 @@ class SubmissionExportController extends Controller
 
         return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $form->title . '-submissions.csv"',
+            'Content-Disposition' => 'attachment; filename="'.$form->title.'-submissions.csv"',
         ]);
     }
 
@@ -136,7 +137,7 @@ class SubmissionExportController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(403);
         }
 
@@ -145,7 +146,7 @@ class SubmissionExportController extends Controller
             ->latest()
             ->get();
 
-        $callback = function() use ($submissions) {
+        $callback = function () use ($submissions) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['Submission ID', 'Form Title', 'Submitted At', 'Status']);
 
@@ -154,7 +155,7 @@ class SubmissionExportController extends Controller
                     $submission->id,
                     $submission->form->title,
                     $submission->created_at->format('Y-m-d H:i:s'),
-                    'Submitted'
+                    'Submitted',
                 ]);
             }
 
@@ -178,7 +179,7 @@ class SubmissionExportController extends Controller
         if ($submission->form_id !== $form->id) {
             abort(404, 'Submission does not belong to this form');
         }
-        
+
         $this->authorize('export', $submission);
 
         try {
@@ -189,20 +190,20 @@ class SubmissionExportController extends Controller
             $submissionData = $this->prepareSubmissionDataForJson($submission);
 
             // Validate filename for security
-            $filename = 'submission-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $submission->id) . '.json';
+            $filename = 'submission-'.preg_replace('/[^a-zA-Z0-9_-]/', '_', $submission->id).'.json';
 
             return response()->json($submissionData, 200, [
                 'Content-Type' => 'application/json',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('JSON export failed for submission', [
                 'submission_id' => $submission->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             abort(500, 'Export failed. Please try again.');
         }
     }
@@ -226,9 +227,9 @@ class SubmissionExportController extends Controller
             },
         ]);
 
-        $callback = function() use ($form) {
+        $callback = function () use ($form) {
             $output = fopen('php://output', 'w');
-            
+
             // Start JSON structure
             fwrite($output, '{"form":');
             fwrite($output, json_encode([
@@ -240,18 +241,18 @@ class SubmissionExportController extends Controller
             fwrite($output, ',"submissions":[');
 
             $first = true;
-            
+
             // Process submissions in chunks to avoid memory issues
             $form->submissions()
                 ->with(['values', 'values.field', 'user'])
                 ->latest()
                 ->chunk(100, function ($submissions) use ($output, &$first) {
                     foreach ($submissions as $submission) {
-                        if (!$first) {
+                        if (! $first) {
                             fwrite($output, ',');
                         }
                         $first = false;
-                        
+
                         $submissionData = $this->prepareSubmissionDataForJson($submission);
                         fwrite($output, json_encode($submissionData));
                     }
@@ -264,7 +265,7 @@ class SubmissionExportController extends Controller
 
         return response()->stream($callback, 200, [
             'Content-Type' => 'application/json',
-            'Content-Disposition' => 'attachment; filename="' . $form->title . '-submissions.json"',
+            'Content-Disposition' => 'attachment; filename="'.$form->title.'-submissions.json"',
         ]);
     }
 
@@ -320,7 +321,7 @@ class SubmissionExportController extends Controller
         $categories = $submission->form->categories->map(function ($category) use ($submissionValues) {
             $fields = $category->fields->map(function ($field) use ($submissionValues) {
                 $value = $submissionValues->get($field->id);
-                
+
                 $fieldData = [
                     'id' => $field->id,
                     'label' => $field->label,
@@ -338,7 +339,7 @@ class SubmissionExportController extends Controller
                         $fieldData['value'] = $fileName;
                     } else {
                         // Cast boolean values properly
-                        $fieldData['value'] = $field->type === 'checkbox' ? 
+                        $fieldData['value'] = $field->type === 'checkbox' ?
                             (bool) $value->value : $value->value;
                     }
                 }

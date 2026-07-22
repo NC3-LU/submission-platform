@@ -19,8 +19,6 @@ class DashboardStatisticsService
 
     /**
      * Get user-related statistics.
-     *
-     * @return array
      */
     public function getUserStatistics(): array
     {
@@ -39,8 +37,6 @@ class DashboardStatisticsService
 
     /**
      * Get form-related statistics.
-     *
-     * @return array
      */
     public function getFormStatistics(): array
     {
@@ -56,8 +52,6 @@ class DashboardStatisticsService
 
     /**
      * Get submission-related statistics.
-     *
-     * @return array
      */
     public function getSubmissionStatistics(): array
     {
@@ -74,9 +68,6 @@ class DashboardStatisticsService
 
     /**
      * Get the count of draft submissions for a specific form.
-     *
-     * @param Form $form
-     * @return int
      */
     public function getFormDraftCount(Form $form): int
     {
@@ -89,9 +80,6 @@ class DashboardStatisticsService
 
     /**
      * Get the count of submitted submissions for a specific form.
-     *
-     * @param Form $form
-     * @return int
      */
     public function getFormSubmittedCount(Form $form): int
     {
@@ -104,8 +92,6 @@ class DashboardStatisticsService
 
     /**
      * Clear all dashboard statistics cache.
-     *
-     * @return void
      */
     public function clearCache(): void
     {
@@ -113,4 +99,4 @@ class DashboardStatisticsService
         Cache::forget('dashboard.form_stats');
         Cache::forget('dashboard.submission_stats');
     }
-} 
+}

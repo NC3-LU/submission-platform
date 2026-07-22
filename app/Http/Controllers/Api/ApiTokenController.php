@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ApiToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -14,15 +13,12 @@ class ApiTokenController extends Controller
 {
     /**
      * Display a listing of the user's API tokens.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-        
+
         $tokens = ApiToken::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get(['id', 'name', 'abilities', 'allowed_ips', 'last_used_at', 'expires_at', 'created_at']);
@@ -32,9 +28,6 @@ class ApiTokenController extends Controller
 
     /**
      * Store a newly created API token.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
@@ -43,19 +36,19 @@ class ApiTokenController extends Controller
             'abilities' => 'nullable|array',
             'abilities.*' => 'string',
             'allowed_ips' => 'nullable|string',
-            'expires_at' => 'nullable|date|after:now'
+            'expires_at' => 'nullable|date|after:now',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-     
+
         // Generate a secure random token
         $plainTextToken = Str::random(40);
         $tokenHash = hash('sha256', $plainTextToken);
@@ -70,7 +63,7 @@ class ApiTokenController extends Controller
             'token' => $tokenHash,
             'abilities' => $abilities,
             'allowed_ips' => $request->allowed_ips,
-            'expires_at' => $request->expires_at
+            'expires_at' => $request->expires_at,
         ]);
 
         // Return the new token with the plain text token (will only be shown once)
@@ -83,23 +76,21 @@ class ApiTokenController extends Controller
                 'abilities' => $token->abilities,
                 'allowed_ips' => $token->allowed_ips,
                 'expires_at' => $token->expires_at,
-                'created_at' => $token->created_at
-            ]
+                'created_at' => $token->created_at,
+            ],
         ], 201);
     }
 
     /**
      * Update the specified API token.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id): JsonResponse
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-        
+
         $token = ApiToken::where('user_id', $userId)
             ->where('id', $id)
             ->firstOrFail();
@@ -109,39 +100,37 @@ class ApiTokenController extends Controller
             'abilities' => 'nullable|array',
             'abilities.*' => 'string',
             'allowed_ips' => 'nullable|string',
-            'expires_at' => 'nullable|date|after:now'
+            'expires_at' => 'nullable|date|after:now',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         // Update the token
         $token->update($request->only([
-            'name', 'abilities', 'allowed_ips', 'expires_at'
+            'name', 'abilities', 'allowed_ips', 'expires_at',
         ]));
 
         return response()->json([
             'message' => 'API token updated successfully',
-            'data' => $token->only(['id', 'name', 'abilities', 'allowed_ips', 'expires_at', 'created_at'])
+            'data' => $token->only(['id', 'name', 'abilities', 'allowed_ips', 'expires_at', 'created_at']),
         ]);
     }
 
     /**
      * Remove the specified API token.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Request $request, $id): JsonResponse
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-        
+
         $token = ApiToken::where('user_id', $userId)
             ->where('id', $id)
             ->firstOrFail();
@@ -149,7 +138,7 @@ class ApiTokenController extends Controller
         $token->delete();
 
         return response()->json([
-            'message' => 'API token deleted successfully'
+            'message' => 'API token deleted successfully',
         ]);
     }
 }

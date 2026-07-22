@@ -94,6 +94,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        throw new \Exception('This migration cannot be reversed.');
+        throw new Exception('This migration cannot be reversed.');
     }
 };

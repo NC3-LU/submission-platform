@@ -5,26 +5,29 @@ namespace App\Livewire;
 use App\Models\Form;
 use App\Models\FormCategory;
 use App\Models\FormField;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
-use Livewire\Component;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Livewire\Component;
 
 class FormFieldManager extends Component
 {
     use AuthorizesRequests;
 
     public $form;
+
     public $categories = [];
+
     public $newCategory = [
         'name' => '',
         'description' => '',
         'percentage_start' => 0,
         'percentage_end' => 100,
     ];
+
     public $newField = [
         'category_id' => '',
         'label' => '',
@@ -38,79 +41,92 @@ class FormFieldManager extends Component
     ];
 
     public $confirmingCategoryDeletion = false;
+
     public $confirmingFieldDeletion = false;
+
     public $categoryToDelete;
+
     public $fieldToDelete;
+
     public $editingCategory = false;
+
     public $editingField = false;
+
     public $categoryBeingEdited;
+
     public $fieldBeingEdited;
-    
+
     // Enhanced UX properties
     public $showAddCategoryPanel = false;
+
     public $showAddFieldPanel = false;
+
     public $addingFieldToCategoryId = null;
+
     public $collapsedCategories = [];
+
     public $showPreview = false;
+
     public $searchQuery = '';
+
     public $activeFieldTypeFilter = null;
-    
+
     // Field type definitions with icons and descriptions
     public static $fieldTypes = [
         'header' => [
             'label' => 'Header',
             'icon' => 'heading',
             'description' => 'Section heading to organize your form',
-            'category' => 'layout'
+            'category' => 'layout',
         ],
         'description' => [
             'label' => 'Description',
             'icon' => 'align-left',
             'description' => 'Explanatory text or instructions',
-            'category' => 'layout'
+            'category' => 'layout',
         ],
         'text' => [
             'label' => 'Short Text',
             'icon' => 'type',
             'description' => 'Single line text input',
-            'category' => 'input'
+            'category' => 'input',
         ],
         'textarea' => [
             'label' => 'Long Text',
             'icon' => 'align-justify',
             'description' => 'Multi-line text area',
-            'category' => 'input'
+            'category' => 'input',
         ],
         'select' => [
             'label' => 'Dropdown',
             'icon' => 'chevron-down-square',
             'description' => 'Select one option from a list',
-            'category' => 'choice'
+            'category' => 'choice',
         ],
         'checkbox' => [
             'label' => 'Checkboxes',
             'icon' => 'check-square',
             'description' => 'Select multiple options',
-            'category' => 'choice'
+            'category' => 'choice',
         ],
         'radio' => [
             'label' => 'Radio Buttons',
             'icon' => 'circle-dot',
             'description' => 'Select one option with radio buttons',
-            'category' => 'choice'
+            'category' => 'choice',
         ],
         'file' => [
             'label' => 'File Upload',
             'icon' => 'upload',
             'description' => 'Allow file attachments',
-            'category' => 'input'
+            'category' => 'input',
         ],
     ];
 
     protected $listeners = [
         'updateCategoryOrder',
         'updateFieldOrder',
-        'moveFieldToCategory'
+        'moveFieldToCategory',
     ];
 
     protected $rules = [
@@ -180,7 +196,6 @@ class FormFieldManager extends Component
         $this->reset('newCategory');
         $this->loadCategories();
     }
-
 
     public function confirmDeleteCategory($categoryId): void
     {
@@ -391,6 +406,7 @@ class FormFieldManager extends Component
             $this->loadCategories();
         }
     }
+
     public function editCategory($categoryId): void
     {
         $this->categoryBeingEdited = FormCategory::find($categoryId)->toArray();
@@ -445,11 +461,11 @@ class FormFieldManager extends Component
             $this->fieldBeingEdited['char_limit'] = null;
         } else {
             $this->fieldBeingEdited['content'] = null;
-            if (!in_array($this->fieldBeingEdited['type'], ['select', 'checkbox', 'radio'])) {
+            if (! in_array($this->fieldBeingEdited['type'], ['select', 'checkbox', 'radio'])) {
                 $this->fieldBeingEdited['options'] = null;
             }
             // Ensure char_limit is only kept for text/textarea
-            if (!in_array($this->fieldBeingEdited['type'], ['text', 'textarea'])) {
+            if (! in_array($this->fieldBeingEdited['type'], ['text', 'textarea'])) {
                 $this->fieldBeingEdited['char_limit'] = null;
             }
         }
@@ -460,8 +476,6 @@ class FormFieldManager extends Component
         $this->fieldBeingEdited = null;
         $this->loadCategories();
     }
-
-
 
     // Toggle category collapse state
     public function toggleCategoryCollapse($categoryId): void
@@ -522,10 +536,10 @@ class FormFieldManager extends Component
     public function duplicateField($fieldId): void
     {
         $originalField = FormField::findOrFail($fieldId);
-        
+
         $newField = $originalField->replicate();
-        $newField->label = $originalField->label ? $originalField->label . ' (Copy)' : null;
-        $newField->content = $originalField->content ? $originalField->content . ' (Copy)' : null;
+        $newField->label = $originalField->label ? $originalField->label.' (Copy)' : null;
+        $newField->content = $originalField->content ? $originalField->content.' (Copy)' : null;
         $newField->order = $originalField->order + 1;
         $newField->save();
 
@@ -543,9 +557,9 @@ class FormFieldManager extends Component
     public function duplicateCategory($categoryId): void
     {
         $originalCategory = FormCategory::with('fields')->findOrFail($categoryId);
-        
+
         $newCategory = $originalCategory->replicate();
-        $newCategory->name = $originalCategory->name . ' (Copy)';
+        $newCategory->name = $originalCategory->name.' (Copy)';
         $newCategory->order = $originalCategory->order + 1;
         $newCategory->save();
 
@@ -582,14 +596,14 @@ class FormFieldManager extends Component
             // Handle both array format and simple ID format
             $fieldId = is_array($item) ? ($item['value'] ?? $item['id'] ?? $item) : $item;
             $order = is_array($item) ? ($item['order'] ?? $index + 1) : $index + 1;
-            
+
             $updateData = ['order' => $order];
-            
+
             // Only update category if 'group' key exists (cross-category drag)
             if (is_array($item) && isset($item['group'])) {
                 $updateData['form_category_id'] = $item['group'];
             }
-            
+
             FormField::where('id', $fieldId)->update($updateData);
         }
         $this->loadCategories();
@@ -600,11 +614,11 @@ class FormFieldManager extends Component
     {
         $field = FormField::findOrFail($fieldId);
         $newCategory = FormCategory::findOrFail($newCategoryId);
-        
+
         $field->form_category_id = $newCategoryId;
         $field->order = $newCategory->fields()->max('order') + 1;
         $field->save();
-        
+
         $this->loadCategories();
         $this->dispatch('notify', ['message' => 'Field moved successfully', 'type' => 'success']);
     }
@@ -613,7 +627,7 @@ class FormFieldManager extends Component
     public function quickAddField($type, $categoryId): void
     {
         $category = FormCategory::findOrFail($categoryId);
-        
+
         $fieldData = [
             'form_id' => $this->form->id,
             'form_category_id' => $categoryId,
@@ -626,7 +640,7 @@ class FormFieldManager extends Component
             $fieldData['label'] = null;
             $fieldData['required'] = false;
         } else {
-            $fieldData['label'] = 'New ' . ucfirst(self::$fieldTypes[$type]['label'] ?? $type) . ' Field';
+            $fieldData['label'] = 'New '.ucfirst(self::$fieldTypes[$type]['label'] ?? $type).' Field';
             $fieldData['required'] = false;
             if (in_array($type, ['select', 'checkbox', 'radio'])) {
                 $fieldData['options'] = 'Option 1,Option 2,Option 3';
@@ -635,7 +649,7 @@ class FormFieldManager extends Component
 
         $newField = FormField::create($fieldData);
         $this->loadCategories();
-        
+
         // Open edit modal for the new field
         $this->editField($newField->id);
     }
@@ -650,7 +664,7 @@ class FormFieldManager extends Component
         foreach ($this->categories as $category) {
             foreach ($category['fields'] as $field) {
                 $totalFields++;
-                if (!empty($field['required'])) {
+                if (! empty($field['required'])) {
                     $requiredFields++;
                 }
                 $type = $field['type'];
@@ -662,7 +676,7 @@ class FormFieldManager extends Component
             'total' => $totalFields,
             'required' => $requiredFields,
             'byType' => $fieldsByType,
-            'categories' => count($this->categories)
+            'categories' => count($this->categories),
         ];
     }
 
@@ -676,17 +690,17 @@ class FormFieldManager extends Component
         $filtered = [];
         foreach ($this->categories as $category) {
             $matchingFields = array_filter($category['fields'], function ($field) {
-                $matchesSearch = empty($this->searchQuery) || 
+                $matchesSearch = empty($this->searchQuery) ||
                     stripos($field['label'] ?? '', $this->searchQuery) !== false ||
                     stripos($field['content'] ?? '', $this->searchQuery) !== false;
-                
-                $matchesType = empty($this->activeFieldTypeFilter) || 
+
+                $matchesType = empty($this->activeFieldTypeFilter) ||
                     $field['type'] === $this->activeFieldTypeFilter;
-                
+
                 return $matchesSearch && $matchesType;
             });
 
-            if (!empty($matchingFields) || 
+            if (! empty($matchingFields) ||
                 stripos($category['name'], $this->searchQuery) !== false) {
                 $filteredCategory = $category;
                 $filteredCategory['fields'] = array_values($matchingFields);

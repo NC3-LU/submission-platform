@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\FormResource;
 use App\Models\ApiToken;
 use App\Models\Form;
-use App\Models\FormCategory;
-use App\Models\FormField;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -19,36 +17,30 @@ class FormController extends Controller
 {
     /**
      * Display a listing of forms for the authenticated user.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request): AnonymousResourceCollection
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-        
+
         $query = Form::query()->where('user_id', $userId);
-        
+
         // Apply filters if provided
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         if ($request->filled('visibility')) {
             $query->where('visibility', $request->visibility);
         }
-        
+
         $forms = $query->latest()->paginate($request->per_page ?? 15);
-        
+
         return FormResource::collection($forms);
     }
 
     /**
      * Store a newly created form.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
@@ -71,14 +63,14 @@ class FormController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         try {
             $apiToken = ApiToken::fromRequest($request);
             $userId = $apiToken->user_id;
-            
+
             // Use a transaction to ensure data integrity
             return DB::transaction(function () use ($request, $userId) {
                 // Create the form
@@ -118,22 +110,22 @@ class FormController extends Controller
 
                 return response()->json([
                     'message' => 'Form created successfully',
-                    'data' => new FormResource($form)
+                    'data' => new FormResource($form),
                 ], 201);
             });
         } catch (\Exception $e) {
             Log::error('API Form creation failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             $response = ['message' => 'Form creation failed'];
-            
+
             // Only include error details in debug mode
             if (config('app.debug')) {
                 $response['error'] = $e->getMessage();
             }
-            
+
             return response()->json($response, 500);
         }
     }
@@ -141,41 +133,37 @@ class FormController extends Controller
     /**
      * Display the specified form.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Form  $form
-     * @return \App\Http\Resources\FormResource|\Illuminate\Http\JsonResponse
+     * @return FormResource|JsonResponse
      */
     public function show(Request $request, Form $form)
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-        
+
         // Check if user owns or has access to the form
-        if ($form->user_id !== $userId && 
-            !$form->appointedUsers()->where('user_id', $userId)->exists()) {
+        if ($form->user_id !== $userId &&
+            ! $form->appointedUsers()->where('user_id', $userId)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-        
+
         $form->load('categories.fields');
-        
+
         return new FormResource($form);
     }
 
     /**
      * Update the specified form.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Form  $form
-     * @return \App\Http\Resources\FormResource|\Illuminate\Http\JsonResponse
+     * @return FormResource|JsonResponse
      */
     public function update(Request $request, Form $form)
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-        
+
         // Check if user owns the form or has edit permission
-        if ($form->user_id !== $userId && 
-            !$form->appointedUsers()->where('user_id', $userId)->where('can_edit', true)->exists()) {
+        if ($form->user_id !== $userId &&
+            ! $form->appointedUsers()->where('user_id', $userId)->where('can_edit', true)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -189,27 +177,23 @@ class FormController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $form->update($request->only(['title', 'description', 'status', 'visibility']));
-        
+
         return new FormResource($form);
     }
 
     /**
      * Remove the specified form.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Form  $form
-     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Request $request, Form $form): JsonResponse
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
-        
+
         // Check if user owns the form
         if ($form->user_id !== $userId) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -225,4 +209,4 @@ class FormController extends Controller
 
         return response()->json(['message' => 'Form deleted successfully'], 200);
     }
-} 
+}

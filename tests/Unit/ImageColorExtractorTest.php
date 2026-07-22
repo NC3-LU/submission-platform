@@ -11,7 +11,7 @@ class ImageColorExtractorTest extends TestCase
     {
         $img = imagecreatetruecolor(64, 64);
         imagefill($img, 0, 0, imagecolorallocate($img, $r, $g, $b));
-        $path = tempnam(sys_get_temp_dir(), 'ice') . '.png';
+        $path = tempnam(sys_get_temp_dir(), 'ice').'.png';
         imagepng($img, $path);
         imagedestroy($img);
 
@@ -21,7 +21,7 @@ class ImageColorExtractorTest extends TestCase
     public function test_extracts_dominant_color_from_solid_image(): void
     {
         $path = $this->solidImagePath(210, 40, 40); // strong red
-        $hex = (new ImageColorExtractor())->extract($path);
+        $hex = (new ImageColorExtractor)->extract($path);
         @unlink($path);
 
         $this->assertNotNull($hex);
@@ -34,7 +34,7 @@ class ImageColorExtractorTest extends TestCase
     {
         $path = tempnam(sys_get_temp_dir(), 'ice');
         file_put_contents($path, 'not an image at all');
-        $hex = (new ImageColorExtractor())->extract($path);
+        $hex = (new ImageColorExtractor)->extract($path);
         @unlink($path);
 
         $this->assertNull($hex);

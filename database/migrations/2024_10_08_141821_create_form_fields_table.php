@@ -20,9 +20,9 @@ return new class extends Migration
             $table->boolean('required')->default(false);
             $table->text('content')->nullable(); // Headers and description
             $table->integer('char_limit')->nullable();
-           # $table->integer('score')->nullable(); //positive and negative
-           # $table->integer('score_ignore')->nullable(); //ignore the score if question not answered
-           # $table->boolean('score_show')->nullable(); //ignore the score if question not answered
+            // $table->integer('score')->nullable(); //positive and negative
+            // $table->integer('score_ignore')->nullable(); //ignore the score if question not answered
+            // $table->boolean('score_show')->nullable(); //ignore the score if question not answered
             $table->integer('order')->default(0);
             $table->timestamps();
 

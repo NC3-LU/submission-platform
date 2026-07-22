@@ -3,6 +3,7 @@
 use App\Http\Middleware\ApiLogMiddleware;
 use App\Http\Middleware\ApiTokenIPMiddleware;
 use App\Http\Middleware\FormAccessMiddleware;
+use App\Http\Middleware\RemoveServerHeaders;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -28,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Web middleware
         $middleware->web(append: [
             FormAccessMiddleware::class,
-            \App\Http\Middleware\RemoveServerHeaders::class,
+            RemoveServerHeaders::class,
         ]);
 
         // API middleware
@@ -39,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Add API log middleware to the API group
         $middleware->api(append: [
             ApiLogMiddleware::class,
-            \App\Http\Middleware\RemoveServerHeaders::class,
+            RemoveServerHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -51,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // API-specific exception handling
-        $exceptions->renderable(function (\Throwable $e, Request $request) {
+        $exceptions->renderable(function (Throwable $e, Request $request) {
             // Only apply to API requests
             if (! $request->is('api/*')) {
                 return null;

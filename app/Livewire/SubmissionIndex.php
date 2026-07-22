@@ -17,23 +17,30 @@ class SubmissionIndex extends Component
     use WithPagination;
 
     public Form $form;
+
     public string $statusFilter = 'all';
+
     public string $search = '';
+
     public string $sortField = 'updated_at';
+
     public string $sortDirection = 'desc';
+
     public bool $showCompleted = false;
+
     protected $listeners = ['refresh' => '$refresh'];
+
     protected array $queryString = [
         'statusFilter' => ['except' => 'all'],
         'search' => ['except' => ''],
         'sortField' => ['except' => 'updated_at'],
         'sortDirection' => ['except' => 'desc'],
-        'showCompleted' => ['except' => false]
+        'showCompleted' => ['except' => false],
     ];
 
     public function mount(Form $form): void
     {
-        if (!Gate::allows('viewAny', [Submission::class, $form])) {
+        if (! Gate::allows('viewAny', [Submission::class, $form])) {
             abort(403);
         }
         $this->form = $form;
@@ -76,9 +83,9 @@ class SubmissionIndex extends Component
         Log::info('Exporting all submissions as JSON', [
             'form_id' => $this->form->id,
             'status_filter' => $this->statusFilter,
-            'search' => $this->search
+            'search' => $this->search,
         ]);
-        
+
         $this->redirect(route('submissions.export.form.json', $this->form));
     }
 
@@ -92,16 +99,16 @@ class SubmissionIndex extends Component
         }
 
         if ($this->search) {
-            $query->where(function($q) {
-                $q->where('id', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('user', function($userQuery) {
-                        $userQuery->where('name', 'like', '%' . $this->search . '%')
-                            ->orWhere('email', 'like', '%' . $this->search . '%');
+            $query->where(function ($q) {
+                $q->where('id', 'like', '%'.$this->search.'%')
+                    ->orWhereHas('user', function ($userQuery) {
+                        $userQuery->where('name', 'like', '%'.$this->search.'%')
+                            ->orWhere('email', 'like', '%'.$this->search.'%');
                     });
             });
         }
 
-        if (!$this->showCompleted) {
+        if (! $this->showCompleted) {
             $query->where('status', '!=', 'completed');
         }
 
@@ -113,5 +120,4 @@ class SubmissionIndex extends Component
             'submissions' => $submissions,
         ]);
     }
-
 }

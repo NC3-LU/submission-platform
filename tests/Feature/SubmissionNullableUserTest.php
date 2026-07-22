@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\SubmissionForm;
 use App\Models\Form;
+use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -53,7 +54,7 @@ class SubmissionNullableUserTest extends TestCase
             'visibility' => 'public',
         ]);
 
-        $submission = \App\Models\Submission::create([
+        $submission = Submission::create([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'ip_address' => '192.168.1.1',

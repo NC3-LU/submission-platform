@@ -11,14 +11,14 @@ use Illuminate\Validation\Rule;
 
 class FormFieldController extends Controller
 {
-
     use AuthorizesRequests;
+
     /**
      * Store a newly created form field in storage.
      */
     public function store(Request $request, Form $form): RedirectResponse
     {
-       # $this->authorize('update', $form);
+        // $this->authorize('update', $form);
 
         // Base validation rules
         $rules = [
@@ -64,13 +64,12 @@ class FormFieldController extends Controller
             // Non-structural fields should not store content
             $data['content'] = null;
             // Ensure options is null when not applicable
-            if (!in_array($request->type, ['select', 'checkbox', 'radio'])) {
+            if (! in_array($request->type, ['select', 'checkbox', 'radio'])) {
                 $data['options'] = null;
             }
         }
 
         $form->fields()->create($data);
-
 
         return redirect()->route('forms.edit', $form)->with('success', 'Field added successfully.');
     }
@@ -80,7 +79,7 @@ class FormFieldController extends Controller
      */
     public function update(Request $request, Form $form, FormField $field): RedirectResponse
     {
-        #$this->authorize('update', $form);
+        // $this->authorize('update', $form);
 
         // Base validation rules
         $rules = [
@@ -123,7 +122,7 @@ class FormFieldController extends Controller
             $data['required'] = false;  // Headers and descriptions are never required
         } else {
             $data['content'] = null;
-            if (!in_array($request->type, ['select', 'checkbox', 'radio'])) {
+            if (! in_array($request->type, ['select', 'checkbox', 'radio'])) {
                 $data['options'] = null;
             }
         }
@@ -138,7 +137,7 @@ class FormFieldController extends Controller
      */
     public function destroy(Form $form, FormField $field): RedirectResponse
     {
-      #  $this->authorize('update', $form);
+        //  $this->authorize('update', $form);
 
         $field->delete();
 

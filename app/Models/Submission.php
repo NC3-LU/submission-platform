@@ -12,12 +12,13 @@ class Submission extends Model
 {
     use HasFactory;
     use HasUuids;
+
     protected $fillable = [
         'form_id',
         'user_id',
         'ip_address',
         'status',
-        'status_metadata'
+        'status_metadata',
     ];
 
     /**
@@ -27,10 +28,12 @@ class Submission extends Model
     {
         return 'id';
     }
+
     protected $casts = [
         'updated_at' => 'datetime',
         'status_metadata' => 'array',
     ];
+
     /**
      * Get the form that owns the submission.
      */

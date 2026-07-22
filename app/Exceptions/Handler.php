@@ -36,7 +36,7 @@ class Handler extends ExceptionHandler
         // Convert exceptions to API-friendly JSON responses when appropriate
         $this->renderable(function (Throwable $e, Request $request) {
             // Only apply to API requests
-            if (!$request->is('api/*')) {
+            if (! $request->is('api/*')) {
                 return null;
             }
 
@@ -73,7 +73,7 @@ class Handler extends ExceptionHandler
             }
 
             // For all other exceptions in production, return generic message
-            if (!config('app.debug')) {
+            if (! config('app.debug')) {
                 return response()->json([
                     'message' => 'Server error',
                 ], 500);
@@ -87,4 +87,4 @@ class Handler extends ExceptionHandler
             ], 500);
         });
     }
-} 
+}

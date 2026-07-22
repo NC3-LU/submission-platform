@@ -16,21 +16,21 @@ class ApiSecuritySettings extends Page implements HasForms
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
-    
+
     protected static ?string $navigationGroup = 'API Management';
-    
+
     protected static ?int $navigationSort = 100;
 
     protected static string $view = 'filament.pages.api-security-settings';
-    
+
     protected static ?string $navigationLabel = 'Security Settings';
-    
+
     protected static ?string $title = 'API Security Settings';
-    
+
     protected static ?string $slug = 'api-security-settings';
 
     public ?array $data = [];
-    
+
     public static function canAccess(): bool
     {
         // Only allow access to admin users
@@ -59,7 +59,7 @@ class ApiSecuritySettings extends Page implements HasForms
                                     ->maxValue(10000)
                                     ->suffix('req/min')
                                     ->helperText('Requests per minute for authenticated API tokens'),
-                                    
+
                                 Forms\Components\TextInput::make('rate_limit_api_unauthenticated')
                                     ->label('Unauthenticated Rate Limit')
                                     ->numeric()
@@ -68,7 +68,7 @@ class ApiSecuritySettings extends Page implements HasForms
                                     ->maxValue(1000)
                                     ->suffix('req/min')
                                     ->helperText('Requests per minute for unauthenticated requests (by IP)'),
-                                    
+
                                 Forms\Components\TextInput::make('rate_limit_auth_attempts')
                                     ->label('Authentication Attempts Limit')
                                     ->numeric()
@@ -79,7 +79,7 @@ class ApiSecuritySettings extends Page implements HasForms
                                     ->helperText('Maximum failed authentication attempts per minute per IP'),
                             ]),
                     ]),
-                    
+
                 Forms\Components\Section::make('Submissions Rate Limiting')
                     ->description('Specific rate limits for the submissions endpoint.')
                     ->schema([
@@ -93,7 +93,7 @@ class ApiSecuritySettings extends Page implements HasForms
                                     ->maxValue(10000)
                                     ->suffix('req/min')
                                     ->helperText('GET requests per minute'),
-                                    
+
                                 Forms\Components\TextInput::make('rate_limit_submissions_write')
                                     ->label('Write Operations')
                                     ->numeric()
@@ -102,7 +102,7 @@ class ApiSecuritySettings extends Page implements HasForms
                                     ->maxValue(1000)
                                     ->suffix('req/min')
                                     ->helperText('POST/PUT/PATCH requests per minute'),
-                                    
+
                                 Forms\Components\TextInput::make('rate_limit_submissions_daily')
                                     ->label('Daily Limit')
                                     ->numeric()
@@ -113,7 +113,7 @@ class ApiSecuritySettings extends Page implements HasForms
                                     ->helperText('Maximum submissions per day per token'),
                             ]),
                     ]),
-                    
+
                 Forms\Components\Section::make('Access Control')
                     ->description('Configure access controls for API documentation and CORS.')
                     ->schema([
@@ -123,7 +123,7 @@ class ApiSecuritySettings extends Page implements HasForms
                             ->rows(3)
                             ->helperText('Comma-separated list of email domains allowed to access API documentation (e.g., example.com,example.org)')
                             ->rules(['regex:/^[a-zA-Z0-9\-.,\s]+$/']),
-                            
+
                         Forms\Components\Textarea::make('cors_allowed_origins')
                             ->label('CORS Allowed Origins')
                             ->required()
@@ -131,7 +131,7 @@ class ApiSecuritySettings extends Page implements HasForms
                             ->helperText('Comma-separated list of origins allowed for CORS requests (e.g., http://localhost,https://example.com)')
                             ->rules(['regex:/^[a-zA-Z0-9\-:\/.,\s]+$/']),
                     ]),
-                    
+
                 Forms\Components\Section::make('Token Configuration')
                     ->description('Configure Sanctum token behavior.')
                     ->schema([
@@ -142,7 +142,7 @@ class ApiSecuritySettings extends Page implements HasForms
                             ->alphaDash()
                             ->nullable(),
                     ]),
-                    
+
                 Forms\Components\Section::make('Logging & Monitoring')
                     ->description('Configure API logging and monitoring features.')
                     ->schema([
@@ -180,13 +180,13 @@ class ApiSecuritySettings extends Page implements HasForms
             DB::transaction(function () use ($data) {
                 foreach ($data as $key => $value) {
                     $setting = ApiSetting::find($key);
-                    
+
                     if ($setting) {
                         // Convert boolean to string for toggle fields
                         if ($setting->type === 'toggle') {
                             $value = $value ? '1' : '0';
                         }
-                        
+
                         $setting->value = $value;
                         $setting->save();
                     }
@@ -202,7 +202,7 @@ class ApiSecuritySettings extends Page implements HasForms
             Notification::make()
                 ->title('Error saving settings')
                 ->danger()
-                ->body('Failed to save settings: ' . $e->getMessage())
+                ->body('Failed to save settings: '.$e->getMessage())
                 ->send();
         }
     }

@@ -16,6 +16,6 @@ class FormUser extends Model
         'user_id',
         'can_edit',
         'status',
-        'last_activity'
+        'last_activity',
     ];
 }

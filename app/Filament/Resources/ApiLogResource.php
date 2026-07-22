@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ApiLogResource\Pages;
-use App\Filament\Resources\ApiLogResource\RelationManagers;
 use App\Models\ApiLog;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Model;
 
 class ApiLogResource extends Resource
@@ -19,26 +16,26 @@ class ApiLogResource extends Resource
     protected static ?string $model = ApiLog::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    
+
     protected static ?string $navigationGroup = 'API Management';
-    
+
     protected static ?int $navigationSort = 100;
-    
+
     protected static ?string $modelLabel = 'API Request Log';
-    
+
     protected static ?string $pluralModelLabel = 'API Request Logs';
-    
+
     // Make the resource read-only
     public static function canCreate(): bool
     {
         return false;
     }
-    
+
     public static function canEdit(Model $record): bool
     {
         return false;
     }
-    
+
     public static function canDelete(Model $record): bool
     {
         return auth()->user()->isAdmin();
@@ -62,7 +59,7 @@ class ApiLogResource extends Resource
                             ->suffix('ms')
                             ->disabled(),
                     ])->columns(2),
-                    
+
                 Forms\Components\Section::make('Related User and Token')
                     ->schema([
                         Forms\Components\Select::make('user_id')
@@ -72,7 +69,7 @@ class ApiLogResource extends Resource
                             ->relationship('token', 'name')
                             ->disabled(),
                     ])->columns(2),
-                    
+
                 Forms\Components\Section::make('Request Data')
                     ->schema([
                         Forms\Components\Textarea::make('request_data')

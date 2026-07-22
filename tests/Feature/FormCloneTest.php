@@ -43,7 +43,7 @@ class FormCloneTest extends TestCase
 
         $this->assertDatabaseCount('forms', 2);
         $clone = Form::where('id', '!=', $form->id)->first();
-        $this->assertEquals($form->title . ' (Copy)', $clone->title);
+        $this->assertEquals($form->title.' (Copy)', $clone->title);
         $this->assertEquals('draft', $clone->status);
         $this->assertCount(1, $clone->categories);
         $this->assertCount(2, $clone->categories->first()->fields);

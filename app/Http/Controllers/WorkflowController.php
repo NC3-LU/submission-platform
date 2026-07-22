@@ -7,10 +7,9 @@ use App\Models\Workflow;
 use App\Models\WorkflowStep;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class WorkflowController extends Controller
 {
@@ -18,6 +17,7 @@ class WorkflowController extends Controller
 
     /**
      * Display workflow management interface for a form
+     *
      * @throws AuthorizationException
      */
     public function manage(Form $form): View
@@ -26,12 +26,13 @@ class WorkflowController extends Controller
 
         return view('workflows.manage', [
             'form' => $form,
-            'workflow' => $form->workflow()->with(['steps.assignments.user'])->first()
+            'workflow' => $form->workflow()->with(['steps.assignments.user'])->first(),
         ]);
     }
 
     /**
      * Display workflow details for a specific form
+     *
      * @throws AuthorizationException
      */
     public function show(Form $form, Workflow $workflow): View
@@ -42,12 +43,13 @@ class WorkflowController extends Controller
 
         return view('workflows.show', [
             'form' => $form,
-            'workflow' => $workflow
+            'workflow' => $workflow,
         ]);
     }
 
     /**
      * Delete a workflow step
+     *
      * @throws AuthorizationException
      */
     public function destroyStep(Form $form, WorkflowStep $step): RedirectResponse
@@ -55,7 +57,7 @@ class WorkflowController extends Controller
         $this->authorize('update', $form);
 
         try {
-            DB::transaction(function() use ($step) {
+            DB::transaction(function () use ($step) {
                 // Delete assignments
                 $step->assignments()->delete();
 
@@ -76,12 +78,13 @@ class WorkflowController extends Controller
                 ->with('success', 'Step deleted successfully.');
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to delete step: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to delete step: '.$e->getMessage()]);
         }
     }
 
     /**
      * Delete an entire workflow
+     *
      * @throws AuthorizationException
      */
     public function destroy(Form $form, Workflow $workflow): RedirectResponse
@@ -89,7 +92,7 @@ class WorkflowController extends Controller
         $this->authorize('update', $form);
 
         try {
-            DB::transaction(function() use ($workflow) {
+            DB::transaction(function () use ($workflow) {
                 // Delete all steps and related data
                 foreach ($workflow->steps as $step) {
                     $step->assignments()->delete();
@@ -103,7 +106,7 @@ class WorkflowController extends Controller
                 ->with('success', 'Workflow deleted successfully.');
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to delete workflow: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to delete workflow: '.$e->getMessage()]);
         }
     }
 }

@@ -3,25 +3,21 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ApiTokenResource\Pages;
-use App\Filament\Resources\ApiTokenResource\RelationManagers;
 use App\Models\ApiToken;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Str;
 
 class ApiTokenResource extends Resource
 {
     protected static ?string $model = ApiToken::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-key';
-    
+
     protected static ?string $navigationGroup = 'API Management';
-    
+
     protected static ?int $navigationSort = 90;
 
     public static function form(Form $form): Form
@@ -33,7 +29,7 @@ class ApiTokenResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                            
+
                         Forms\Components\Select::make('user_id')
                             ->relationship('user', 'name')
                             ->searchable()
@@ -41,15 +37,15 @@ class ApiTokenResource extends Resource
                             ->required()
                             ->label('Token Owner')
                             ->helperText('User who will own this token and access its data'),
-                            
+
                         Forms\Components\TextInput::make('allowed_ips')
                             ->placeholder('192.168.1.1, 10.0.0.1')
                             ->helperText('Comma separated IPs. Leave empty to allow all'),
-                            
+
                         Forms\Components\DateTimePicker::make('expires_at')
                             ->nullable(),
                     ]),
-                    
+
                 Forms\Components\Section::make('Permissions')
                     ->schema([
                         Forms\Components\CheckboxList::make('abilities')
@@ -67,7 +63,7 @@ class ApiTokenResource extends Resource
                             ->default(['forms:read'])
                             ->columns(2),
                     ]),
-                    
+
                 Forms\Components\Section::make('Plain Text Token')
                     ->schema([
                         Forms\Components\Placeholder::make('token_display')
@@ -115,21 +111,21 @@ class ApiTokenResource extends Resource
                         if (empty($data['value'])) {
                             return $query;
                         }
-                        
+
                         if ($data['value'] === 'active') {
                             return $query->where(function ($query) {
                                 $query->whereNull('expires_at')
                                     ->orWhere('expires_at', '>', now());
                             });
                         }
-                        
+
                         if ($data['value'] === 'expired') {
                             return $query->where('expires_at', '<=', now());
                         }
-                        
+
                         return $query;
                     }),
-                    
+
                 Tables\Filters\SelectFilter::make('user')
                     ->relationship('user', 'name')
                     ->searchable()

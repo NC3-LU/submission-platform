@@ -13,13 +13,13 @@ class FormAccessMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param Closure(Request): (Response) $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $form = $request->route('form');
 
-        if (!$form instanceof Form) {
+        if (! $form instanceof Form) {
             return $next($request);
         }
 
@@ -28,9 +28,10 @@ class FormAccessMiddleware
                 return $next($request);
 
             case 'authenticated':
-                if (!auth()->check()) {
+                if (! auth()->check()) {
                     return redirect()->route('login');
                 }
+
                 return $next($request);
 
             case 'private':
@@ -45,13 +46,14 @@ class FormAccessMiddleware
                 }
 
                 // Get session data
-                $sessionKey = 'form_access_' . $form->id;
+                $sessionKey = 'form_access_'.$form->id;
                 if ($request->session()->has($sessionKey)) {
                     $sessionAccess = $request->session()->get($sessionKey);
 
                     // Ensure session data is in the expected format
-                    if (!is_array($sessionAccess) || !isset($sessionAccess['token'])) {
+                    if (! is_array($sessionAccess) || ! isset($sessionAccess['token'])) {
                         $request->session()->forget($sessionKey);
+
                         return redirect()->route('homepage')
                             ->with('error', 'Invalid access format. Please use the access link again.');
                     }
@@ -59,14 +61,16 @@ class FormAccessMiddleware
                     // Check expiration if set
                     if (isset($sessionAccess['expires_at']) && $sessionAccess['expires_at'] < now()->timestamp) {
                         $request->session()->forget($sessionKey);
+
                         return redirect()->route('homepage')
                             ->with('error', 'Your access to this form has expired.');
                     }
 
                     // Verify the access link is still valid
                     $accessLink = FormAccessLink::findValidByToken($sessionAccess['token']);
-                    if (!$accessLink) {
+                    if (! $accessLink) {
                         $request->session()->forget($sessionKey);
+
                         return redirect()->route('homepage')
                             ->with('error', 'The access link for this form is no longer valid.');
                     }

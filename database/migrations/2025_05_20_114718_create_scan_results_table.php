@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('scanner_used')->default('pandora');
             $table->string('filename');
             $table->timestamps();
-            
+
             $table->foreign('submission_id')->references('id')->on('submissions')->onDelete('cascade');
             $table->foreign('submission_value_id')->references('id')->on('submission_values')->onDelete('cascade');
         });

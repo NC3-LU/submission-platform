@@ -3,29 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Form;
-use App\Models\Submission;
 use App\Models\User;
 use App\Services\DashboardStatisticsService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * DashboardController handles the display of user-specific and admin dashboard views.
  */
 class DashboardController extends Controller
 {
-    /**
-     * @var DashboardStatisticsService
-     */
     private DashboardStatisticsService $statisticsService;
 
     /**
      * Create a new controller instance.
-     *
-     * @param DashboardStatisticsService $statisticsService
      */
     public function __construct(DashboardStatisticsService $statisticsService)
     {
@@ -34,8 +28,6 @@ class DashboardController extends Controller
 
     /**
      * Display the dashboard view with user-specific and admin statistics.
-     *
-     * @return View|Factory|Application
      */
     public function index(): View|Factory|Application
     {
@@ -47,8 +39,6 @@ class DashboardController extends Controller
 
     /**
      * Get statistics for forms owned by or assigned to the current user.
-     *
-     * @return Collection
      */
     private function getUserFormStatistics(): Collection
     {
@@ -65,13 +55,11 @@ class DashboardController extends Controller
 
     /**
      * Get forms owned by or assigned to the current user.
-     *
-     * @return Collection
      */
     private function getUserForms(): Collection
     {
         $createdForms = Auth::user()->forms()->latest();
-        $assignedForms = Form::whereHas('appointedUsers', function($query) {
+        $assignedForms = Form::whereHas('appointedUsers', function ($query) {
             $query->where('user_id', Auth::id());
         })->latest();
 
@@ -80,12 +68,10 @@ class DashboardController extends Controller
 
     /**
      * Get admin statistics if the current user is an admin.
-     *
-     * @return array|null
      */
     private function getAdminStatistics(): ?array
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             return null;
         }
 
@@ -95,4 +81,4 @@ class DashboardController extends Controller
             'submissions' => $this->statisticsService->getSubmissionStatistics(),
         ];
     }
-} 
+}

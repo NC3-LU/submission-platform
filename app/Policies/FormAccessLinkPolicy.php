@@ -7,7 +7,6 @@ use App\Models\User;
 
 class FormAccessLinkPolicy
 {
-
     /**
      * Determine whether the user can delete the access link.
      */

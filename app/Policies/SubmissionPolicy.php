@@ -8,7 +8,6 @@ use App\Models\User;
 
 class SubmissionPolicy
 {
-
     /**
      * Perform pre-authorization checks on the model.
      */
@@ -17,8 +16,10 @@ class SubmissionPolicy
         if ($user->isAdmin()) {
             return true;
         }
+
         return null;
     }
+
     /**
      * Determine whether the user can delete a submission.
      */
@@ -27,6 +28,7 @@ class SubmissionPolicy
 
         return $user->id === $submission->user_id && $submission->status === 'draft';
     }
+
     public function view(User $user, Submission $submission): bool
     {
         // Can't view drafts unless you're the owner
@@ -63,6 +65,7 @@ class SubmissionPolicy
 
         return false;
     }
+
     public function viewAny(User $user, Form $form): bool
     {
         // Admin or form owner can view all submissions
@@ -79,6 +82,7 @@ class SubmissionPolicy
 
         return false;
     }
+
     public function review(User $user, Submission $submission): bool
     {
         // Only reviewable if under review
@@ -160,15 +164,15 @@ class SubmissionPolicy
         return $this->update($user, $submission);
     }
 
-
     /**
      * Determine whether the user can save drafts.
      */
     public function saveDraft(User $user, Form $form): bool
     {
         // Anyone who can submit can save drafts
-        return (new FormPolicy())->submit($user, $form);
+        return (new FormPolicy)->submit($user, $form);
     }
+
     /**
      * Determine whether the user can export/download a specific submission.
      */
@@ -207,7 +211,4 @@ class SubmissionPolicy
             ->where('can_edit', true)
             ->exists();
     }
-
-
-
 }

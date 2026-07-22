@@ -63,7 +63,7 @@ class FormPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role, ['internal_evaluator','external_evaluator', 'admin']);
+        return in_array($user->role, ['internal_evaluator', 'external_evaluator', 'admin']);
     }
 
     /**
@@ -158,7 +158,7 @@ class FormPolicy
 
             case 'private':
                 // Check for valid access link in session
-                if (session()->has('form_access_' . $form->id)) {
+                if (session()->has('form_access_'.$form->id)) {
                     return true;
                 }
 

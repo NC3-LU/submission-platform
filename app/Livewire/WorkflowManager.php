@@ -15,24 +15,29 @@ use Livewire\Component;
 class WorkflowManager extends Component
 {
     public Form $form;
+
     public ?Workflow $workflow = null;
 
     // Form state
     public string $workflowName = '';
+
     public ?string $workflowDescription = null;
 
     // Step management
     public array $steps = [];
+
     public array $newStep = [
         'name' => '',
         'description' => '',
         'type' => '',
-        'assignees' => []
+        'assignees' => [],
     ];
 
     // UI state
     public bool $showNewStepModal = false;
+
     public bool $editingStep = false;
+
     public ?int $editingStepId = null;
 
     protected $listeners = ['stepOrderUpdated'];
@@ -51,7 +56,9 @@ class WorkflowManager extends Component
 
     public function loadSteps(): void
     {
-        if (!$this->workflow) return;
+        if (! $this->workflow) {
+            return;
+        }
 
         $this->steps = $this->workflow->steps()
             ->with(['assignments.user'])
@@ -64,20 +71,20 @@ class WorkflowManager extends Component
     {
         $this->validate([
             'workflowName' => 'required|string|max:100',
-            'workflowDescription' => 'nullable|string'
+            'workflowDescription' => 'nullable|string',
         ]);
 
         DB::transaction(function () {
             $this->workflow = $this->form->workflows()->create([
                 'name' => $this->workflowName,
                 'description' => $this->workflowDescription,
-                'status' => 'draft'
+                'status' => 'draft',
             ]);
         });
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => 'Workflow created successfully.'
+            'message' => 'Workflow created successfully.',
         ]);
     }
 
@@ -93,7 +100,7 @@ class WorkflowManager extends Component
             'newStep.name' => 'required|string|max:100',
             'newStep.description' => 'nullable|string',
             'newStep.type' => 'required|in:review,approval,notification,automated',
-            'newStep.assignees' => 'array'
+            'newStep.assignees' => 'array',
         ]);
 
         DB::transaction(function () {
@@ -102,14 +109,14 @@ class WorkflowManager extends Component
                 'description' => $this->newStep['description'],
                 'type' => $this->newStep['type'],
                 'is_active' => true,
-                'order' => count($this->steps) + 1
+                'order' => count($this->steps) + 1,
             ]);
 
             foreach ($this->newStep['assignees'] as $assignee) {
                 $step->assignments()->create([
                     'user_id' => $assignee['user_id'],
                     'role' => $assignee['role'],
-                    'is_active' => true
+                    'is_active' => true,
                 ]);
             }
         });
@@ -119,7 +126,7 @@ class WorkflowManager extends Component
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => 'Step added successfully.'
+            'message' => 'Step added successfully.',
         ]);
     }
 
@@ -136,9 +143,9 @@ class WorkflowManager extends Component
                 'assignees' => collect($step['assignments'])->map(function ($assignment) {
                     return [
                         'user_id' => $assignment['user_id'],
-                        'role' => $assignment['role']
+                        'role' => $assignment['role'],
                     ];
-                })->toArray()
+                })->toArray(),
             ];
         }
     }
@@ -149,7 +156,7 @@ class WorkflowManager extends Component
             'newStep.name' => 'required|string|max:100',
             'newStep.description' => 'nullable|string',
             'newStep.type' => 'required|in:review,approval,notification,automated',
-            'newStep.assignees' => 'array'
+            'newStep.assignees' => 'array',
         ]);
 
         DB::transaction(function () {
@@ -157,7 +164,7 @@ class WorkflowManager extends Component
             $step->update([
                 'name' => $this->newStep['name'],
                 'description' => $this->newStep['description'],
-                'type' => $this->newStep['type']
+                'type' => $this->newStep['type'],
             ]);
 
             // Update assignees
@@ -166,7 +173,7 @@ class WorkflowManager extends Component
                 $step->assignments()->create([
                     'user_id' => $assignee['user_id'],
                     'role' => $assignee['role'],
-                    'is_active' => true
+                    'is_active' => true,
                 ]);
             }
         });
@@ -177,7 +184,7 @@ class WorkflowManager extends Component
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => 'Step updated successfully.'
+            'message' => 'Step updated successfully.',
         ]);
     }
 
@@ -198,7 +205,7 @@ class WorkflowManager extends Component
             'name' => '',
             'description' => '',
             'type' => '',
-            'assignees' => []
+            'assignees' => [],
         ];
     }
 

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('submission_values', function (Blueprint $table) {
-         $table->mediumText('value')->nullable()->change();
+            $table->mediumText('value')->nullable()->change();
         });
     }
 

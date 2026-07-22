@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class FormCategoryResource extends JsonResource
@@ -9,8 +11,8 @@ class FormCategoryResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @param  Request  $request
+     * @return array|Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
@@ -22,4 +24,4 @@ class FormCategoryResource extends JsonResource
             'fields' => FormFieldResource::collection($this->whenLoaded('fields')),
         ];
     }
-} 
+}

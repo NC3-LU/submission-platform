@@ -10,6 +10,7 @@ use App\Models\ScanResult;
 use App\Models\Submission;
 use App\Models\SubmissionValues;
 use App\Notifications\SubmissionFileScanAlert;
+use App\Services\FileScanService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -69,7 +70,7 @@ class ScanSubmissionFileJobTest extends TestCase
         ]);
 
         $value = $this->makeFileValue();
-        (new ScanSubmissionFileJob($value))->handle(app(\App\Services\FileScanService::class));
+        (new ScanSubmissionFileJob($value))->handle(app(FileScanService::class));
 
         $scan = ScanResult::where('submission_value_id', $value->id)->first();
         $this->assertNotNull($scan);
@@ -87,7 +88,7 @@ class ScanSubmissionFileJobTest extends TestCase
         ]);
 
         $value = $this->makeFileValue('submissions/Y/malware.pdf');
-        (new ScanSubmissionFileJob($value))->handle(app(\App\Services\FileScanService::class));
+        (new ScanSubmissionFileJob($value))->handle(app(FileScanService::class));
 
         $scan = ScanResult::where('submission_value_id', $value->id)->first();
         $this->assertSame(ScanResult::STATUS_MALICIOUS, $scan->status);
@@ -104,7 +105,7 @@ class ScanSubmissionFileJobTest extends TestCase
         $value = $this->makeFileValue();
 
         $this->expectException(\RuntimeException::class);
-        (new ScanSubmissionFileJob($value))->handle(app(\App\Services\FileScanService::class));
+        (new ScanSubmissionFileJob($value))->handle(app(FileScanService::class));
     }
 
     public function test_failed_handler_records_failed_status(): void
@@ -131,7 +132,7 @@ class ScanSubmissionFileJobTest extends TestCase
         $owner = $value->submission->form->user;
         $this->assertNotNull($owner);
 
-        (new ScanSubmissionFileJob($value))->handle(app(\App\Services\FileScanService::class));
+        (new ScanSubmissionFileJob($value))->handle(app(FileScanService::class));
 
         Notification::assertSentTo(
             $owner,

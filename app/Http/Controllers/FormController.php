@@ -11,13 +11,13 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class FormController extends Controller
 {
@@ -34,6 +34,7 @@ class FormController extends Controller
 
         return view('index', compact('forms', 'totalForms'));
     }
+
     public function publicIndex(Request $request): View|Factory|Application
     {
         $forms = Form::where('status', 'published')
@@ -55,7 +56,7 @@ class FormController extends Controller
         $createdForms = Auth::user()->forms()->latest();
 
         // Get forms the user is assigned to
-        $assignedForms = Form::whereHas('appointedUsers', function($query) {
+        $assignedForms = Form::whereHas('appointedUsers', function ($query) {
             $query->where('user_id', Auth::id());
         })->latest();
 
@@ -71,6 +72,7 @@ class FormController extends Controller
     public function create(): View|Factory|Application
     {
         $this->authorize('create', Form::class);
+
         return view('forms.create');
     }
 
@@ -134,6 +136,7 @@ class FormController extends Controller
     public function edit(Form $form): View|Factory|Application
     {
         $this->authorize('update', $form);
+
         return view('forms.edit', compact('form'));
     }
 
@@ -185,8 +188,8 @@ class FormController extends Controller
     public function preview(Form $form): View|Factory|Application
     {
         // Only allow form creators and appointed users (evaluators) to access preview
-        if ($form->user_id !== Auth::id() && 
-            !$form->appointedUsers()->where('user_id', Auth::id())->exists()) {
+        if ($form->user_id !== Auth::id() &&
+            ! $form->appointedUsers()->where('user_id', Auth::id())->exists()) {
             abort(403, 'Only form creators and evaluators can access form previews.');
         }
 
@@ -196,9 +199,6 @@ class FormController extends Controller
     /**
      * Remove a user from the form.
      *
-     * @param Form $form
-     * @param User $user
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function removeUser(Form $form, User $user): RedirectResponse
@@ -222,7 +222,7 @@ class FormController extends Controller
 
         $newForm = DB::transaction(function () use ($form) {
             $clone = $form->replicate(['id', 'created_at', 'updated_at']);
-            $clone->title = $form->title . ' (Copy)';
+            $clone->title = $form->title.' (Copy)';
             $clone->status = 'draft';
             $clone->user_id = auth()->id();
 

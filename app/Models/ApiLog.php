@@ -17,12 +17,12 @@ class ApiLog extends Model
         'ip_address',
         'request_data',
         'response_code',
-        'execution_time'
+        'execution_time',
     ];
 
     protected $casts = [
         'request_data' => 'array',
-        'execution_time' => 'float'
+        'execution_time' => 'float',
     ];
 
     /**
@@ -50,10 +50,10 @@ class ApiLog extends Model
         if (is_string($value)) {
             return $value;
         }
-        
+
         // If it's an array (or has been cast to an array), convert to JSON with pretty print
         $data = is_array($value) ? $value : json_decode($value, true);
-        
+
         return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
-} 
+}

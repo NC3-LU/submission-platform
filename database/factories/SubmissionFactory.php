@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Models\Form;
 use App\Models\Submission;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Submission>
+ * @extends Factory<Submission>
  */
 class SubmissionFactory extends Factory
 {
@@ -22,7 +23,7 @@ class SubmissionFactory extends Factory
     {
         return [
             'form_id' => Form::factory(),
-            'user_id' => \App\Models\User::factory(), // Create a user for each submission
+            'user_id' => User::factory(), // Create a user for each submission
             'status' => $this->faker->randomElement(['draft', 'submitted']), // Only use valid enum values
             'status_metadata' => null,
         ];
@@ -47,5 +48,4 @@ class SubmissionFactory extends Factory
             'status' => 'draft',
         ]);
     }
-
 }

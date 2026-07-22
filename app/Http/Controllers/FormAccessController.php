@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Form;
-use App\Models\User;
 use App\Models\FormAccessLink;
+use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class FormAccessController extends Controller
 {
@@ -35,7 +35,6 @@ class FormAccessController extends Controller
             'user_ids.*' => ['integer', 'distinct', Rule::in($allowedUserIds)],
             'can_edit' => ['boolean'],
         ]);
-
 
         $existingUserIds = $form->appointedUsers->pluck('id')->toArray();
 
@@ -84,7 +83,7 @@ class FormAccessController extends Controller
         $accessLink->delete();
 
         // Clear any existing sessions using this access link
-        \Session::getHandler()->destroy('form_access_' . $formId);
+        \Session::getHandler()->destroy('form_access_'.$formId);
 
         return redirect()->route('forms.edit', $accessLink->form)
             ->with('success', 'Access link deleted successfully.');
@@ -94,20 +93,16 @@ class FormAccessController extends Controller
     {
         $accessLink = FormAccessLink::findValidByToken($token);
 
-        if (!$accessLink) {
+        if (! $accessLink) {
             return redirect()->route('homepage')->with('error', 'This access link is invalid or has expired.');
         }
 
         // Store both the token and expiry time in the session
-        $request->session()->put('form_access_' . $accessLink->form_id, [
+        $request->session()->put('form_access_'.$accessLink->form_id, [
             'token' => $token,
-            'expires_at' => $accessLink->expires_at?->timestamp
+            'expires_at' => $accessLink->expires_at?->timestamp,
         ]);
 
         return redirect()->route('submissions.create', $accessLink->form);
     }
-
-
-
-
 }

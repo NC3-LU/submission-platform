@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -30,7 +30,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'name',
         'email',
         'password',
-        'role'
+        'role',
     ];
 
     /**
@@ -67,7 +67,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         ];
     }
 
-
     public function forms(): HasMany
     {
         return $this->hasMany(Form::class);
@@ -85,11 +84,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             ->withTimestamps();
     }
 
-
     public function canAccessPanel(Panel $panel): bool
     {
-        return str_ends_with($this->email, '@nc3.lu') && $this->hasVerifiedEmail() && $this->role == "admin";
-       # return str_ends_with($this->email, '@nc3.lu') && $this->role == "admin";
-        #return 1;
+        return str_ends_with($this->email, '@nc3.lu') && $this->hasVerifiedEmail() && $this->role == 'admin';
+        // return str_ends_with($this->email, '@nc3.lu') && $this->role == "admin";
+        // return 1;
     }
 }

@@ -9,6 +9,7 @@ use App\Models\FormField;
 use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class SubmissionApiTest extends TestCase
@@ -16,19 +17,22 @@ class SubmissionApiTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected string $token;
+
     protected ApiToken $apiToken;
+
     protected Form $form;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
-        
-        $plainTextToken = \Illuminate\Support\Str::random(40);
+
+        $plainTextToken = Str::random(40);
         $this->token = $plainTextToken;
-        
+
         $this->apiToken = ApiToken::create([
             'user_id' => $this->user->id,
             'name' => 'Test Token',
@@ -64,34 +68,34 @@ class SubmissionApiTest extends TestCase
     {
         Submission::factory()->count(3)->create(['form_id' => $this->form->id]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->getJson("/api/v1/forms/{$this->form->id}/submissions");
 
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['id', 'status', 'created_at']
-                ]
+                    '*' => ['id', 'status', 'created_at'],
+                ],
             ]);
     }
 
     public function test_can_create_submission(): void
     {
         $this->markTestIncomplete('Needs investigation - getting 500 error, likely validation issue');
-        
+
         $field = $this->form->fields()->first();
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->postJson("/api/v1/forms/{$this->form->id}/submissions", [
                 'values' => [
                     $field->id => 'Test Value',
-                ]
+                ],
             ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
                 'message',
-                'data' => ['id', 'status']
+                'data' => ['id', 'status'],
             ]);
 
         $this->assertDatabaseHas('submissions', [
@@ -101,27 +105,27 @@ class SubmissionApiTest extends TestCase
 
     public function test_validates_required_fields(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->postJson("/api/v1/forms/{$this->form->id}/submissions", [
-                'values' => []
+                'values' => [],
             ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['values.' . $this->form->fields()->first()->id]);
+            ->assertJsonValidationErrors(['values.'.$this->form->fields()->first()->id]);
     }
 
     public function test_can_show_submission(): void
     {
         $submission = Submission::factory()->create(['form_id' => $this->form->id]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->getJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}");
 
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
                     'id' => $submission->id,
-                ]
+                ],
             ]);
     }
 
@@ -129,16 +133,16 @@ class SubmissionApiTest extends TestCase
     {
         $submission = Submission::factory()->create(['form_id' => $this->form->id]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->putJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}", [
-                'status' => 'completed'
+                'status' => 'completed',
             ]);
 
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
                     'status' => 'completed',
-                ]
+                ],
             ]);
     }
 
@@ -146,7 +150,7 @@ class SubmissionApiTest extends TestCase
     {
         $submission = Submission::factory()->create(['form_id' => $this->form->id]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->deleteJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}");
 
         $response->assertStatus(200)
@@ -162,9 +166,9 @@ class SubmissionApiTest extends TestCase
             'status' => 'draft',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->postJson("/api/v1/forms/{$draftForm->id}/submissions", [
-                'values' => []
+                'values' => [],
             ]);
 
         $response->assertStatus(403)
@@ -179,9 +183,9 @@ class SubmissionApiTest extends TestCase
             'visibility' => 'private',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->postJson("/api/v1/forms/{$privateForm->id}/submissions", [
-                'values' => []
+                'values' => [],
             ]);
 
         $response->assertStatus(403);
@@ -192,11 +196,11 @@ class SubmissionApiTest extends TestCase
         Submission::factory()->create(['form_id' => $this->form->id, 'status' => 'submitted']);
         Submission::factory()->create(['form_id' => $this->form->id, 'status' => 'completed']);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->getJson("/api/v1/forms/{$this->form->id}/submissions?status=completed");
 
         $response->assertStatus(200);
-        
+
         $submissions = $response->json('data');
         $this->assertCount(1, $submissions);
         $this->assertEquals('completed', $submissions[0]['status']);

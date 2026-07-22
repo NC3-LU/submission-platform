@@ -17,13 +17,15 @@ class ResetTwoFactor extends Command
 
         if ($count === 0) {
             $this->info('No users have 2FA enabled.');
+
             return;
         }
 
         $this->warn("{$count} user(s) have 2FA enabled.");
 
-        if (!$this->confirm('Reset 2FA for all users?')) {
+        if (! $this->confirm('Reset 2FA for all users?')) {
             $this->info('Aborted.');
+
             return;
         }
 

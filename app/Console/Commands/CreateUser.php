@@ -26,7 +26,7 @@ class CreateUser extends Command
 
         // Validate role
         $validRoles = ['admin', 'user', 'internal_evaluator', 'external_evaluator'];
-        if (!in_array($role, $validRoles)) {
+        if (! in_array($role, $validRoles)) {
             $role = $this->choice(
                 'Select user role',
                 $validRoles,
@@ -41,16 +41,16 @@ class CreateUser extends Command
                 'password' => Hash::make($password),
                 'email_verified_at' => now(),
                 'remember_token' => Str::random(10),
-                'role' => $role
+                'role' => $role,
             ]);
 
-            $this->info("User created successfully!");
+            $this->info('User created successfully!');
             $this->table(
                 ['Name', 'Email', 'Role'],
                 [[$user->name, $user->email, $user->role]]
             );
         } catch (\Exception $e) {
-            $this->error("Failed to create user: " . $e->getMessage());
+            $this->error('Failed to create user: '.$e->getMessage());
         }
     }
 }

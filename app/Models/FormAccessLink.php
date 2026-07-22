@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FormAccessLink extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'token',
         'expires_at',
-        'form_id'
+        'form_id',
     ];
 
     protected $casts = [
