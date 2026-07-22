@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Form;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -20,5 +21,33 @@ class FormHeaderImageTest extends TestCase
         $this->assertSame(Storage::disk('public')->url('form-headers/x.jpg'), $with->header_image_url);
         $this->assertNull($without->header_image_url);
         $this->assertSame(50, $without->header_image_position);
+    }
+
+    public function test_non_image_header_upload_is_rejected(): void
+    {
+        $user = User::factory()->create(['role' => 'internal_evaluator']);
+
+        $response = $this->actingAs($user)->post(route('forms.store'), [
+            'title' => 'T',
+            'visibility' => 'public',
+            'categories' => [['name' => 'C', 'description' => null]],
+            'header_image' => UploadedFile::fake()->create('evil.pdf', 100, 'application/pdf'),
+        ]);
+
+        $response->assertSessionHasErrors('header_image');
+    }
+
+    public function test_oversized_dimension_header_is_rejected(): void
+    {
+        $user = User::factory()->create(['role' => 'internal_evaluator']);
+
+        $response = $this->actingAs($user)->post(route('forms.store'), [
+            'title' => 'T',
+            'visibility' => 'public',
+            'categories' => [['name' => 'C', 'description' => null]],
+            'header_image' => UploadedFile::fake()->image('huge.jpg', 7000, 7000),
+        ]);
+
+        $response->assertSessionHasErrors('header_image');
     }
 }

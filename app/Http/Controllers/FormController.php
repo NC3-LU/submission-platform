@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFormRequest;
+use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -69,23 +71,9 @@ class FormController extends Controller
         return view('forms.create');
     }
 
-    /**
-     * @throws AuthorizationException
-     */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreFormRequest $request): RedirectResponse
     {
-        $this->authorize('create', Form::class);
-
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'visibility' => 'required|in:public,authenticated,private',
-            'categories' => 'required|array|min:1',
-            'categories.*.name' => 'required|string|max:255',
-            'categories.*.description' => 'nullable|string',
-            'available_from' => 'nullable|date',
-            'available_until' => 'nullable|date|after_or_equal:available_from',
-        ]);
+        $validatedData = $request->validated();
 
         $form = Form::create([
             'title' => $validatedData['title'],
@@ -117,22 +105,8 @@ class FormController extends Controller
         return view('forms.edit', compact('form'));
     }
 
-    /**
-     * @throws AuthorizationException
-     */
-    public function update(Request $request, Form $form): RedirectResponse
+    public function update(UpdateFormRequest $request, Form $form): RedirectResponse
     {
-        $this->authorize('update', $form);
-
-        $request->validate([
-            'title' => 'required|max:255',
-            'description' => 'nullable',
-            'status' => 'required|in:draft,published,archived',
-            'visibility' => 'required|in:public,authenticated,private',
-            'available_from' => 'nullable|date',
-            'available_until' => 'nullable|date|after_or_equal:available_from',
-        ]);
-
         $form->update($request->only('title', 'description', 'status', 'visibility', 'available_from', 'available_until'));
 
         return redirect()->route('forms.user_index')->with('success', 'Form updated successfully.');
