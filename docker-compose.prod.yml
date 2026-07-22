@@ -119,6 +119,137 @@ services:
     networks:
       - app_network
 
+  # --- Pandora file-scanning stack ---
+  # Mirrors the pandora-profile services in docker-compose.yml, adapted for prod:
+  # no compose profiles (deploy.sh brings them up by name) and attached to
+  # app_network so the app resolves http://pandora:6100. Config lives in
+  # docker/pandora/ (rsynced with the code).
+  redis:
+    image: redis:7.4.9
+    working_dir: /cache
+    command:
+      - /bin/sh
+      - -c
+      - |
+          cp /etc/redis/cache.conf /cache/cache.conf
+          redis-server /cache/cache.conf --daemonize no
+    volumes:
+      - pandora_cache:/cache
+      - ./docker/pandora/config/cache.conf:/etc/redis/cache.conf:ro
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-s", "/cache/cache.sock", "ping"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  kvrocks:
+    image: apache/kvrocks:2.15.0
+    user: root
+    volumes:
+      - pandora_storage:/var/lib/kvrocks
+    command: ["--log-dir", "stdout", "--port", "6101"]
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "127.0.0.1", "-p", "6101", "ping"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  kvrocks-indexing:
+    image: apache/kvrocks:2.15.0
+    user: root
+    volumes:
+      - pandora_indexing:/var/lib/kvrocks
+      - pandora_indexing_sock:/pandora-sock
+      - ./docker/pandora/config/kvrocks-indexing.conf:/etc/kvrocks/kvrocks.conf:ro
+    command: ["-c", "/etc/kvrocks/kvrocks.conf"]
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-s", "/pandora-sock/kvrocks_index.sock", "ping"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  clamav:
+    image: clamav/clamav:1.5.2
+    volumes:
+      - clamav-socket:/var/run/clamav
+      - ./docker/pandora/config/clamav/clamd.conf:/etc/clamav/clamd.conf:ro
+      - ./docker/pandora/config/clamav/freshclam.conf:/etc/clamav/freshclam.conf:ro
+    environment:
+      - HTTP_PROXY=${PROXY}
+      - HTTPS_PROXY=${PROXY}
+      - http_proxy=${PROXY}
+      - https_proxy=${PROXY}
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "clamdscan", "--ping", "1"]
+      start_period: 180s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  pandora:
+    image: ghcr.io/pandora-analysis/pandora:v1.12.2
+    depends_on:
+      redis:
+        condition: service_started
+      kvrocks:
+        condition: service_started
+      kvrocks-indexing:
+        condition: service_started
+      clamav:
+        condition: service_healthy
+    expose: ["6100"]
+    mem_limit: 2g
+    environment:
+      - HTTP_PROXY=${PROXY}
+      - HTTPS_PROXY=${PROXY}
+      - http_proxy=${PROXY}
+      - https_proxy=${PROXY}
+    working_dir: /pandora
+    tty: true
+    command:
+      - /bin/sh
+      - -c
+      - |
+          echo "[pandora] waiting for dependencies..."
+          sleep 30
+          echo "[pandora] reducing gunicorn workers to 2..."
+          sed -i "s/'-w', '10'/'-w', '2'/" /pandora/bin/start_website.py
+          echo "[pandora] starting workers..."
+          poetry run workers_manager &
+          echo "[pandora] starting website on port 6100..."
+          poetry run start_website &
+          echo "[pandora] all services started"
+          wait
+    env_file:
+      - ./docker/pandora/pandora.env
+    volumes:
+      - pandora_cache:/pandora/cache
+      - pandora_storage:/pandora/storage
+      - pandora_indexing_sock:/pandora/indexing
+      - clamav-socket:/var/run/clamav
+      - ./docker/pandora/config/generic.json:/pandora/config/generic.json:ro
+      - ./docker/pandora/workers/base.yml:/pandora/pandora/workers/base.yml:ro
+      - ./docker/pandora/workers/clamav.yml:/pandora/pandora/workers/clamav.yml:ro
+      - ./docker/pandora/yara_rules:/pandora/yara_rules:ro
+    networks:
+      - app_network
+    restart: unless-stopped
+
 networks:
   app_network:
     driver: bridge
@@ -126,3 +257,8 @@ networks:
 volumes:
   dbdata:
   storage_data:
+  pandora_cache:
+  pandora_storage:
+  pandora_indexing:
+  pandora_indexing_sock:
+  clamav-socket:

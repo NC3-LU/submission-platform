@@ -184,6 +184,13 @@ docker-compose -f docker-compose.prod.yml --env-file docker-compose.env exec -T 
 # so an unprocessed queue makes every newly uploaded file undownloadable.
 # 'docker-compose down' at the start of this script removes the container, so
 # 'restart: unless-stopped' does not bring it back on its own.
+# Start the Pandora file-scanning stack. ClamAV has a long start_period and
+# Pandora waits for its dependencies; the app fails-closed and scan jobs retry,
+# so exact readiness ordering here is not critical. Harmless to run when Pandora
+# is not in use — the services simply idle.
+echo "Starting Pandora file-scanning stack..."
+docker-compose -f docker-compose.prod.yml --env-file docker-compose.env up -d clamav redis kvrocks kvrocks-indexing pandora
+
 echo "Starting queue worker..."
 docker-compose -f docker-compose.prod.yml --env-file docker-compose.env up -d queue
 
