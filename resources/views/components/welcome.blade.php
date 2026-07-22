@@ -13,7 +13,7 @@
         </h1>
 
         <p class="mt-6 text-lg text-slate-300 max-w-2xl">
-            Submit applications, track progress, and collaborate with NC3 through our streamlined and secure platform.
+            Submit applications, track progress, and collaborate with Cybersecurity Luxembourg Ecosystem through our streamlined and secure platform.
         </p>
 
         <a href="#forms" class="mt-8 inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg transition-colors shadow-lg shadow-sky-600/20">
