@@ -242,4 +242,62 @@ class FormHeaderImageTest extends TestCase
         $this->assertArrayHasKey('header_theme_color', $resource);
         $this->assertSame('#3366cc', $resource['header_theme_color']);
     }
+
+    public function test_invalid_theme_color_is_rejected(): void
+    {
+        $user = User::factory()->create(['role' => 'internal_evaluator']);
+
+        $response = $this->actingAs($user)->post(route('forms.store'), [
+            'title' => 'T',
+            'visibility' => 'public',
+            'categories' => [['name' => 'C', 'description' => null]],
+            'header_theme_color' => 'red; }',
+        ]);
+
+        $response->assertSessionHasErrors('header_theme_color');
+    }
+
+    public function test_valid_theme_color_is_accepted(): void
+    {
+        $user = User::factory()->create(['role' => 'internal_evaluator']);
+
+        $response = $this->actingAs($user)->post(route('forms.store'), [
+            'title' => 'ValidColor',
+            'visibility' => 'public',
+            'categories' => [['name' => 'C', 'description' => null]],
+            'header_theme_color' => '#1a2b3c',
+        ]);
+
+        $response->assertSessionDoesntHaveErrors('header_theme_color');
+    }
+
+    public function test_gif_header_is_rejected(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create(['role' => 'internal_evaluator']);
+
+        $response = $this->actingAs($user)->post(route('forms.store'), [
+            'title' => 'T',
+            'visibility' => 'public',
+            'categories' => [['name' => 'C', 'description' => null]],
+            'header_image' => UploadedFile::fake()->create('a.gif', 100, 'image/gif'),
+        ]);
+
+        $response->assertSessionHasErrors('header_image');
+    }
+
+    public function test_webp_header_is_accepted(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create(['role' => 'internal_evaluator']);
+
+        $response = $this->actingAs($user)->post(route('forms.store'), [
+            'title' => 'WebpHeader',
+            'visibility' => 'public',
+            'categories' => [['name' => 'C', 'description' => null]],
+            'header_image' => UploadedFile::fake()->image('a.webp', 400, 200),
+        ]);
+
+        $response->assertSessionDoesntHaveErrors('header_image');
+    }
 }

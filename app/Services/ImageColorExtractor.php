@@ -37,7 +37,12 @@ class ImageColorExtractor
         }
 
         $sample = imagecreatetruecolor(self::SAMPLE, self::SAMPLE);
-        imagecopyresampled($sample, $src, 0, 0, 0, 0, self::SAMPLE, self::SAMPLE, $width, $height);
+        if ($sample === false) {
+            imagedestroy($src);
+
+            return null;
+        }
+        @imagecopyresampled($sample, $src, 0, 0, 0, 0, self::SAMPLE, self::SAMPLE, $width, $height);
         imagedestroy($src);
 
         $buckets = [];
@@ -61,7 +66,7 @@ class ImageColorExtractor
                     continue; // low-saturation grey
                 }
 
-                $key = intdiv($r, 32) . '-' . intdiv($g, 32) . '-' . intdiv($b, 32);
+                $key = intdiv($r, 32).'-'.intdiv($g, 32).'-'.intdiv($b, 32);
                 if (! isset($buckets[$key])) {
                     $buckets[$key] = ['count' => 0, 'r' => 0, 'g' => 0, 'b' => 0];
                 }
