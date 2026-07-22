@@ -1,3 +1,3 @@
 <a href="/">
-<img class="w-24 h-24" src="{{asset('/img/nc3-logo-no-text-no-bg.png')}}" alt="nc3 logo no text">
+    <img class="h-12 w-auto" src="{{ asset('img/SM-Cyber-Luxembourg-color.svg') }}" alt="Cyber Luxembourg">
 </a>
