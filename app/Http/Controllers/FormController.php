@@ -6,6 +6,7 @@ use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\User;
+use App\Services\ImageColorExtractor;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -14,6 +15,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class FormController extends Controller
@@ -71,19 +74,48 @@ class FormController extends Controller
         return view('forms.create');
     }
 
+    /**
+     * Store an uploaded header image (if any) and resolve its accent color.
+     * Owner-supplied theme color wins; otherwise it is auto-extracted.
+     *
+     * @return array{header_image: string, header_theme_color: string|null}|null
+     */
+    private function handleHeaderUpload(Request $request): ?array
+    {
+        if (! $request->hasFile('header_image')) {
+            return null;
+        }
+
+        $path = $request->file('header_image')->store('form-headers', 'public');
+
+        $color = $request->filled('header_theme_color')
+            ? $request->input('header_theme_color')
+            : app(ImageColorExtractor::class)->extract(Storage::disk('public')->path($path));
+
+        return ['header_image' => $path, 'header_theme_color' => $color];
+    }
+
     public function store(StoreFormRequest $request): RedirectResponse
     {
         $validatedData = $request->validated();
 
-        $form = Form::create([
+        $attributes = [
             'title' => $validatedData['title'],
-            'description' => $validatedData['description'],
+            'description' => $validatedData['description'] ?? null,
             'visibility' => $validatedData['visibility'],
             'status' => 'draft',
             'user_id' => auth()->id(),
             'available_from' => $validatedData['available_from'] ?? null,
             'available_until' => $validatedData['available_until'] ?? null,
-        ]);
+            'header_image_position' => $validatedData['header_image_position'] ?? 50,
+        ];
+
+        if ($header = $this->handleHeaderUpload($request)) {
+            $attributes['header_image'] = $header['header_image'];
+            $attributes['header_theme_color'] = $header['header_theme_color'];
+        }
+
+        $form = Form::create($attributes);
 
         foreach ($validatedData['categories'] as $index => $categoryData) {
             $form->categories()->create([
@@ -107,7 +139,26 @@ class FormController extends Controller
 
     public function update(UpdateFormRequest $request, Form $form): RedirectResponse
     {
-        $form->update($request->only('title', 'description', 'status', 'visibility', 'available_from', 'available_until'));
+        $data = $request->only('title', 'description', 'status', 'visibility', 'available_from', 'available_until');
+        $data['header_image_position'] = (int) $request->input('header_image_position', 50);
+
+        if ($request->boolean('remove_header_image') && $form->header_image) {
+            Storage::disk('public')->delete($form->header_image);
+            $data['header_image'] = null;
+            $data['header_theme_color'] = null;
+            $data['header_image_position'] = 50;
+        } elseif ($header = $this->handleHeaderUpload($request)) {
+            $old = $form->header_image;
+            $data['header_image'] = $header['header_image'];
+            $data['header_theme_color'] = $header['header_theme_color'];
+            if ($old) {
+                Storage::disk('public')->delete($old);
+            }
+        } elseif ($request->filled('header_theme_color')) {
+            $data['header_theme_color'] = $request->input('header_theme_color');
+        }
+
+        $form->update($data);
 
         return redirect()->route('forms.user_index')->with('success', 'Form updated successfully.');
     }
@@ -118,6 +169,10 @@ class FormController extends Controller
     public function destroy(Form $form): RedirectResponse
     {
         $this->authorize('delete', $form);
+
+        if ($form->header_image) {
+            Storage::disk('public')->delete($form->header_image);
+        }
 
         $form->delete();
 
@@ -170,6 +225,14 @@ class FormController extends Controller
             $clone->title = $form->title . ' (Copy)';
             $clone->status = 'draft';
             $clone->user_id = auth()->id();
+
+            if ($form->header_image && Storage::disk('public')->exists($form->header_image)) {
+                $ext = pathinfo($form->header_image, PATHINFO_EXTENSION);
+                $newPath = 'form-headers/'.Str::uuid().($ext ? '.'.$ext : '');
+                Storage::disk('public')->copy($form->header_image, $newPath);
+                $clone->header_image = $newPath;
+            }
+
             $clone->save();
 
             foreach ($form->categories()->orderBy('order')->get() as $category) {

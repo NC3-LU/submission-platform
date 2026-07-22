@@ -27,7 +27,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('forms.store') }}" method="POST" x-data="{ categories: [{ name: '', description: '', percentage_start: 0, percentage_end: 100 }] }">
+                <form action="{{ route('forms.store') }}" method="POST" enctype="multipart/form-data" x-data="{ categories: [{ name: '', description: '', percentage_start: 0, percentage_end: 100 }] }">
                     @csrf
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -95,7 +95,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('forms.update', $form) }}" method="POST">
+                <form action="{{ route('forms.update', $form) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
