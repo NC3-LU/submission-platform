@@ -125,6 +125,49 @@
                             @enderror
                         </div>
 
+                        <!-- Header Image Field -->
+                        <div class="lg:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Header image</label>
+
+                            @if($form->header_image)
+                                <div x-data="{ pos: {{ $form->header_image_position }}, dragging: false }" class="mb-3">
+                                    <div class="relative w-full h-48 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 cursor-ns-resize select-none"
+                                         @mousedown="dragging = true"
+                                         @mousemove="if (dragging) { const r = $el.getBoundingClientRect(); pos = Math.min(100, Math.max(0, Math.round((($event.clientY - r.top) / r.height) * 100))) }"
+                                         @mouseup.window="dragging = false"
+                                         @mouseleave="dragging = false">
+                                        <img src="{{ $form->header_image_url }}" alt="{{ $form->title }}"
+                                             class="w-full h-full object-cover pointer-events-none"
+                                             :style="`object-position: 50% ${pos}%`">
+                                        <div class="absolute inset-x-0 bottom-0 bg-black/40 text-white text-xs text-center py-1 pointer-events-none">Drag to reposition</div>
+                                    </div>
+                                    <input type="hidden" name="header_image_position" :value="pos">
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-4 mb-3">
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                        Accent color
+                                        <input type="color" name="header_theme_color" value="{{ $form->header_theme_color ?? '#3366cc' }}"
+                                               class="h-8 w-12 rounded border border-gray-300 dark:border-gray-600 bg-transparent p-0">
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                        <input type="checkbox" name="remove_header_image" value="1"
+                                               class="rounded border-gray-300 dark:border-gray-600 text-sky-600 focus:ring-sky-500">
+                                        Remove header image
+                                    </label>
+                                </div>
+                            @else
+                                <input type="hidden" name="header_image_position" value="50">
+                            @endif
+
+                            <input type="file" name="header_image" accept="image/jpeg,image/png,image/webp"
+                                   class="block w-full text-sm text-gray-600 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 dark:file:bg-sky-900/30 dark:file:text-sky-300">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">JPG, PNG or WebP, max 4&nbsp;MB. Uploading replaces the current image.</p>
+                            @error('header_image')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
                         <!-- Status Field -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

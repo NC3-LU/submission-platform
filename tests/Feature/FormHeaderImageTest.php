@@ -215,4 +215,19 @@ class FormHeaderImageTest extends TestCase
         $response->assertOk();
         $response->assertDontSee('object-position: 50%', false);
     }
+
+    public function test_edit_page_exposes_header_controls(): void
+    {
+        $user = User::factory()->create();
+        $form = Form::factory()->for($user)->withHeaderImage()->create();
+
+        $response = $this->actingAs($user)->get(route('forms.edit', $form));
+
+        $response->assertOk();
+        $response->assertSee('name="header_image"', false);
+        $response->assertSee('name="header_image_position"', false);
+        $response->assertSee('name="header_theme_color"', false);
+        $response->assertSee('name="remove_header_image"', false);
+        $response->assertSee('enctype="multipart/form-data"', false);
+    }
 }

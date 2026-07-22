@@ -50,6 +50,16 @@
                             @enderror
                         </div>
 
+                        <div class="lg:col-span-2">
+                            <label for="header_image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Header image</label>
+                            <input type="file" name="header_image" id="header_image" accept="image/jpeg,image/png,image/webp"
+                                   class="block w-full text-sm text-gray-600 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 dark:file:bg-sky-900/30 dark:file:text-sky-300">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Optional banner shown above the form. JPG, PNG or WebP, max 4&nbsp;MB. Reposition and accent color can be adjusted after saving.</p>
+                            @error('header_image')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
                         <div>
                             <label for="visibility" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Visibility</label>
                             <select name="visibility" id="visibility"
