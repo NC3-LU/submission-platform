@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Resources\FormResource;
 use App\Models\Form;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -229,5 +230,16 @@ class FormHeaderImageTest extends TestCase
         $response->assertSee('name="header_theme_color"', false);
         $response->assertSee('name="remove_header_image"', false);
         $response->assertSee('enctype="multipart/form-data"', false);
+    }
+
+    public function test_form_resource_includes_header_fields(): void
+    {
+        $form = Form::factory()->withHeaderImage()->create();
+
+        $resource = (new FormResource($form))->toArray(request());
+
+        $this->assertArrayHasKey('header_image_url', $resource);
+        $this->assertArrayHasKey('header_theme_color', $resource);
+        $this->assertSame('#3366cc', $resource['header_theme_color']);
     }
 }

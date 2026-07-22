@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class FormResource extends JsonResource
@@ -9,8 +11,8 @@ class FormResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @param  Request  $request
+     * @return array|Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
@@ -18,6 +20,8 @@ class FormResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            'header_image_url' => $this->header_image_url,
+            'header_theme_color' => $this->header_theme_color,
             'status' => $this->status,
             'visibility' => $this->visibility,
             'created_at' => $this->created_at,
@@ -29,4 +33,4 @@ class FormResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),
         ];
     }
-} 
+}
