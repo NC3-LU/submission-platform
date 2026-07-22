@@ -5,6 +5,12 @@ set -e
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Recreate the public/storage symlink on every start. public/ lives in the
+# image layer (not the persistent storage volume), so a fresh deploy ships
+# without the link and uploaded files under storage/app/public — form header
+# images, etc. — 404 until it is relinked. --force makes this idempotent.
+php artisan storage:link --force
+
 # Clear and rebuild caches on every container start
 # This ensures fresh deploys don't serve stale config/views
 php artisan config:cache
