@@ -36,7 +36,13 @@
                             @foreach($submissions as $submission)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {{ $submission->form->title }}
+                                        <div class="flex items-center gap-3">
+                                            @if($submission->form->header_image)
+                                                <img src="{{ $submission->form->header_image_url }}" alt=""
+                                                     class="w-10 h-10 object-cover rounded shrink-0">
+                                            @endif
+                                            <span>{{ $submission->form->title }}</span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium

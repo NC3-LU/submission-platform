@@ -19,6 +19,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($forms as $form)
                         <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-sky-500 p-6 hover:shadow-md transition-shadow">
+                            @if($form->header_image)
+                                <img src="{{ $form->header_image_url }}" alt=""
+                                     class="w-full h-24 object-cover rounded-md mb-3 -mt-2"
+                                     style="object-position: 50% {{ $form->header_image_position }}%">
+                            @endif
                             <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ $form->title }}</h3>
                             <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mt-2">{{ $form->description }}</p>
                             <div class="mt-4 flex items-center justify-between">

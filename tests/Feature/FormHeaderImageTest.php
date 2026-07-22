@@ -190,4 +190,29 @@ class FormHeaderImageTest extends TestCase
         Storage::disk('public')->delete('form-headers/orig.jpg');
         Storage::disk('public')->assertExists($clone->header_image);
     }
+
+    public function test_banner_renders_on_submission_page_when_set(): void
+    {
+        $user = User::factory()->create();
+        $form = Form::factory()->for($user)->published()->public()->withHeaderImage()->create();
+        $form->categories()->create(['name' => 'C', 'order' => 1]);
+
+        $response = $this->actingAs($user)->get(route('submissions.create', $form));
+
+        $response->assertOk();
+        $response->assertSee('object-position: 50% 60%', false);
+        $response->assertSee($form->header_image_url, false);
+    }
+
+    public function test_banner_absent_when_no_header_image(): void
+    {
+        $user = User::factory()->create();
+        $form = Form::factory()->for($user)->published()->public()->create(['header_image' => null]);
+        $form->categories()->create(['name' => 'C', 'order' => 1]);
+
+        $response = $this->actingAs($user)->get(route('submissions.create', $form));
+
+        $response->assertOk();
+        $response->assertDontSee('object-position: 50%', false);
+    }
 }
