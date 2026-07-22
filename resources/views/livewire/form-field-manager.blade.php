@@ -380,7 +380,7 @@
     </div>
     <!-- Delete Section Confirmation Modal -->
     @if($confirmingCategoryDeletion)
-        <div class="fixed inset-0 z-50 overflow-y-auto"
+        <div class="fixed inset-0 z-[60] overflow-y-auto"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.set('confirmingCategoryDeletion', false)">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
@@ -408,7 +408,7 @@
 
     <!-- Delete Field Confirmation Modal -->
     @if($confirmingFieldDeletion)
-        <div class="fixed inset-0 z-50 overflow-y-auto"
+        <div class="fixed inset-0 z-[60] overflow-y-auto"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.set('confirmingFieldDeletion', false)">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
@@ -436,7 +436,7 @@
 
     <!-- Edit Section Modal -->
     @if($editingCategory)
-        <div class="fixed inset-0 z-50 overflow-y-auto"
+        <div class="fixed inset-0 z-[60] overflow-y-auto"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.set('editingCategory', false)">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
@@ -478,7 +478,7 @@
     @endif
     <!-- Edit Field Slide-out Panel -->
     @if($editingField)
-        <div class="fixed inset-0 z-50 overflow-hidden"
+        <div class="fixed inset-0 z-[60] overflow-hidden"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.set('editingField', false)">
             <div class="absolute inset-0 overflow-hidden">
@@ -618,7 +618,7 @@
 
     <!-- Add Section Slide-out Panel -->
     @if($showAddCategoryPanel)
-        <div class="fixed inset-0 z-50 overflow-hidden"
+        <div class="fixed inset-0 z-[60] overflow-hidden"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.closeAddCategoryPanel()">
             <div class="absolute inset-0 overflow-hidden">
@@ -686,7 +686,7 @@
 
     <!-- Add Field Slide-out Panel -->
     @if($showAddFieldPanel)
-        <div class="fixed inset-0 z-50 overflow-hidden"
+        <div class="fixed inset-0 z-[60] overflow-hidden"
              x-data="{ init() { document.body.style.overflow = 'hidden' }, destroy() { document.body.style.overflow = '' } }"
              @keydown.escape.window="$wire.closeAddFieldPanel()">
             <div class="absolute inset-0 overflow-hidden">
