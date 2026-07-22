@@ -83,7 +83,8 @@
                     <!-- Brand -->
                     <div>
                         <x-application-logo class="h-8 w-auto" />
-                        <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">National Cybersecurity Competence Center</p>
+                        <p class="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Cybersecurity Luxembourg</p>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">National Cybersecurity Competence Center</p>
                         <div class="mt-4 inline-flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
                             <img src="{{ asset('img/co-funded-eu-logo.png') }}" alt="Co-funded by the European Union" class="h-10 w-auto" loading="lazy">
                             <span class="text-xs text-slate-500 dark:text-slate-400">Co-funded by the EU<br>Digital Europe Programme</span>
@@ -99,7 +100,10 @@
                             @auth
                             <li><a href="{{ route('dashboard') }}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Dashboard</a></li>
                             @endauth
-                            <li><a href="https://nc3.lu" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">NC3 Website</a></li>
+                            <li><a href="https://cybersecurity.lu" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Cybersecurity Luxembourg</a></li>
+                            <li><a href="https://nc3.lu" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">NC3</a></li>
+                            <li><a href="https://circl.lu" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">CIRCL</a></li>
+                            <li><a href="https://lhc.lu" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">LHC</a></li>
                         </ul>
                     </div>
 
