@@ -77,6 +77,14 @@ services:
       # fastcgi handler resolves /var/www/html/public/index.php, so the
       # container must see the same public/ the host does.
       - ./public:/var/www/html/public
+      # Public-disk uploads (form header images) must live on the HOST, because
+      # the host Apache — not the container — serves /storage/*. Without this
+      # they land in the storage_data volume and the public/storage symlink
+      # entrypoint.sh creates points at /var/www/html/storage/app/public, a
+      # path that exists only inside the container: every /storage/* URL 403s
+      # while the upload itself appears to succeed. Nested under the
+      # storage_data mount above; compose applies the deeper path last.
+      - ./public/storage:/var/www/html/storage/app/public
       # .env is deliberately excluded from the image by .dockerignore so
       # secrets never land in an image layer. Production still needs it at
       # runtime (APP_KEY, mail, session, Pandora), and docker-compose.env only
@@ -111,6 +119,9 @@ services:
     command: php artisan queue:work --tries=3 --sleep=3 --timeout=180 --max-time=3600
     volumes:
       - storage_data:/var/www/html/storage
+      # Same public-disk bind as the app service. Without it the two containers
+      # would see different content at storage/app/public.
+      - ./public/storage:/var/www/html/storage/app/public
       # Same reasoning as the app service.
       - ./.env:/var/www/html/.env:ro
     depends_on:

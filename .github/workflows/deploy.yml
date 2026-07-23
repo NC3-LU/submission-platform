@@ -40,6 +40,9 @@ jobs:
           EOF
 
       - name: Sync Files to Server
+        # public/storage holds uploaded header images and is gitignored, so it
+        # is absent from the source tree — without excluding it, --delete wipes
+        # every uploaded image on each deploy.
         run: |
           rsync -avz --delete \
           -e "ssh -J ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:${{ secrets.BASTION_SSH_PORT }}" \
@@ -47,6 +50,7 @@ jobs:
           --exclude '.git' \
           --exclude '.github' \
           --exclude 'tests' \
+          --exclude 'public/storage' \
           ./ ${{ secrets.SERVER_USERNAME }}@${{ secrets.PRODUCTION_ENV_HOST }}:/var/www/applications.nc3.lu/
       - name: Create Configuration Files and Deploy
         env:

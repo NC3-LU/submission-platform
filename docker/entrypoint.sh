@@ -9,7 +9,20 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 # image layer (not the persistent storage volume), so a fresh deploy ships
 # without the link and uploaded files under storage/app/public — form header
 # images, etc. — 404 until it is relinked. --force makes this idempotent.
-php artisan storage:link --force
+#
+# Production is the exception: docker-compose.prod.yml bind-mounts the host's
+# public/storage onto storage/app/public so the HOST Apache can serve those
+# files. There public/storage is a real directory, and storage:link --force
+# would fail on it (delete() cannot remove a directory, then symlink() errors
+# "File exists") — which, under `set -e`, wedges the container in a restart
+# loop. Skip it whenever the path is already a directory rather than a link.
+if [ -d /var/www/html/public/storage ] && [ ! -L /var/www/html/public/storage ]; then
+    echo "public/storage is a real directory (bind mount) — skipping storage:link."
+    chown -R www-data:www-data /var/www/html/public/storage
+    chmod -R 775 /var/www/html/public/storage
+else
+    php artisan storage:link --force
+fi
 
 # Clear and rebuild caches on every container start
 # This ensures fresh deploys don't serve stale config/views

@@ -108,6 +108,7 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
     docker-php-ext-install intl
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 COPY --from=composer-builder /app /var/www/html
 COPY --from=node-builder /app/public/build /var/www/html/public/build
@@ -164,6 +165,7 @@ RUN a2enmod rewrite && \
 
 # Configure opcache
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 # Copy application files
 COPY --from=composer-builder /app /var/www/html
