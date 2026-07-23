@@ -580,32 +580,75 @@ class FormFieldManager extends Component
         $this->dispatch('notify', ['message' => 'Category duplicated successfully', 'type' => 'success']);
     }
 
+    /**
+     * Pull the model id out of a livewire-sortable entry.
+     *
+     * `wire:sortable` posts [{order, value}], not plain ids. Passing the raw
+     * entry to a where() clause silently binds the wrong value, so always
+     * normalise first.
+     */
+    private function sortableId(mixed $item): ?int
+    {
+        $id = is_array($item) ? ($item['value'] ?? $item['id'] ?? null) : $item;
+
+        return is_numeric($id) ? (int) $id : null;
+    }
+
     // Handle drag-drop reordering of categories
     public function updateCategoryOrder($orderedIds): void
     {
-        foreach ($orderedIds as $index => $id) {
-            FormCategory::where('id', $id)->update(['order' => $index + 1]);
+        foreach (array_values((array) $orderedIds) as $index => $item) {
+            $categoryId = $this->sortableId($item);
+
+            if ($categoryId === null) {
+                continue;
+            }
+
+            $order = is_array($item) ? ($item['order'] ?? $index + 1) : $index + 1;
+
+            FormCategory::where('id', $categoryId)
+                ->where('form_id', $this->form->id)
+                ->update(['order' => (int) $order]);
         }
+
         $this->loadCategories();
     }
 
-    // Handle drag-drop reordering of fields within a category
-    public function updateFieldOrder($items): void
+    // Handle drag-drop reordering of fields, within and across categories
+    public function updateFieldOrder($groups): void
     {
-        foreach ($items as $index => $item) {
-            // Handle both array format and simple ID format
-            $fieldId = is_array($item) ? ($item['value'] ?? $item['id'] ?? $item) : $item;
-            $order = is_array($item) ? ($item['order'] ?? $index + 1) : $index + 1;
+        foreach ((array) $groups as $group) {
+            // `wire:sortable-group` posts one entry per category:
+            // {order, value: categoryId, items: [{order, value: fieldId}]}.
+            $categoryId = $this->sortableId($group);
+            $items = is_array($group) ? ($group['items'] ?? null) : null;
 
-            $updateData = ['order' => $order];
-
-            // Only update category if 'group' key exists (cross-category drag)
-            if (is_array($item) && isset($item['group'])) {
-                $updateData['form_category_id'] = $item['group'];
+            if ($categoryId === null || ! is_array($items)) {
+                continue;
             }
 
-            FormField::where('id', $fieldId)->update($updateData);
+            if (! FormCategory::where('id', $categoryId)->where('form_id', $this->form->id)->exists()) {
+                continue;
+            }
+
+            foreach (array_values($items) as $index => $item) {
+                $fieldId = $this->sortableId($item);
+
+                if ($fieldId === null) {
+                    continue;
+                }
+
+                $order = is_array($item) ? ($item['order'] ?? $index + 1) : $index + 1;
+
+                FormField::where('id', $fieldId)
+                    ->where('form_id', $this->form->id)
+                    ->update([
+                        'order' => (int) $order,
+                        'form_category_id' => $categoryId,
+                    ]);
+            }
         }
+
         $this->loadCategories();
     }
 
