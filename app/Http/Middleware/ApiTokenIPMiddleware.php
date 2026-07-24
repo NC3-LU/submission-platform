@@ -137,7 +137,12 @@ class ApiTokenIPMiddleware
      */
     private function getRequiredAbility(Request $request): ?string
     {
-        $path = $request->path();
+        // decodedPath(), not path(): the router matches routes against
+        // rawurldecode($path), while path() returns the still-encoded path.
+        // Matching abilities on the raw path lets `POST /api/v1/%74okens`
+        // reach the tokens route while matching none of the patterns below,
+        // so no ability is required at all.
+        $path = $request->decodedPath();
         $method = $request->method();
 
         $verb = match ($method) {

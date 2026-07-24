@@ -90,6 +90,37 @@ class ApiTokenAbilityEnforcementTest extends TestCase
             ->assertStatus(200);
     }
 
+    // --- Percent-encoded paths resolve to the same ability ----------------
+    //
+    // Laravel matches routes against rawurldecode($path) but Request::path()
+    // returns the raw, still-encoded path. Any ability check driven by the raw
+    // path is therefore bypassable by encoding one character of the route.
+
+    public function test_a_percent_encoded_submissions_path_still_requires_submissions_read(): void
+    {
+        // %66 is 'f', so this reaches the same route as /api/v1/forms/...
+        $this->asToken($this->tokenWith(['forms:read']))
+            ->getJson("/api/v1/%66orms/{$this->form->id}/submissions")
+            ->assertStatus(403);
+    }
+
+    public function test_a_percent_encoded_tokens_path_still_requires_tokens_manage(): void
+    {
+        // %74 is 't', so this reaches the same route as /api/v1/tokens.
+        $this->asToken($this->tokenWith(['forms:read']))
+            ->postJson('/api/v1/%74okens', ['name' => 'Minted via encoded path'])
+            ->assertStatus(403);
+
+        $this->assertDatabaseMissing('api_tokens', ['name' => 'Minted via encoded path']);
+    }
+
+    public function test_a_percent_encoded_forms_path_still_requires_the_forms_ability(): void
+    {
+        $this->asToken($this->tokenWith(['submissions:read']))
+            ->getJson('/api/v1/%66orms')
+            ->assertStatus(403);
+    }
+
     // --- Token management requires its own ability ------------------------
 
     public function test_a_forms_read_token_cannot_mint_new_tokens(): void
