@@ -6,7 +6,6 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\FormFieldController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\SubmissionExportController;
-use App\Http\Controllers\WorkflowController;
 use App\Http\Middleware\FormAccessMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -54,18 +53,14 @@ Route::middleware([
         Route::delete('/access-links/{accessLink}', [FormAccessController::class, 'deleteAccessLink'])->name('delete-access-link');
 
         // Form Field Management
-        Route::prefix('{form}/fields')->name('fields.')->middleware(['can:update,form'])->group(function () {
+        // scopeBindings() resolves {field} through $form->fields(), so a field
+        // belonging to another form 404s. `can:update,form` only authorizes the
+        // {form} segment — without the scoping, any form owner could edit or
+        // delete fields on someone else's form.
+        Route::prefix('{form}/fields')->name('fields.')->middleware(['can:update,form'])->scopeBindings()->group(function () {
             Route::post('/', [FormFieldController::class, 'store'])->name('store');
             Route::put('/{field}', [FormFieldController::class, 'update'])->name('update');
             Route::delete('/{field}', [FormFieldController::class, 'destroy'])->name('destroy');
-        });
-
-        // Workflow Management
-        Route::prefix('{form}/workflows')->name('workflows.')->group(function () {
-            Route::get('/manage', [WorkflowController::class, 'manage'])->name('manage');
-            Route::get('/{workflow}', [WorkflowController::class, 'show'])->name('show');
-            Route::delete('/steps/{step}', [WorkflowController::class, 'destroyStep'])->name('steps.destroy');
-            Route::delete('/{workflow}', [WorkflowController::class, 'destroy'])->name('destroy');
         });
 
         // User Removal from Form
@@ -100,12 +95,5 @@ Route::middleware([
     Route::get('forms/{form}/export/json', [SubmissionExportController::class, 'exportFormJson'])
         ->middleware('throttle:bulk-export')
         ->name('submissions.export.form.json');
-
-    /*Route::prefix('forms/{form}/workflows')->name('workflows.')->middleware(['auth'])->group(function () {
-    Route::get('/manage', [WorkflowController::class, 'manage'])->name('manage');
-    Route::get('/{workflow}', [WorkflowController::class, 'show'])->name('show');
-    Route::delete('/steps/{step}', [WorkflowController::class, 'destroyStep'])->name('steps.destroy');
-    Route::delete('/{workflow}', [WorkflowController::class, 'destroy'])->name('destroy');
-    });*/
 
 });

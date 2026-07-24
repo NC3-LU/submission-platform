@@ -43,6 +43,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Open API Documentation
+    |--------------------------------------------------------------------------
+    |
+    | When true, any authenticated user may view /docs/api regardless of their
+    | email domain. Intended for the test environment. This used to be inferred
+    | from a "test." Host header, which the client controls.
+    |
+    */
+
+    'api_docs_public' => (bool) env('API_DOCS_PUBLIC', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |

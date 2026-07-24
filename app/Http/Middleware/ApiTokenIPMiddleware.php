@@ -140,30 +140,39 @@ class ApiTokenIPMiddleware
         $path = $request->path();
         $method = $request->method();
 
-        // Forms management abilities
-        if (preg_match('#^api/v1/forms#', $path)) {
-            if ($method === 'GET') {
-                return 'forms:read';
-            } elseif ($method === 'POST') {
-                return 'forms:create';
-            } elseif ($method === 'PUT' || $method === 'PATCH') {
-                return 'forms:update';
-            } elseif ($method === 'DELETE') {
-                return 'forms:delete';
-            }
+        $verb = match ($method) {
+            'GET', 'HEAD' => 'read',
+            'POST' => 'create',
+            'PUT', 'PATCH' => 'update',
+            'DELETE' => 'delete',
+            default => null,
+        };
+
+        if ($verb === null) {
+            return null;
         }
 
-        // Submissions management abilities
-        if (preg_match('#^api/v1/forms/\d+/submissions#', $path)) {
-            if ($method === 'GET') {
-                return 'submissions:read';
-            } elseif ($method === 'POST') {
-                return 'submissions:create';
-            } elseif ($method === 'PUT' || $method === 'PATCH') {
-                return 'submissions:update';
-            } elseif ($method === 'DELETE') {
-                return 'submissions:delete';
-            }
+        // Order matters: submissions and access-links are nested under
+        // `forms/{id}/`, so they have to be matched before the broader forms
+        // pattern or they resolve to a forms:* ability and the narrower
+        // abilities become unreachable.
+        if (preg_match('#^api/v1/forms/[^/]+/submissions#', $path)) {
+            return 'submissions:'.$verb;
+        }
+
+        // Access links are form configuration, so they ride on forms:*.
+        if (preg_match('#^api/v1/forms?/[^/]+/access-links#', $path)) {
+            return $verb === 'read' ? 'forms:read' : 'forms:update';
+        }
+
+        if (preg_match('#^api/v1/forms(/|$)#', $path)) {
+            return 'forms:'.$verb;
+        }
+
+        // Token management is a privileged operation in its own right: without
+        // this, any token could mint an unrestricted one for its user.
+        if (preg_match('#^api/v1/tokens(/|$)#', $path)) {
+            return 'tokens:manage';
         }
 
         // Default to null (no specific ability required)

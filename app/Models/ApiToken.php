@@ -11,6 +11,35 @@ class ApiToken extends Model
 {
     use HasFactory;
 
+    /**
+     * Every ability a token may hold, excluding the '*' wildcard.
+     *
+     * The wildcard is deliberately not listed: it can only be granted from the
+     * admin panel, never through the API, so a token can never widen its own
+     * reach.
+     *
+     * @var array<int, string>
+     */
+    public const ABILITIES = [
+        'forms:read',
+        'forms:create',
+        'forms:update',
+        'forms:delete',
+        'submissions:read',
+        'submissions:create',
+        'submissions:update',
+        'submissions:delete',
+        'tokens:manage',
+    ];
+
+    /**
+     * Granted when a token is created through the API without an explicit
+     * ability list. Least privilege: the caller must ask for more.
+     *
+     * @var array<int, string>
+     */
+    public const DEFAULT_ABILITIES = ['forms:read'];
+
     protected $fillable = [
         'user_id',
         'name',

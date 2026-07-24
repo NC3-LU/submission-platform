@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ApiTokenController extends Controller
 {
@@ -34,7 +35,7 @@ class ApiTokenController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'abilities' => 'nullable|array',
-            'abilities.*' => 'string',
+            'abilities.*' => ['string', Rule::in(ApiToken::ABILITIES)],
             'allowed_ips' => 'nullable|string',
             'expires_at' => 'nullable|date|after:now',
         ]);
@@ -49,12 +50,17 @@ class ApiTokenController extends Controller
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
 
+        // Least privilege: an omitted ability list used to mean '*', which let
+        // any token mint an unrestricted one.
+        $abilities = $request->abilities ?? ApiToken::DEFAULT_ABILITIES;
+
+        if ($denied = $this->abilitiesBeyond($apiToken, $abilities)) {
+            return $this->escalationRefused($denied);
+        }
+
         // Generate a secure random token
         $plainTextToken = Str::random(40);
         $tokenHash = hash('sha256', $plainTextToken);
-
-        // Set default abilities if none provided
-        $abilities = $request->abilities ?? ['*'];
 
         // Create the token record
         $token = ApiToken::create([
@@ -98,7 +104,7 @@ class ApiTokenController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'abilities' => 'nullable|array',
-            'abilities.*' => 'string',
+            'abilities.*' => ['string', Rule::in(ApiToken::ABILITIES)],
             'allowed_ips' => 'nullable|string',
             'expires_at' => 'nullable|date|after:now',
         ]);
@@ -108,6 +114,11 @@ class ApiTokenController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $validator->errors(),
             ], 422);
+        }
+
+        if ($request->has('abilities')
+            && ($denied = $this->abilitiesBeyond($apiToken, $request->abilities ?? []))) {
+            return $this->escalationRefused($denied);
         }
 
         // Update the token
@@ -140,5 +151,37 @@ class ApiTokenController extends Controller
         return response()->json([
             'message' => 'API token deleted successfully',
         ]);
+    }
+
+    /**
+     * Abilities in $requested that the calling token does not itself hold.
+     *
+     * A token may only ever hand out a subset of its own reach — otherwise the
+     * token endpoints are a privilege-escalation primitive.
+     *
+     * @param  array<int, string>  $requested
+     * @return array<int, string>
+     */
+    private function abilitiesBeyond(ApiToken $caller, array $requested): array
+    {
+        return array_values(array_filter(
+            $requested,
+            fn ($ability) => ! $caller->can($ability)
+        ));
+    }
+
+    /**
+     * @param  array<int, string>  $denied
+     */
+    private function escalationRefused(array $denied): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Validation failed',
+            'errors' => [
+                'abilities' => [
+                    'A token cannot grant abilities it does not hold: '.implode(', ', $denied).'.',
+                ],
+            ],
+        ], 422);
     }
 }

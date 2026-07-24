@@ -27,7 +27,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('forms.store') }}" method="POST" enctype="multipart/form-data" x-data="{ categories: [{ name: '', description: '', percentage_start: 0, percentage_end: 100 }] }">
+                <form action="{{ route('forms.store') }}" method="POST" enctype="multipart/form-data" x-data="{ categories: [{ name: '', description: '' }] }">
                     @csrf
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -112,7 +112,7 @@
                             </template>
                         </div>
 
-                        <button type="button" @click="categories.push({ name: '', description: '', percentage_start: 0, percentage_end: 100 })"
+                        <button type="button" @click="categories.push({ name: '', description: '' })"
                                 class="mt-4 inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

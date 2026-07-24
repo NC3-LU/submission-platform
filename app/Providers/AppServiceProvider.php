@@ -45,10 +45,11 @@ class AppServiceProvider extends ServiceProvider
      */
     private function isDomainAllowed(string $email): bool
     {
-        $host = request()->getHost();
-
-        // Allow all access if domain starts with "test."
-        if (str_starts_with($host, 'test.')) {
+        // Deliberately not derived from request()->getHost(): the Host header
+        // is client-supplied, so the old `str_starts_with($host, 'test.')`
+        // escape hatch let any registered user reach /docs/api by spoofing it.
+        // Environments that want open docs opt in through configuration.
+        if (config('app.api_docs_public', false)) {
             return true;
         }
 

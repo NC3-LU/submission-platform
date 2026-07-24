@@ -136,9 +136,19 @@ class SubmissionController extends Controller
                     'status' => 'submitted',
                 ]);
 
-                // Create submission values
+                // Create submission values.
+                //
+                // The keys of `values` are client-supplied field ids, so they
+                // are matched against this form's fields — otherwise a caller
+                // could attach answers to another form's fields.
                 if ($request->has('values')) {
+                    $ownFieldIds = $form->fields()->pluck('id')->all();
+
                     foreach ($request->values as $fieldId => $value) {
+                        if (! in_array((int) $fieldId, $ownFieldIds, true)) {
+                            continue;
+                        }
+
                         SubmissionValues::create([
                             'submission_id' => $submission->id,
                             'form_field_id' => $fieldId,

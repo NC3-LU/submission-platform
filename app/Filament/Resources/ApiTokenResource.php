@@ -58,6 +58,7 @@ class ApiTokenResource extends Resource
                                 'submissions:create' => 'Create Submissions',
                                 'submissions:update' => 'Update Submissions',
                                 'submissions:delete' => 'Delete Submissions',
+                                'tokens:manage' => 'Manage API Tokens',
                                 '*' => 'All Permissions',
                             ])
                             ->default(['forms:read'])

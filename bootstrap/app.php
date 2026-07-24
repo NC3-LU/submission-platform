@@ -23,8 +23,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust proxies (Traefik/reverse proxy) for correct HTTPS detection
-        $middleware->trustProxies(at: '*');
+        // Trust proxies (Traefik/reverse proxy) for correct HTTPS detection.
+        //
+        // X-Forwarded-Host is deliberately excluded: with `at: '*'` any client
+        // could otherwise rewrite request()->getHost() and defeat host-based
+        // checks. Proto/port/for/prefix are what HTTPS detection needs.
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR
+            | Request::HEADER_X_FORWARDED_PORT
+            | Request::HEADER_X_FORWARDED_PROTO
+            | Request::HEADER_X_FORWARDED_PREFIX);
+
+        // Reject requests whose Host header is not one we serve. Opt-in: an
+        // empty TRUSTED_HOSTS leaves the check off rather than risking a
+        // deployment that cannot answer on its own hostname.
+        $trustedHosts = array_filter(array_map('trim', explode(',', (string) env('TRUSTED_HOSTS', ''))));
+
+        if ($trustedHosts !== []) {
+            $middleware->trustHosts(at: $trustedHosts, subdomains: false);
+        }
 
         // Web middleware
         $middleware->web(append: [

@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Jobs\ScanSubmissionFileJob;
 use App\Models\Form;
-use App\Models\FormField;
 use App\Models\Submission;
 use Exception;
 use Illuminate\Contracts\View\Factory;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -44,6 +44,18 @@ class SubmissionForm extends Component
      * @var array<string, mixed>
      */
     public array $tempFiles = [];
+
+    /**
+     * Temp-disk paths this component wrote during this session, keyed by field.
+     *
+     * `fieldValues` round-trips through the browser, so it cannot be used to
+     * decide what we are allowed to delete. This is #[Locked] and therefore
+     * server-authoritative.
+     *
+     * @var array<int, string>
+     */
+    #[Locked]
+    public array $uploadedTempPaths = [];
 
     /**
      * Current step in the multi-step form
@@ -302,6 +314,7 @@ class SubmissionForm extends Component
 
             $path = $value->store('temp-submissions', 'private');
             $this->fieldValues[$fieldId] = $path;
+            $this->uploadedTempPaths[(int) $fieldId] = $path;
 
             if (array_key_exists($key, $this->tempFiles)) {
                 $this->tempFiles[$key] = null;
@@ -313,7 +326,7 @@ class SubmissionForm extends Component
             if (array_key_exists($key, $this->tempFiles)) {
                 $this->tempFiles[$key] = null;
             }
-            unset($this->fieldValues[$fieldId]);
+            unset($this->fieldValues[$fieldId], $this->uploadedTempPaths[(int) $fieldId]);
 
             Log::error('Livewire file validation failed during upload for key: '.$key, [
                 'error' => $e->getMessage(),
@@ -342,19 +355,61 @@ class SubmissionForm extends Component
      */
     public function deleteFile(int $fieldId): void
     {
-        if (isset($this->fieldValues[$fieldId])) {
-            try {
-                Storage::disk('private')->delete($this->fieldValues[$fieldId]);
-                unset($this->fieldValues[$fieldId]);
-                $this->dispatch('success', 'File deleted successfully');
-            } catch (Exception $e) {
-                Log::error('File deletion failed', [
-                    'error' => $e->getMessage(),
-                    'field_id' => $fieldId,
-                ]);
-                $this->dispatch('error', 'Failed to delete file: '.$e->getMessage());
-            }
+        $path = $this->fieldValues[$fieldId] ?? null;
+
+        if (! is_string($path) || $path === '') {
+            return;
         }
+
+        if (! $this->ownsUploadedFile($fieldId, $path)) {
+            // The path came off the wire and does not belong to this form's
+            // upload for this field. Refuse rather than hand the caller an
+            // arbitrary delete on the private disk.
+            Log::warning('Refused to delete a file the submission form does not own', [
+                'form_id' => $this->form->id,
+                'submission_id' => $this->submission?->id,
+                'field_id' => $fieldId,
+                'path' => $path,
+            ]);
+
+            $this->dispatch('error', 'Failed to delete file.');
+
+            return;
+        }
+
+        try {
+            Storage::disk('private')->delete($path);
+            unset($this->fieldValues[$fieldId], $this->uploadedTempPaths[$fieldId]);
+            $this->dispatch('success', 'File deleted successfully');
+        } catch (Exception $e) {
+            Log::error('File deletion failed', [
+                'error' => $e->getMessage(),
+                'field_id' => $fieldId,
+            ]);
+            $this->dispatch('error', 'Failed to delete file: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Whether $path is a file this component is entitled to delete: either one
+     * it stored during this session, or one already recorded against this
+     * submission for this field.
+     */
+    protected function ownsUploadedFile(int $fieldId, string $path): bool
+    {
+        if (! $this->form->fields()->where('id', $fieldId)->where('type', 'file')->exists()) {
+            return false;
+        }
+
+        if (($this->uploadedTempPaths[$fieldId] ?? null) === $path) {
+            return true;
+        }
+
+        return $this->submission !== null
+            && $this->submission->values()
+                ->where('form_field_id', $fieldId)
+                ->where('value', $path)
+                ->exists();
     }
 
     /**
@@ -439,6 +494,10 @@ class SubmissionForm extends Component
 
             // Save checkbox values as they are (they're already arrays in the UI)
             foreach ($this->fieldValues as $fieldId => $value) {
+                if (! $this->ownsField($fieldId)) {
+                    continue;
+                }
+
                 if (is_array($value)) {
                     // This is likely a checkbox field, preserve the array values in the session
                     // but store a string representation in the database
@@ -524,6 +583,27 @@ class SubmissionForm extends Component
     }
 
     /**
+     * Ids of the fields that belong to the form being submitted.
+     *
+     * @var array<int, int>|null
+     */
+    protected ?array $ownFieldIdCache = null;
+
+    /**
+     * Whether a client-supplied field id belongs to this form.
+     *
+     * `fieldValues` round-trips through the browser, so its keys are untrusted:
+     * without this, answers (and files) could be attached to another form's
+     * fields.
+     */
+    protected function ownsField(int|string $fieldId): bool
+    {
+        $this->ownFieldIdCache ??= $this->form->fields()->pluck('id')->all();
+
+        return in_array((int) $fieldId, $this->ownFieldIdCache, true);
+    }
+
+    /**
      * Save form field values to the database
      */
     protected function saveValues(): void
@@ -531,6 +611,10 @@ class SubmissionForm extends Component
         $this->processCheckboxValues();
 
         foreach ($this->fieldValues as $fieldId => $value) {
+            if (! $this->ownsField($fieldId)) {
+                continue;
+            }
+
             $this->submission->values()->updateOrCreate(
                 ['form_field_id' => $fieldId],
                 ['value' => $value]
@@ -572,6 +656,16 @@ class SubmissionForm extends Component
         if (! $this->isEditMode) {
             $form = $this->form->fresh();
 
+            // Status is re-read for the same reason as the window below: the
+            // page render is the only other place it is checked, and Livewire
+            // posts straight here. A form unpublished since mount must stop
+            // accepting submissions.
+            if ($form && $form->status !== 'published') {
+                $this->dispatch('error', 'This form is not accepting submissions.');
+
+                return;
+            }
+
             if ($form && ! $form->isWithinAvailabilityWindow()) {
                 $this->dispatch('error', $form->availabilityState() === 'scheduled'
                     ? 'This form is not open for submissions yet.'
@@ -609,6 +703,10 @@ class SubmissionForm extends Component
 
             // Store submission values
             foreach ($this->fieldValues as $fieldId => $value) {
+                if (! $this->ownsField($fieldId)) {
+                    continue;
+                }
+
                 if (is_array($value)) {
                     // This is likely a checkbox field
                     // Get the field to access its options
@@ -682,8 +780,9 @@ class SubmissionForm extends Component
                 continue;
             }
 
-            // Check if this field is actually a file type and the value looks like a temp path
-            $fieldModel = FormField::find($fieldId);
+            // Check if this field is actually a file type on THIS form and the
+            // value looks like a temp path.
+            $fieldModel = $this->form->fields()->find($fieldId);
             if (! $fieldModel || $fieldModel->type !== 'file') {
                 continue;
             }

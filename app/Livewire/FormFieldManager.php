@@ -24,8 +24,6 @@ class FormFieldManager extends Component
     public $newCategory = [
         'name' => '',
         'description' => '',
-        'percentage_start' => 0,
-        'percentage_end' => 100,
     ];
 
     public $newField = [
@@ -132,8 +130,6 @@ class FormFieldManager extends Component
     protected $rules = [
         'newCategory.name' => 'required|string|max:255',
         'newCategory.description' => 'nullable|string',
-        'newCategory.percentage_start' => 'required|numeric|min:0|max:100',
-        'newCategory.percentage_end' => 'required|numeric|min:0|max:100|gt:newCategory.percentage_start',
         // Keep a generic rule as a fallback; scoped rule is applied at runtime in validation methods
         'newField.category_id' => 'required|exists:form_categories,id',
         'newField.label' => 'required|string|max:255',
@@ -143,8 +139,6 @@ class FormFieldManager extends Component
         'newField.content' => 'required_if:newField.type,header,description',
         'categoryBeingEdited.name' => 'required|string|max:255',
         'categoryBeingEdited.description' => 'nullable|string',
-        'categoryBeingEdited.percentage_start' => 'required|numeric|min:0|max:100',
-        'categoryBeingEdited.percentage_end' => 'required|numeric|min:0|max:100|gt:categoryBeingEdited.percentage_start',
         'fieldBeingEdited.label' => 'required|string|max:255',
         'fieldBeingEdited.type' => 'required|in:text,textarea,select,checkbox,radio,file,header,description',
         'fieldBeingEdited.options' => 'nullable|string|required_if:fieldBeingEdited.type,select,checkbox,radio',
@@ -181,15 +175,11 @@ class FormFieldManager extends Component
         $this->validate([
             'newCategory.name' => 'required|string|max:255',
             'newCategory.description' => 'nullable|string',
-            'newCategory.percentage_start' => 'required|numeric|min:0|max:100',
-            'newCategory.percentage_end' => 'required|numeric|min:0|max:100|gt:newCategory.percentage_start',
         ]);
 
         $this->form->categories()->create([
             'name' => $this->newCategory['name'],
             'description' => $this->newCategory['description'],
-            'percentage_start' => $this->newCategory['percentage_start'],
-            'percentage_end' => $this->newCategory['percentage_end'],
             'order' => $this->form->categories()->max('order') + 1,
         ]);
 
@@ -203,9 +193,30 @@ class FormFieldManager extends Component
         $this->categoryToDelete = $categoryId;
     }
 
+    /**
+     * Resolve a category by client-supplied id, scoped to the mounted form.
+     *
+     * mount() authorizes the form and nothing else. Every action below takes an
+     * id straight off the wire, so the lookup itself has to be the boundary —
+     * an unscoped find() lets any form owner drive this component against
+     * someone else's sections and fields.
+     */
+    private function formCategory($categoryId): FormCategory
+    {
+        return FormCategory::where('form_id', $this->form->id)->findOrFail($categoryId);
+    }
+
+    /**
+     * Resolve a field by client-supplied id, scoped to the mounted form.
+     */
+    private function formField($fieldId): FormField
+    {
+        return FormField::where('form_id', $this->form->id)->findOrFail($fieldId);
+    }
+
     public function deleteCategory(): void
     {
-        $category = FormCategory::findOrFail($this->categoryToDelete);
+        $category = $this->formCategory($this->categoryToDelete);
 
         // Delete all fields associated with this category
         $category->fields()->delete();
@@ -226,7 +237,7 @@ class FormFieldManager extends Component
 
     public function deleteField(): void
     {
-        $field = FormField::findOrFail($this->fieldToDelete);
+        $field = $this->formField($this->fieldToDelete);
         $field->delete();
         $this->confirmingFieldDeletion = false;
         $this->fieldToDelete = null;
@@ -321,7 +332,7 @@ class FormFieldManager extends Component
 
     public function moveCategoryUp($categoryId): void
     {
-        $category = FormCategory::find($categoryId);
+        $category = $this->formCategory($categoryId);
         $switchWith = FormCategory::where('form_id', $this->form->id)
             ->where('order', '<', $category->order)
             ->orderBy('order', 'desc')
@@ -343,7 +354,7 @@ class FormFieldManager extends Component
 
     public function moveCategoryDown($categoryId): void
     {
-        $category = FormCategory::find($categoryId);
+        $category = $this->formCategory($categoryId);
         $switchWith = FormCategory::where('form_id', $this->form->id)
             ->where('order', '>', $category->order)
             ->orderBy('order', 'asc')
@@ -365,7 +376,7 @@ class FormFieldManager extends Component
 
     public function moveFieldUp($fieldId): void
     {
-        $field = FormField::find($fieldId);
+        $field = $this->formField($fieldId);
         $switchWith = FormField::where('form_category_id', $field->form_category_id)
             ->where('order', '<', $field->order)
             ->orderBy('order', 'desc')
@@ -387,7 +398,7 @@ class FormFieldManager extends Component
 
     public function moveFieldDown($fieldId): void
     {
-        $field = FormField::find($fieldId);
+        $field = $this->formField($fieldId);
         $switchWith = FormField::where('form_category_id', $field->form_category_id)
             ->where('order', '>', $field->order)
             ->orderBy('order', 'asc')
@@ -409,7 +420,7 @@ class FormFieldManager extends Component
 
     public function editCategory($categoryId): void
     {
-        $this->categoryBeingEdited = FormCategory::find($categoryId)->toArray();
+        $this->categoryBeingEdited = $this->formCategory($categoryId)->toArray();
         $this->editingCategory = true;
     }
 
@@ -418,12 +429,17 @@ class FormFieldManager extends Component
         $this->validate([
             'categoryBeingEdited.name' => 'required|string|max:255',
             'categoryBeingEdited.description' => 'nullable|string',
-            'categoryBeingEdited.percentage_start' => 'required|numeric|min:0|max:100',
-            'categoryBeingEdited.percentage_end' => 'required|numeric|min:0|max:100|gt:categoryBeingEdited.percentage_start',
         ]);
 
-        $category = FormCategory::find($this->categoryBeingEdited['id']);
-        $category->update($this->categoryBeingEdited);
+        $category = $this->formCategory($this->categoryBeingEdited['id'] ?? null);
+
+        // Explicit payload: `categoryBeingEdited` is client-controlled and
+        // `form_id` is fillable, so a blind update() would let a section be
+        // reparented into another form.
+        $category->update([
+            'name' => $this->categoryBeingEdited['name'],
+            'description' => $this->categoryBeingEdited['description'] ?? null,
+        ]);
 
         $this->editingCategory = false;
         $this->categoryBeingEdited = null;
@@ -432,7 +448,7 @@ class FormFieldManager extends Component
 
     public function editField($fieldId): void
     {
-        $field = FormField::find($fieldId);
+        $field = $this->formField($fieldId);
         $this->fieldBeingEdited = array_merge($field->toArray(), [
             'required' => (bool) $field->required,
             'options' => $field->options ?? '',
@@ -448,7 +464,7 @@ class FormFieldManager extends Component
     {
         $this->validate($this->fieldValidationRules('fieldBeingEdited'));
 
-        $field = FormField::find($this->fieldBeingEdited['id']);
+        $field = $this->formField($this->fieldBeingEdited['id'] ?? null);
 
         // Ensure boolean value is properly set
         $this->fieldBeingEdited['required'] = (bool) $this->fieldBeingEdited['required'];
@@ -470,7 +486,24 @@ class FormFieldManager extends Component
             }
         }
 
-        $field->update($this->fieldBeingEdited);
+        // Explicit payload: `fieldBeingEdited` is client-controlled and both
+        // `form_id` and `form_category_id` are fillable, so a blind update()
+        // would let a field be reparented into another form.
+        $dependsOn = $this->fieldBeingEdited['depends_on_field_id'] ?? null;
+        $dependsOn = $dependsOn && FormField::where('form_id', $this->form->id)->whereKey($dependsOn)->exists()
+            ? $dependsOn
+            : null;
+
+        $field->update([
+            'type' => $this->fieldBeingEdited['type'],
+            'label' => $this->fieldBeingEdited['label'],
+            'options' => $this->fieldBeingEdited['options'],
+            'required' => $this->fieldBeingEdited['required'],
+            'content' => $this->fieldBeingEdited['content'],
+            'char_limit' => $this->fieldBeingEdited['char_limit'],
+            'depends_on_field_id' => $dependsOn,
+            'depends_on_value' => $dependsOn ? ($this->fieldBeingEdited['depends_on_value'] ?? null) : null,
+        ]);
 
         $this->editingField = false;
         $this->fieldBeingEdited = null;
@@ -535,7 +568,7 @@ class FormFieldManager extends Component
     // Duplicate a field
     public function duplicateField($fieldId): void
     {
-        $originalField = FormField::findOrFail($fieldId);
+        $originalField = $this->formField($fieldId);
 
         $newField = $originalField->replicate();
         $newField->label = $originalField->label ? $originalField->label.' (Copy)' : null;
@@ -556,7 +589,7 @@ class FormFieldManager extends Component
     // Duplicate a category with all its fields
     public function duplicateCategory($categoryId): void
     {
-        $originalCategory = FormCategory::with('fields')->findOrFail($categoryId);
+        $originalCategory = $this->formCategory($categoryId)->load('fields');
 
         $newCategory = $originalCategory->replicate();
         $newCategory->name = $originalCategory->name.' (Copy)';
@@ -655,8 +688,8 @@ class FormFieldManager extends Component
     // Move field to a different category
     public function moveFieldToCategory($fieldId, $newCategoryId): void
     {
-        $field = FormField::findOrFail($fieldId);
-        $newCategory = FormCategory::findOrFail($newCategoryId);
+        $field = $this->formField($fieldId);
+        $newCategory = $this->formCategory($newCategoryId);
 
         $field->form_category_id = $newCategoryId;
         $field->order = $newCategory->fields()->max('order') + 1;
@@ -669,11 +702,11 @@ class FormFieldManager extends Component
     // Quick add field with preset type
     public function quickAddField($type, $categoryId): void
     {
-        $category = FormCategory::findOrFail($categoryId);
+        $category = $this->formCategory($categoryId);
 
         $fieldData = [
             'form_id' => $this->form->id,
-            'form_category_id' => $categoryId,
+            'form_category_id' => $category->id,
             'type' => $type,
             'order' => $category->fields()->max('order') + 1,
         ];

@@ -19,12 +19,21 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    // In production, replace '*' with specific domains that should access your API
-    // For example: ['https://example.com', 'https://app.example.com']
-    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', '*')),
+    // Defaults to an empty list: an unset CORS_ALLOWED_ORIGINS used to mean '*',
+    // which is a wide-open default for anyone who forgets to configure it.
+    // Same-origin requests are unaffected. Set the env var to the domains that
+    // legitimately need cross-origin access, e.g.
+    // CORS_ALLOWED_ORIGINS=https://example.com,https://app.example.com
+    'allowed_origins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('CORS_ALLOWED_ORIGINS', ''))
+    ))),
 
     // You can also use patterns for subdomains, etc.
-    'allowed_origins_patterns' => explode(',', env('CORS_ALLOWED_ORIGIN_PATTERNS', '')),
+    'allowed_origins_patterns' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('CORS_ALLOWED_ORIGIN_PATTERNS', ''))
+    ))),
 
     'allowed_headers' => [
         'X-Requested-With',
