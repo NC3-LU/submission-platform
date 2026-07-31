@@ -3,6 +3,11 @@ set -e
 
 echo "🚀 Starting deployment process..."
 
+# Host Apache needs to traverse the project root to serve public assets.
+# Run this before the image build so a restrictive rsync source mode cannot
+# leave CSS and JavaScript unavailable throughout a long deployment.
+sh scripts/ensure-web-root-traversable.sh "$(pwd -P)"
+
 
 # Source the environment variables from docker-compose.env
 if [ -f docker-compose.env ]; then

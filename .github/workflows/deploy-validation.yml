@@ -47,7 +47,7 @@ jobs:
 
       - name: Sync Files to Server
         run: |
-          rsync -avz --delete \
+          rsync -avz --delete --no-perms \
           -e "ssh -J ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:${{ secrets.BASTION_SSH_PORT }}" \
           --exclude 'node_modules' \
           --exclude '.git' \
