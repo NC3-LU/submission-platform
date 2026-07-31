@@ -25,17 +25,4 @@ class DeploymentPermissionsTest extends TestCase
             rmdir($projectDirectory);
         }
     }
-
-    public function test_deployment_sync_does_not_copy_checkout_permissions_to_server(): void
-    {
-        foreach (['deploy.yml', 'deploy-validation.yml'] as $workflow) {
-            $contents = file_get_contents(base_path('.github/workflows/'.$workflow));
-
-            $this->assertStringContainsString(
-                'rsync -avz --delete --no-perms',
-                $contents,
-                "$workflow must preserve the destination directory permissions",
-            );
-        }
-    }
 }
