@@ -19,10 +19,11 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
                 @if($form->header_image)
-                    <div class="mb-6 -mx-6 -mt-6 overflow-hidden rounded-t-xl"
+                    <div class="mb-6 -mx-6 -mt-6 aspect-[3/1] overflow-hidden rounded-t-xl"
                          @if($form->header_theme_color) style="border-top: 4px solid {{ $form->header_theme_color }}" @endif>
                         <img src="{{ $form->header_image_url }}" alt="{{ $form->title }}"
-                             class="w-full h-48 sm:h-64 object-cover"
+                             width="1200" height="400"
+                             class="block h-full w-full object-cover"
                              style="object-position: 50% {{ $form->header_image_position }}%">
                     </div>
                 @endif

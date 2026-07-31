@@ -205,6 +205,33 @@ class FormHeaderImageTest extends TestCase
         $response->assertSee($form->header_image_url, false);
     }
 
+    public function test_submission_banner_scales_with_a_stable_aspect_ratio(): void
+    {
+        $user = User::factory()->create();
+        $form = Form::factory()->for($user)->published()->public()->withHeaderImage()->create();
+        $form->categories()->create(['name' => 'C', 'order' => 1]);
+
+        $response = $this->actingAs($user)->get(route('submissions.create', $form));
+
+        $response->assertOk();
+        $response->assertSee('aspect-[3/1]', false);
+        $response->assertSee('width="1200"', false);
+        $response->assertSee('height="400"', false);
+    }
+
+    public function test_preview_banner_uses_the_submission_banner_ratio(): void
+    {
+        $user = User::factory()->create();
+        $form = Form::factory()->for($user)->withHeaderImage()->create();
+
+        $response = $this->actingAs($user)->get(route('forms.preview', $form));
+
+        $response->assertOk();
+        $response->assertSee('aspect-[3/1]', false);
+        $response->assertSee('width="1200"', false);
+        $response->assertSee('height="400"', false);
+    }
+
     public function test_banner_absent_when_no_header_image(): void
     {
         $user = User::factory()->create();
@@ -230,6 +257,17 @@ class FormHeaderImageTest extends TestCase
         $response->assertSee('name="header_theme_color"', false);
         $response->assertSee('name="remove_header_image"', false);
         $response->assertSee('enctype="multipart/form-data"', false);
+    }
+
+    public function test_editor_crop_window_matches_the_rendered_banner_ratio(): void
+    {
+        $user = User::factory()->create();
+        $form = Form::factory()->for($user)->withHeaderImage()->create();
+
+        $response = $this->actingAs($user)->get(route('forms.edit', $form));
+
+        $response->assertOk();
+        $response->assertSee('aspect-[3/1]', false);
     }
 
     public function test_form_resource_includes_header_fields(): void

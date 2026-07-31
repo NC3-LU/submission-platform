@@ -131,12 +131,13 @@
 
                             @if($form->header_image)
                                 <div x-data="{ pos: {{ $form->header_image_position }}, dragging: false }" class="mb-3">
-                                    <div class="relative w-full h-48 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 cursor-ns-resize select-none"
+                                    <div class="relative aspect-[3/1] w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 cursor-ns-resize select-none"
                                          @mousedown="dragging = true"
                                          @mousemove="if (dragging) { const r = $el.getBoundingClientRect(); pos = Math.min(100, Math.max(0, Math.round((($event.clientY - r.top) / r.height) * 100))) }"
                                          @mouseup.window="dragging = false"
                                          @mouseleave="dragging = false">
                                         <img src="{{ $form->header_image_url }}" alt="{{ $form->title }}"
+                                             width="1200" height="400"
                                              class="w-full h-full object-cover pointer-events-none"
                                              :style="`object-position: 50% ${pos}%`">
                                         <div class="absolute inset-x-0 bottom-0 bg-black/40 text-white text-xs text-center py-1 pointer-events-none">Drag to reposition</div>
