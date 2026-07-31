@@ -96,4 +96,8 @@ Route::middleware([
         ->middleware('throttle:bulk-export')
         ->name('submissions.export.form.json');
 
+    Route::get('forms/{form}/export/xlsx', [SubmissionExportController::class, 'exportFormXlsx'])
+        ->middleware('throttle:bulk-export')
+        ->name('submissions.export.form.xlsx');
+
 });

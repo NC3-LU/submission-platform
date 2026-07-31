@@ -4,6 +4,11 @@ All notable changes to the NC3 Submission Platform are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Form owners and appointed evaluators can export a form's submissions to XLSX, with submission metadata and one column per form field.
+
 ## [2.1.0] - 2026-07-22
 
 ### Added

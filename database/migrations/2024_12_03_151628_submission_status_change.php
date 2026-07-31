@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // SQLite cannot drop and recreate a column in the same table alteration.
         Schema::table('submissions', function (Blueprint $table) {
-            // Drop the existing status column
             $table->dropColumn('status');
+        });
 
-            // Add new status column with more states
+        Schema::table('submissions', function (Blueprint $table) {
             $table->enum('status', [
-                'draft',             // User has started but not completed
-                'ongoing',           // User is actively working on it
-                'submitted',         // User has completed and submitted
-                'under_review',      // Being reviewed by evaluators
-                'completed'          // Review process complete
+                'draft',
+                'ongoing',
+                'submitted',
+                'under_review',
+                'completed',
             ])->default('draft');
-
-            // Add metadata column for additional status-related info
             $table->json('status_metadata')->nullable();
         });
     }
