@@ -44,7 +44,7 @@ jobs:
         # is absent from the source tree — without excluding it, --delete wipes
         # every uploaded image on each deploy.
         run: |
-          rsync -avz --delete \
+          rsync -avz --delete --no-perms \
           -e "ssh -J ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:${{ secrets.BASTION_SSH_PORT }}" \
           --exclude 'node_modules' \
           --exclude '.git' \
