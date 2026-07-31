@@ -38,7 +38,7 @@ See the [CHANGELOG](CHANGELOG.md) for release history.
 - Request logging and per-endpoint rate limiting
 
 ### Exports
-- PDF (DomPDF) and JSON export of submissions, individually or in bulk, with separate rate limits
+- PDF and JSON export of individual submissions, plus JSON and XLSX bulk exports for a form, with separate rate limits
 
 ## Requirements
 

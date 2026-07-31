@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\Submission;
+use App\Services\SubmissionXlsxExporter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubmissionExportController extends Controller
@@ -128,6 +131,29 @@ class SubmissionExportController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="'.$form->title.'-submissions.csv"',
         ]);
+    }
+
+    /**
+     * Export all submissions for a form to XLSX.
+     *
+     * @throws AuthorizationException
+     */
+    public function exportFormXlsx(
+        Form $form,
+        SubmissionXlsxExporter $exporter
+    ): BinaryFileResponse {
+        $this->authorize('exportAllSubmissions', $form);
+
+        $tempPath = $exporter->export($form);
+
+        $baseName = Str::slug($form->title);
+        $filename = ($baseName !== '' ? $baseName : 'form-'.$form->id).'-submissions.xlsx';
+
+        return response()
+            ->download($tempPath, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])
+            ->deleteFileAfterSend(true);
     }
 
     /**
