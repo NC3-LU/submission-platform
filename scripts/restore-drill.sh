@@ -7,6 +7,7 @@ backup_file=${1:?Usage: restore-drill.sh BACKUP.tar.gpg}
 : "${RESTORE_DIR:?Set a NEW protected directory outside the web root}"
 : "${RESTORE_PROJECT:?Choose a NEW name beginning submission-restore-}"
 : "${RESTORE_IMAGE:?Set RESTORE_IMAGE to the release runtime-apache image}"
+RESTORE_DB_IMAGE=${RESTORE_DB_IMAGE:-mysql:8.0.36-debian}
 [[ "$RESTORE_PROJECT" =~ ^submission-restore-[a-z0-9-]+$ ]] || { echo 'Invalid isolated project name.' >&2; exit 1; }
 project_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 RESTORE_DIR=$(realpath -m "$RESTORE_DIR")
@@ -42,7 +43,7 @@ printf 'MYSQL_ROOT_PASSWORD=%s\nMYSQL_DATABASE=restored\n' "$restore_password" >
 docker network create --internal "$RESTORE_PROJECT" >/dev/null
 docker volume create "${RESTORE_PROJECT}-db" >/dev/null
 docker volume create "${RESTORE_PROJECT}-storage" >/dev/null
-docker run -d --name "${RESTORE_PROJECT}-db" --network "$RESTORE_PROJECT" --env-file "$RESTORE_DIR/mysql.env" -v "${RESTORE_PROJECT}-db:/var/lib/mysql" mysql:8.0 >/dev/null
+docker run -d --name "${RESTORE_PROJECT}-db" --network "$RESTORE_PROJECT" --env-file "$RESTORE_DIR/mysql.env" -v "${RESTORE_PROJECT}-db:/var/lib/mysql" "$RESTORE_DB_IMAGE" >/dev/null
 for attempt in {1..60}; do
     if docker exec "${RESTORE_PROJECT}-db" sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -h127.0.0.1 -uroot "$MYSQL_DATABASE" -e "SELECT 1"' >/dev/null 2>&1; then break; fi
     [[ $attempt != 60 ]] || { echo 'Restore database did not start.' >&2; exit 1; }

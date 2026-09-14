@@ -39,9 +39,12 @@ Restore only into fresh, isolated resources for a drill:
 export RESTORE_PROJECT=submission-restore-review
 export RESTORE_DIR=/protected/new-restore-directory
 export RESTORE_IMAGE=submission-platform:release-apache
+export RESTORE_DB_IMAGE=mysql:8.0.36-debian
 export BACKUP_PASSPHRASE_FILE=/protected/backup-passphrase
 bash scripts/restore-drill.sh /protected/backups/submission-TIMESTAMP.tar.gpg
 ```
+
+Choose a restore database image compatible with the production version and host CPU. `RESTORE_DB_IMAGE` defaults to the pinned production image above; floating MySQL images can require newer CPU instruction sets.
 
 The drill refuses existing resource names/directories, verifies archive checksums, starts a new isolated MySQL database, restores files, applies the current additive migrations and compares counts/content hashes. It clears database URL/socket overrides, uses local cache/session/queue/logging settings and disables outbound mail, scanning and webhooks. The original environment file is mounted read-only so Laravel correctly parses quoted encryption keys. Restored queued jobs are not started.
 
