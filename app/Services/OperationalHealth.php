@@ -51,7 +51,7 @@ final class OperationalHealth
             $check('queue_heartbeat', fn () => Cache::get('health:queue', 0) >= now()->subMinutes(3)->timestamp);
             $check('scheduler_heartbeat', fn () => Cache::get('health:scheduler', 0) >= now()->subMinutes(3)->timestamp);
             if (config('services.pandora.enabled')) {
-                $check('scanner_reachable', fn () => Http::timeout(5)->get(rtrim(config('services.pandora.url'), '/'))->successful());
+                $check('scanner_reachable', fn () => Http::withOptions(['proxy' => ''])->timeout(5)->get(rtrim(config('services.pandora.url'), '/'))->successful());
             }
         }
 

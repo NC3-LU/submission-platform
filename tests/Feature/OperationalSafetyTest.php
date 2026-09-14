@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Form;
 use App\Models\Submission;
+use App\Services\OperationalHealth;
 use Illuminate\Contracts\Foundation\MaintenanceMode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -48,6 +50,22 @@ class OperationalSafetyTest extends TestCase
     {
         DB::table('jobs')->insert(['queue' => 'default', 'payload' => '{}', 'attempts' => 0, 'reserved_at' => null, 'available_at' => now()->subHour()->timestamp, 'created_at' => now()->subHour()->timestamp]);
         $this->artisan('app:health', ['--full' => true])->assertFailed();
+    }
+
+    public function test_scanner_health_bypasses_the_outbound_proxy_like_file_scanning(): void
+    {
+        config(['services.pandora.enabled' => true, 'services.pandora.url' => 'http://pandora:6100']);
+        $options = null;
+        Http::fake(function ($request, $requestOptions) use (&$options) {
+            $options = $requestOptions;
+
+            return Http::response('', ($requestOptions['proxy'] ?? null) === '' ? 200 : 403);
+        });
+
+        $checks = app(OperationalHealth::class)->checks(full: true);
+
+        $this->assertTrue($checks['scanner_reachable']);
+        $this->assertSame('', $options['proxy']);
     }
 
     public function test_worker_reports_startup_while_maintenance_keeps_jobs_paused(): void

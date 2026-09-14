@@ -27,4 +27,5 @@ backups
 test-results
 playwright-report
 .release-image
+.release-revision
 tests

@@ -4,7 +4,7 @@ All notable changes to the NC3 Submission Platform are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [3.0.0] - 2026-09-14
 
 ### Added
 - Token context/self-revocation, lifecycle history and bounded batch revocation APIs (#57, #58, #60).
@@ -25,8 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Keyboard/focus behavior, mobile layouts and submission feedback.
 - Queue/scheduler health, deployment rollback and encrypted backup/restore procedures.
 - Backup preflight before service interruption, and restored database/network/integration isolation, including quoted encryption keys.
+- Source-archive deployments without host PHP/Git and scanner health checks behind an outbound proxy.
 
-See the [v3.0.0 draft release notes](docs/releases/v3.0.0.md) for compatibility changes and verification. This release is not yet published.
+See the [v3.0.0 release notes](docs/releases/v3.0.0.md) for compatibility changes and verification.
 
 ## [2.1.0] - 2026-07-22
 

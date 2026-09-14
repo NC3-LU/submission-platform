@@ -33,7 +33,11 @@ cp .env "$backup_tmp/app.env"
 cp "${COMPOSE_ENV_FILE:-docker-compose.env}" "$backup_tmp/compose.env"
 "${COMPOSE[@]}" run --rm --no-deps --entrypoint php app artisan app:data-manifest > "$backup_tmp/data-manifest.json"
 "${COMPOSE[@]}" images --format json > "$backup_tmp/images.json"
-git rev-parse HEAD > "$backup_tmp/revision.txt"
+if [[ -s .release-revision ]]; then
+    cat .release-revision > "$backup_tmp/revision.txt"
+else
+    git rev-parse HEAD > "$backup_tmp/revision.txt" 2>/dev/null || printf 'unknown\n' > "$backup_tmp/revision.txt"
+fi
 (cd "$backup_tmp" && sha256sum database.sql storage.tar.gz public.tar.gz app.env compose.env data-manifest.json images.json revision.txt > SHA256SUMS)
 tar -C "$backup_tmp" -cf - . | gpg --batch --yes --pinentry-mode loopback --passphrase-file "$BACKUP_PASSPHRASE_FILE" --symmetric --cipher-algo AES256 --output "$backup_file"
 echo "Encrypted snapshot: $backup_file"

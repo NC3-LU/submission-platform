@@ -28,6 +28,7 @@ CLAUDE.md
 .claude/
 
 .release-image
+.release-revision
 /backups
 /bootstrap/cache/*.php
 

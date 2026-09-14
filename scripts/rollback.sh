@@ -19,4 +19,5 @@ if ! curl --fail --silent --show-error --max-time 15 --retry 15 --retry-delay 2 
     exit 1
 fi
 printf '%s\n' "$APP_IMAGE" > .release-image
+printf '%s\n' "${ROLLBACK_REVISION:-unknown}" > .release-revision
 echo 'Previous code and image assets restored. Database preserved. Perform login, submission and download smoke checks; review scheduler support for the selected release.'
