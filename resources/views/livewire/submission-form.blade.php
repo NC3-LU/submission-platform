@@ -1,3 +1,4 @@
+{{-- Alpine reveals x-show targets on an animation frame, after $nextTick. --}}
 <div x-data="{
     schema: @js($form->fields->keyBy('id')->map(fn ($field) => $field->only(['id', 'type', 'options', 'depends_on_field_id', 'depends_on_value']))),
     visible(id, seen = []) {
@@ -11,7 +12,7 @@
         const options = (parent.options || '').split(',').map(option => option.trim());
         return Object.entries(value || {}).some(([index, selected]) => (selected === true &amp;&amp; options[index] === field.depends_on_value) || selected === field.depends_on_value);
     }
-}" x-on:focus-field.window="$nextTick(() => { const field = document.getElementById($event.detail.id) || document.querySelector('[id^=' + $event.detail.id + '_]'); field?.focus(); field?.scrollIntoView({block: 'center'}); })">
+}" x-on:focus-field.window="$nextTick(() => requestAnimationFrame(() => { const field = document.getElementById($event.detail.id) || document.querySelector('[id^=' + $event.detail.id + '_]'); field?.focus({preventScroll: true}); field?.scrollIntoView({block: 'center'}); }))">
     <!-- Global Error Display -->
     @if ($errors->any())
         <div role="alert" tabindex="-1" class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
