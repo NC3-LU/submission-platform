@@ -1,9 +1,7 @@
 #!/bin/bash
 set -e
 
-# Fix storage permissions (volume mount overrides build-time chown)
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+mkdir -p storage/app/private storage/app/public storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache
 
 # Recreate the public/storage symlink on every start. public/ lives in the
 # image layer (not the persistent storage volume), so a fresh deploy ships
@@ -18,33 +16,30 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 # loop. Skip it whenever the path is already a directory rather than a link.
 if [ -d /var/www/html/public/storage ] && [ ! -L /var/www/html/public/storage ]; then
     echo "public/storage is a real directory (bind mount) — skipping storage:link."
-    chown -R www-data:www-data /var/www/html/public/storage
-    chmod -R 775 /var/www/html/public/storage
 else
     php artisan storage:link --force
 fi
 
-# Clear and rebuild caches on every container start
-# This ensures fresh deploys don't serve stale config/views
+# Stop startup on a schema failure. Queue and scheduler containers never migrate.
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+    php artisan migrate --force
+fi
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
+php artisan app:health
 
-# Run migrations. Only one container may do this: app and queue share this
-# entrypoint, and Laravel takes no migration lock, so letting both run
-# concurrently against the same database can double-apply or deadlock.
-# The queue service sets RUN_MIGRATIONS=false for exactly this reason.
-#
-# Failures are reported rather than swallowed. Previously this was
-# `2>/dev/null || true`, which hid a broken migration behind a zero exit code.
-# It stays non-fatal so a transient DB hiccup does not wedge the container in a
-# restart loop, but the error is now visible in the logs.
-if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
-    echo "Running database migrations..."
-    php artisan migrate --force || echo "⚠️  MIGRATION FAILED — see output above. Application may be running against an outdated schema."
-else
-    echo "Skipping migrations (RUN_MIGRATIONS=${RUN_MIGRATIONS})."
+# CLI initialization runs as root; hand its generated files to the runtime user.
+chown -R www-data:www-data storage bootstrap/cache
+find storage bootstrap/cache -type d -exec chmod 770 {} +
+find storage bootstrap/cache -type f -exec chmod 660 {} +
+find storage/app/public -type d -exec chmod 755 {} +
+find storage/app/public -type f -exec chmod 644 {} +
+
+if [ "$1" = "php" ]; then
+    if command -v su-exec >/dev/null; then exec su-exec www-data "$@"; fi
+    exec gosu www-data "$@"
 fi
-
 exec "$@"

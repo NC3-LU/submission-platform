@@ -1,0 +1,114 @@
+[
+  {
+    "page": "home",
+    "status": 200,
+    "violations": [
+      [
+        "color-contrast",
+        3
+      ]
+    ]
+  },
+  {
+    "page": "login",
+    "status": 200,
+    "violations": [
+      [
+        "color-contrast",
+        1
+      ]
+    ]
+  },
+  {
+    "page": "public-form",
+    "status": 200,
+    "violations": [
+      [
+        "color-contrast",
+        2
+      ],
+      [
+        "link-name",
+        1
+      ]
+    ]
+  },
+  {
+    "guest_draft_button": true,
+    "guest_draft_feedback": "Home\nForms\nLogin\nRegister\nHandover audit \u2014 public report\n\nSubmit Form\n\nSynthetic form for testing submission flow.\nContact details\nStep 1 of 2\nPlease provide your contact information.\n1\nContact details\n2\nReport\nYour name *\nInclude details?\nSelect an option\nYes\nNo\nSave as Draft\nNext\n\nCybersecurity Luxembourg\n\nNational Cybersecurity Competence Center\n\nCo-funded by the EU\nDigital Europe Programme\nQUICK LINKS\nHome\nForms\nCybersecurity Luxembourg\nNC3\nCIRCL\nLHC\nLEGAL\nTerms of Service\nPrivacy Policy\nCookie Settings\n\n\u00a9 2026 Luxembourg House of Cybersecurity. All rights reserved.\n\nCookie Notice: This website uses essential cookies required for basic functionality, including session management and security. No tracking or third-party cookies are used. Learn more\n\nGot it"
+  },
+  {
+    "conditional_after_select": true
+  },
+  {
+    "invalid_submission_url": "http://127.0.0.1:8765/forms/1/submit",
+    "first_required_field_visible": false,
+    "visible_inline_errors": [],
+    "global_error_summary": [
+      "\n                                                    This field is required.\n                        \n                    "
+    ],
+    "focused_element": "<body class=\"font-sans antialiased\">\n\n        <div x-data=\"{&quot;show&quot;:true,&quot;style&quot;:&quot;success&quot;,&quot;message&quot;:null}\" :class=\"{ 'bg-sky-500': style == 'success', 'bg-red-700': style == 'danger', 'bg-yellow-500': style == 'warning', 'bg-gray-500': style != 'success' &amp;&amp; style != 'danger' &amp;&amp; style != 'warning'}\" style=\"display: none;\" x-show=\"show &amp;&amp; message\" x-on:banner-message.window=\"\n                style = event.detail.style;\n               "
+  },
+  {
+    "page": "public-form-mobile",
+    "status": 200,
+    "violations": [
+      [
+        "color-contrast",
+        1
+      ],
+      [
+        "link-name",
+        1
+      ]
+    ]
+  },
+  {
+    "mobile_step_2_overflow": false,
+    "mobile_scroll_width": 390
+  },
+  {
+    "admin_login_url": "http://127.0.0.1:8765/dashboard"
+  },
+  {
+    "page": "dashboard",
+    "status": 200,
+    "violations": [
+      [
+        "color-contrast",
+        7
+      ]
+    ]
+  },
+  {
+    "page": "form-builder",
+    "status": 200,
+    "violations": [
+      [
+        "button-name",
+        2
+      ],
+      [
+        "color-contrast",
+        6
+      ],
+      [
+        "link-name",
+        1
+      ]
+    ]
+  },
+  {
+    "page": "admin",
+    "status": 200,
+    "violations": [
+      [
+        "color-contrast",
+        4
+      ]
+    ]
+  },
+  {
+    "page_errors": []
+  }
+]

@@ -4,6 +4,7 @@ use App\Http\Middleware\ApiLogMiddleware;
 use App\Http\Middleware\ApiTokenIPMiddleware;
 use App\Http\Middleware\FormAccessMiddleware;
 use App\Http\Middleware\RemoveServerHeaders;
+use App\Http\Middleware\RequireApiTokenAbility;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -11,8 +12,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -23,12 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust proxies (Traefik/reverse proxy) for correct HTTPS detection.
-        //
-        // X-Forwarded-Host is deliberately excluded: with `at: '*'` any client
-        // could otherwise rewrite request()->getHost() and defeat host-based
-        // checks. Proto/port/for/prefix are what HTTPS detection needs.
-        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR
+        // Proxy addresses are loaded at request time from config/trustedproxy.php.
+        // With no TRUSTED_PROXIES value, forwarded client information is ignored.
+        $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR
             | Request::HEADER_X_FORWARDED_PORT
             | Request::HEADER_X_FORWARDED_PROTO
             | Request::HEADER_X_FORWARDED_PREFIX);
@@ -36,11 +36,17 @@ return Application::configure(basePath: dirname(__DIR__))
         // Reject requests whose Host header is not one we serve. Opt-in: an
         // empty TRUSTED_HOSTS leaves the check off rather than risking a
         // deployment that cannot answer on its own hostname.
-        $trustedHosts = array_filter(array_map('trim', explode(',', (string) env('TRUSTED_HOSTS', ''))));
+        // Resolve configuration when the middleware handles a request; the
+        // config repository is not bound yet while bootstrap/app.php is built.
+        $middleware->trustHosts(
+            at: fn (): array => config('app.trusted_hosts', []),
+            subdomains: false
+        );
 
-        if ($trustedHosts !== []) {
-            $middleware->trustHosts(at: $trustedHosts, subdomains: false);
-        }
+        $middleware->prependToPriorityList(
+            ThrottleRequests::class,
+            ApiTokenIPMiddleware::class,
+        );
 
         // Web middleware
         $middleware->web(append: [
@@ -51,6 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // API middleware
         $middleware->alias([
             'api.token.ip' => ApiTokenIPMiddleware::class,
+            'api.ability' => RequireApiTokenAbility::class,
         ]);
 
         // Add API log middleware to the API group
@@ -104,6 +111,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'message' => 'Access denied',
                 ], 403);
+            }
+
+            if ($e instanceof HttpExceptionInterface) {
+                return response()->json(['message' => $e->getMessage() ?: 'Request failed'], $e->getStatusCode(), $e->getHeaders());
             }
 
             // For all other exceptions in production, return generic message

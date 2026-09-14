@@ -6,3 +6,25 @@ node_modules
 .claude
 docs
 database/database.sqlite
+
+# Runtime data, credentials and local build state must never enter image layers.
+vendor
+storage
+bootstrap/cache/*.php
+public/storage
+public/build
+public/hot
+coverage
+.phpunit.cache
+.phpunit.result.cache
+*.log
+auth.json
+backups
+.env*
+!docker-compose.env.example
+
+.browser
+test-results
+playwright-report
+.release-image
+tests

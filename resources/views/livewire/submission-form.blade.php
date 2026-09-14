@@ -1,7 +1,20 @@
-<div>
+<div x-data="{
+    schema: @js($form->fields->keyBy('id')->map(fn ($field) => $field->only(['id', 'type', 'options', 'depends_on_field_id', 'depends_on_value']))),
+    visible(id, seen = []) {
+        const field = this.schema[id];
+        if (!field || seen.includes(id)) return false;
+        if (!field.depends_on_field_id || field.depends_on_value === null) return true;
+        const parent = this.schema[field.depends_on_field_id];
+        if (!parent || !this.visible(parent.id, [...seen, id])) return false;
+        const value = this.$wire.fieldValues[parent.id];
+        if (parent.type !== 'checkbox') return String(value ?? '') === field.depends_on_value;
+        const options = (parent.options || '').split(',').map(option => option.trim());
+        return Object.entries(value || {}).some(([index, selected]) => (selected === true &amp;&amp; options[index] === field.depends_on_value) || selected === field.depends_on_value);
+    }
+}" x-on:focus-field.window="$nextTick(() => { const field = document.getElementById($event.detail.id) || document.querySelector('[id^=' + $event.detail.id + '_]'); field?.focus(); field?.scrollIntoView({block: 'center'}); })">
     <!-- Global Error Display -->
     @if ($errors->any())
-        <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div role="alert" tabindex="-1" class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <div class="flex items-start gap-3">
                 <svg class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -28,6 +41,7 @@
          x-transition:leave-start="opacity-100 translate-y-0"
          x-transition:leave-end="opacity-0 translate-y-2"
          x-on:success.window="message = $event.detail; show = true; setTimeout(() => show = false, 2000)"
+         role="status" aria-live="polite"
          class="fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 px-4 py-2.5 rounded-lg shadow-lg"
          style="display: none;">
         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,12 +82,12 @@
                 <!-- Step Indicators -->
                 <div class="flex justify-between mt-3">
                     @foreach($steps as $index => $step)
-                        <button wire:click="$set('currentStep', {{ $index + 1 }})"
+                        <button type="button" aria-label="Step {{ $index + 1 }}: {{ $step['name'] }}" aria-current="{{ $currentStep === $index + 1 ? 'step' : 'false' }}" wire:click="$set('currentStep', {{ $index + 1 }})"
                                 @if($currentStep <= $index + 1) disabled @endif
                                 class="flex flex-col items-center gap-1.5 group">
                             <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300
-                                {{ $currentStep > $index + 1 ? 'bg-sky-600 text-white hover:bg-sky-700 cursor-pointer' : '' }}
-                                {{ $currentStep === $index + 1 ? 'bg-sky-600 text-white ring-4 ring-sky-100 dark:ring-sky-900/50 scale-110' : '' }}
+                                {{ $currentStep > $index + 1 ? 'bg-sky-700 text-white hover:bg-sky-700 cursor-pointer' : '' }}
+                                {{ $currentStep === $index + 1 ? 'bg-sky-700 text-white ring-4 ring-sky-100 dark:ring-sky-900/50 scale-110' : '' }}
                                 {{ $currentStep < $index + 1 ? 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-default' : '' }}">
                                 @if($currentStep > $index + 1)
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,6 +115,8 @@
         @endif
     @endif
 
+    <div wire:offline role="status" class="mb-4 rounded-lg bg-amber-50 p-3 text-amber-900">You are offline. Keep this page open; saving and submitting will work after the connection returns.</div>
+
     <!-- Form Fields -->
     @foreach($form->categories as $index => $category)
         <div x-show="$wire.currentStep === {{ $index + 1 }}"
@@ -115,7 +131,7 @@
                      fields when categories are reordered. --}}
                 <div wire:key="submission-field-{{ $field->id }}"
                      @if($field->depends_on_field_id)
-                         x-show="$wire.fieldValues[{{ (int) $field->depends_on_field_id }}] == @js($field->depends_on_value)"
+                         x-show="visible({{ $field->id }})"
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0"
                          x-transition:enter-end="opacity-100"
@@ -145,14 +161,14 @@
 
                         @if($field->type === 'text')
                             <input type="text"
-                                   id="field_{{ $field->id }}"
+                                   id="field_{{ $field->id }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
                                    wire:model.live="fieldValues.{{ $field->id }}"
                                    @if($field->char_limit) placeholder="Max {{ $field->char_limit }} characters" @endif
                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
                                    @if($field->char_limit) maxlength="{{ $field->char_limit }}" @endif>
 
                         @elseif($field->type === 'textarea')
-                            <textarea id="field_{{ $field->id }}"
+                            <textarea id="field_{{ $field->id }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
                                       wire:model.live="fieldValues.{{ $field->id }}"
                                       rows="4"
                                       @if($field->char_limit) placeholder="Max {{ $field->char_limit }} characters" @endif
@@ -160,8 +176,8 @@
                                       @if($field->char_limit) maxlength="{{ $field->char_limit }}" @endif></textarea>
 
                         @elseif($field->type === 'select')
-                            <select id="field_{{ $field->id }}"
-                                    wire:model="fieldValues.{{ $field->id }}"
+                            <select id="field_{{ $field->id }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
+                                    wire:model.live="fieldValues.{{ $field->id }}"
                                     class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors">
                                 <option value="">Select an option</option>
                                 @foreach(explode(',', $field->options) as $option)
@@ -170,27 +186,27 @@
                             </select>
 
                         @elseif(in_array($field->type, ['checkbox', 'radio']))
-                            <div class="mt-1.5 space-y-2">
+                            <fieldset class="mt-1.5 space-y-2"><legend class="sr-only">{{ $field->label }}</legend>
                                 @foreach(explode(',', $field->options) as $option)
                                     <label for="field_{{ $field->id }}_{{ $loop->index }}"
                                            class="flex items-center gap-3 p-2.5 rounded-lg border border-transparent hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
                                         @if($field->type === 'checkbox')
                                             <input type="checkbox"
-                                                   id="field_{{ $field->id }}_{{ $loop->index }}"
-                                                   wire:model="fieldValues.{{ $field->id }}.{{ $loop->index }}"
+                                                   id="field_{{ $field->id }}_{{ $loop->index }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
+                                                   wire:model.live="fieldValues.{{ $field->id }}.{{ $loop->index }}"
                                                    value="{{ trim($option) }}"
-                                                   class="rounded focus:ring-sky-500 h-4 w-4 text-sky-600 border-gray-300 dark:border-gray-600 transition-colors">
+                                                   class="rounded focus:ring-sky-500 h-4 w-4 text-sky-700 border-gray-300 dark:border-gray-600 transition-colors">
                                         @else
                                             <input type="radio"
-                                                   id="field_{{ $field->id }}_{{ $loop->index }}"
-                                                   wire:model="fieldValues.{{ $field->id }}"
+                                                   id="field_{{ $field->id }}_{{ $loop->index }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
+                                                   wire:model.live="fieldValues.{{ $field->id }}"
                                                    value="{{ trim($option) }}"
-                                                   class="focus:ring-sky-500 h-4 w-4 text-sky-600 border-gray-300 dark:border-gray-600 transition-colors">
+                                                   class="focus:ring-sky-500 h-4 w-4 text-sky-700 border-gray-300 dark:border-gray-600 transition-colors">
                                         @endif
                                         <span class="text-sm text-gray-700 dark:text-gray-300">{{ trim($option) }}</span>
                                     </label>
                                 @endforeach
-                            </div>
+                            </fieldset>
 
                         @elseif($field->type === 'file')
                             <div class="mt-1 space-y-3">
@@ -198,7 +214,7 @@
                                     <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center shrink-0">
-                                                <svg class="w-4 h-4 text-sky-600 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="w-4 h-4 text-sky-700 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                                 </svg>
@@ -209,7 +225,7 @@
                                                 </p>
                                                 @if($submission && $submission->id)
                                                     <a href="{{ route('submissions.download', ['submission' => $submission->id, 'filename' => basename($fieldValues[$field->id])]) }}"
-                                                       class="text-xs text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors">
+                                                       class="text-xs text-sky-700 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors">
                                                         Download file
                                                     </a>
                                                 @endif
@@ -230,13 +246,13 @@
 
                                 <div class="relative">
                                     <input type="file"
-                                           id="field_{{ $field->id }}"
+                                           id="field_{{ $field->id }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
                                            wire:model="tempFiles.field_{{ $field->id }}"
                                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 dark:text-gray-400 dark:file:bg-sky-900/30 dark:file:text-sky-300 transition-colors">
 
                                     <div wire:loading wire:target="tempFiles.field_{{ $field->id }}"
                                          class="absolute inset-0 bg-white/60 dark:bg-gray-800/60 rounded-lg flex items-center justify-center">
-                                        <div class="flex items-center gap-2 text-sm text-sky-600 dark:text-sky-400">
+                                        <div class="flex items-center gap-2 text-sm text-sky-700 dark:text-sky-400">
                                             <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -252,9 +268,11 @@
                             </div>
                         @endif
 
+                        <div id="error_{{ $field->id }}">
                         @error('fieldValues.' . $field->id)
                             <p class="mt-1.5 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
                         @enderror
+                        </div>
 
                         @if($field->char_limit)
                             @php
@@ -265,7 +283,7 @@
                             @endphp
                             <p class="mt-1 text-xs tabular-nums" aria-live="polite"
                                @class([
-                                   'text-gray-400 dark:text-gray-500' => !$nearLimit && $used < $limit,
+                                   'text-gray-600 dark:text-gray-500' => !$nearLimit && $used < $limit,
                                    'text-amber-600 dark:text-amber-400 font-medium' => $nearLimit,
                                    'text-red-600 dark:text-red-500 font-medium' => $used >= $limit,
                                ])>
@@ -294,7 +312,8 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button wire:click="saveAsDraft" type="button"
+            @auth
+            <button wire:click="saveAsDraft" type="button" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
@@ -302,9 +321,13 @@
                 Save as Draft
             </button>
 
+            @else
+                <p class="text-sm text-gray-600 dark:text-gray-300">Sign in before filling the form to save a draft. Guest answers stay on this page until submitted.</p>
+            @endauth
+
             @if($currentStep < $totalSteps)
                 <button wire:click="nextStep" type="button"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
+                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-700 rounded-lg transition-colors">
                     Next
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -313,7 +336,7 @@
             @else
                 <button wire:click="submit" type="button"
                         wire:loading.attr="disabled"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors disabled:opacity-50">
+                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-700 rounded-lg transition-colors disabled:opacity-50">
                     <span wire:loading.remove wire:target="submit">Submit</span>
                     <span wire:loading wire:target="submit" class="inline-flex items-center gap-2">
                         <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">

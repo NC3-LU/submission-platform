@@ -99,6 +99,46 @@ class SubmissionFileDeletionTest extends TestCase
         Storage::disk('private')->assertExists('exports/quarterly-report.pdf');
     }
 
+    public function test_an_injected_file_path_is_never_persisted_or_deleted_with_a_draft(): void
+    {
+        $user = User::factory()->create();
+        $unrelatedPath = 'exports/quarterly-report.pdf';
+        Storage::disk('private')->put($unrelatedPath, 'unrelated');
+
+        Livewire::actingAs($user)
+            ->test(SubmissionForm::class, ['form' => $this->form])
+            ->set("fieldValues.{$this->fileField->id}", $unrelatedPath)
+            ->call('saveAsDraft');
+
+        $this->assertDatabaseMissing('submission_values', ['value' => $unrelatedPath]);
+        $this->assertDatabaseMissing('submissions', ['form_id' => $this->form->id, 'user_id' => $user->id]);
+
+        Storage::disk('private')->assertExists($unrelatedPath);
+    }
+
+    public function test_deleting_a_draft_ignores_an_untrusted_stored_file_path(): void
+    {
+        $user = User::factory()->create();
+        $draft = Submission::factory()->create([
+            'form_id' => $this->form->id,
+            'user_id' => $user->id,
+            'status' => 'draft',
+        ]);
+        $unrelatedPath = 'exports/quarterly-report.pdf';
+        Storage::disk('private')->put($unrelatedPath, 'unrelated');
+        SubmissionValues::create([
+            'submission_id' => $draft->id,
+            'form_field_id' => $this->fileField->id,
+            'value' => $unrelatedPath,
+        ]);
+
+        $this->actingAs($user)
+            ->delete(route('submissions.destroy', $draft))
+            ->assertRedirect();
+
+        Storage::disk('private')->assertExists($unrelatedPath);
+    }
+
     public function test_a_file_uploaded_in_this_session_can_be_deleted(): void
     {
         $component = Livewire::test(SubmissionForm::class, ['form' => $this->form])

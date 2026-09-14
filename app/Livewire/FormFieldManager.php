@@ -147,6 +147,171 @@ class FormFieldManager extends Component
 
     ];
 
+    public function hydrate(): void
+    {
+        $this->authorize('update', $this->form->fresh());
+    }
+
+    public function addCategory(): void
+    {
+        DB::transaction(function () {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performAddCategory();
+        });
+    }
+
+    public function deleteCategory(): void
+    {
+        DB::transaction(function () {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performDeleteCategory();
+        });
+    }
+
+    public function deleteField(): void
+    {
+        DB::transaction(function () {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performDeleteField();
+        });
+    }
+
+    public function addField(): void
+    {
+        DB::transaction(function () {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performAddField();
+        });
+    }
+
+    public function moveCategoryUp($categoryId): void
+    {
+        DB::transaction(function () use ($categoryId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performMoveCategoryUp($categoryId);
+        });
+    }
+
+    public function moveCategoryDown($categoryId): void
+    {
+        DB::transaction(function () use ($categoryId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performMoveCategoryDown($categoryId);
+        });
+    }
+
+    public function moveFieldUp($fieldId): void
+    {
+        DB::transaction(function () use ($fieldId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performMoveFieldUp($fieldId);
+        });
+    }
+
+    public function moveFieldDown($fieldId): void
+    {
+        DB::transaction(function () use ($fieldId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performMoveFieldDown($fieldId);
+        });
+    }
+
+    public function updateCategory(): void
+    {
+        DB::transaction(function () {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performUpdateCategory();
+        });
+    }
+
+    public function updateField(): void
+    {
+        DB::transaction(function () {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performUpdateField();
+        });
+    }
+
+    public function duplicateField($fieldId): void
+    {
+        DB::transaction(function () use ($fieldId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performDuplicateField($fieldId);
+        });
+    }
+
+    public function duplicateCategory($categoryId): void
+    {
+        DB::transaction(function () use ($categoryId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performDuplicateCategory($categoryId);
+        });
+    }
+
+    public function updateCategoryOrder($orderedIds): void
+    {
+        DB::transaction(function () use ($orderedIds) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performUpdateCategoryOrder($orderedIds);
+        });
+    }
+
+    public function updateFieldOrder($groups): void
+    {
+        DB::transaction(function () use ($groups) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performUpdateFieldOrder($groups);
+        });
+    }
+
+    public function moveFieldToCategory($fieldId, $newCategoryId): void
+    {
+        DB::transaction(function () use ($fieldId, $newCategoryId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performMoveFieldToCategory($fieldId, $newCategoryId);
+        });
+    }
+
+    public function quickAddField($type, $categoryId): void
+    {
+        DB::transaction(function () use ($type, $categoryId) {
+            $this->form = Form::whereKey($this->form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $this->form);
+            $this->form->ensureStructureEditable();
+            $this->performQuickAddField($type, $categoryId);
+        });
+    }
+
     public function mount(Form $form): void
     {
         // Defence in depth: this component exposes many mutating actions and
@@ -170,8 +335,10 @@ class FormFieldManager extends Component
         $this->validateOnly($propertyName);
     }
 
-    public function addCategory(): void
+    protected function performAddCategory(): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $this->validate([
             'newCategory.name' => 'required|string|max:255',
             'newCategory.description' => 'nullable|string',
@@ -214,8 +381,10 @@ class FormFieldManager extends Component
         return FormField::where('form_id', $this->form->id)->findOrFail($fieldId);
     }
 
-    public function deleteCategory(): void
+    protected function performDeleteCategory(): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $category = $this->formCategory($this->categoryToDelete);
 
         // Delete all fields associated with this category
@@ -235,8 +404,10 @@ class FormFieldManager extends Component
         $this->fieldToDelete = $fieldId;
     }
 
-    public function deleteField(): void
+    protected function performDeleteField(): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $field = $this->formField($this->fieldToDelete);
         $field->delete();
         $this->confirmingFieldDeletion = false;
@@ -244,8 +415,10 @@ class FormFieldManager extends Component
         $this->loadCategories();
     }
 
-    public function addField(): void
+    protected function performAddField(): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $messages = [
             'newField.category_id.required' => 'Category is required.',
             'newField.category_id.exists' => 'Selected category is invalid.',
@@ -330,8 +503,10 @@ class FormFieldManager extends Component
         return $rules;
     }
 
-    public function moveCategoryUp($categoryId): void
+    protected function performMoveCategoryUp($categoryId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $category = $this->formCategory($categoryId);
         $switchWith = FormCategory::where('form_id', $this->form->id)
             ->where('order', '<', $category->order)
@@ -352,8 +527,10 @@ class FormFieldManager extends Component
         }
     }
 
-    public function moveCategoryDown($categoryId): void
+    protected function performMoveCategoryDown($categoryId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $category = $this->formCategory($categoryId);
         $switchWith = FormCategory::where('form_id', $this->form->id)
             ->where('order', '>', $category->order)
@@ -374,8 +551,10 @@ class FormFieldManager extends Component
         }
     }
 
-    public function moveFieldUp($fieldId): void
+    protected function performMoveFieldUp($fieldId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $field = $this->formField($fieldId);
         $switchWith = FormField::where('form_category_id', $field->form_category_id)
             ->where('order', '<', $field->order)
@@ -396,8 +575,10 @@ class FormFieldManager extends Component
         }
     }
 
-    public function moveFieldDown($fieldId): void
+    protected function performMoveFieldDown($fieldId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $field = $this->formField($fieldId);
         $switchWith = FormField::where('form_category_id', $field->form_category_id)
             ->where('order', '>', $field->order)
@@ -424,8 +605,10 @@ class FormFieldManager extends Component
         $this->editingCategory = true;
     }
 
-    public function updateCategory(): void
+    protected function performUpdateCategory(): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $this->validate([
             'categoryBeingEdited.name' => 'required|string|max:255',
             'categoryBeingEdited.description' => 'nullable|string',
@@ -460,8 +643,10 @@ class FormFieldManager extends Component
         $this->editingField = true;
     }
 
-    public function updateField(): void
+    protected function performUpdateField(): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $this->validate($this->fieldValidationRules('fieldBeingEdited'));
 
         $field = $this->formField($this->fieldBeingEdited['id'] ?? null);
@@ -566,8 +751,10 @@ class FormFieldManager extends Component
     }
 
     // Duplicate a field
-    public function duplicateField($fieldId): void
+    protected function performDuplicateField($fieldId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $originalField = $this->formField($fieldId);
 
         $newField = $originalField->replicate();
@@ -587,8 +774,10 @@ class FormFieldManager extends Component
     }
 
     // Duplicate a category with all its fields
-    public function duplicateCategory($categoryId): void
+    protected function performDuplicateCategory($categoryId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $originalCategory = $this->formCategory($categoryId)->load('fields');
 
         $newCategory = $originalCategory->replicate();
@@ -628,8 +817,10 @@ class FormFieldManager extends Component
     }
 
     // Handle drag-drop reordering of categories
-    public function updateCategoryOrder($orderedIds): void
+    protected function performUpdateCategoryOrder($orderedIds): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         foreach (array_values((array) $orderedIds) as $index => $item) {
             $categoryId = $this->sortableId($item);
 
@@ -648,8 +839,10 @@ class FormFieldManager extends Component
     }
 
     // Handle drag-drop reordering of fields, within and across categories
-    public function updateFieldOrder($groups): void
+    protected function performUpdateFieldOrder($groups): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         foreach ((array) $groups as $group) {
             // `wire:sortable-group` posts one entry per category:
             // {order, value: categoryId, items: [{order, value: fieldId}]}.
@@ -686,8 +879,10 @@ class FormFieldManager extends Component
     }
 
     // Move field to a different category
-    public function moveFieldToCategory($fieldId, $newCategoryId): void
+    protected function performMoveFieldToCategory($fieldId, $newCategoryId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $field = $this->formField($fieldId);
         $newCategory = $this->formCategory($newCategoryId);
 
@@ -700,8 +895,10 @@ class FormFieldManager extends Component
     }
 
     // Quick add field with preset type
-    public function quickAddField($type, $categoryId): void
+    protected function performQuickAddField($type, $categoryId): void
     {
+        $this->authorize('update', $this->form->fresh());
+        $this->form->ensureStructureEditable();
         $category = $this->formCategory($categoryId);
 
         $fieldData = [

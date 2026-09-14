@@ -7,6 +7,7 @@ use App\Models\Form;
 use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -175,6 +176,19 @@ class ApiTokenAbilityEnforcementTest extends TestCase
         $this->assertDatabaseMissing('api_tokens', ['name' => 'Wildcarded']);
     }
 
+    public function test_token_management_ability_cannot_be_delegated_through_the_api(): void
+    {
+        $this->asToken($this->tokenWith(['*']))
+            ->postJson('/api/v1/tokens', [
+                'name' => 'Persistent manager',
+                'abilities' => ['tokens:manage'],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('abilities.0');
+
+        $this->assertDatabaseMissing('api_tokens', ['name' => 'Persistent manager']);
+    }
+
     public function test_unknown_abilities_are_rejected(): void
     {
         $this->asToken($this->tokenWith(['*']))
@@ -209,5 +223,17 @@ class ApiTokenAbilityEnforcementTest extends TestCase
             ->assertStatus(422);
 
         $this->assertNotContains('*', $token->fresh()->abilities);
+    }
+
+    public function test_a_protected_api_route_without_an_explicit_ability_fails_closed(): void
+    {
+        Route::middleware('api.token.ip')->get('/api/v1/undeclared-ability', fn () => ['ok' => true]);
+
+        $this->asToken($this->tokenWith(['*']))
+            ->getJson('/api/v1/undeclared-ability')
+            ->assertForbidden()
+            ->assertJson([
+                'message' => 'API endpoint permission is not configured',
+            ]);
     }
 }

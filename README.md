@@ -4,7 +4,7 @@
 
 The NC3 Submission Platform is a form management system built by the Luxembourg House of Cybersecurity for the secure submission and handling of structured reports. It combines a no-code form builder, flexible access controls, malware scanning of uploads, collaborative review workflows and a REST API.
 
-See the [CHANGELOG](CHANGELOG.md) for release history.
+See the [CHANGELOG](CHANGELOG.md) for release history, [API contract](docs/api.md), and [handover remediation](docs/plans/2026-09-14-remediation.md).
 
 ## Key Features
 
@@ -15,7 +15,9 @@ See the [CHANGELOG](CHANGELOG.md) for release history.
 - Markdown support in form and field descriptions
 - Form cloning (deep copy of sections and fields)
 - Availability windows (`available_from` / `available_until`) so a form only accepts submissions within a period
-- Drafting and autosave before submitting
+- Authenticated drafts and autosave; guest responses persist only on submission
+- Question structure locks once responses exist; duplicate a form to revise it
+- CLI ownership transfer preserves forms and responses when maintainers leave
 - Custom workflow support [WIP]
 
 ### Access Control
@@ -42,10 +44,10 @@ See the [CHANGELOG](CHANGELOG.md) for release history.
 
 ## Requirements
 
-- PHP 8.2+
-- Laravel 12 / Livewire 3 / Filament 3
+- PHP 8.3+
+- Laravel 13 / Livewire 3 / Filament 3
 - MySQL 8.0
-- Node.js 20+ (Vite 5, Tailwind CSS 3.4)
+- Node.js 24 LTS (Vite 8, Tailwind CSS 3.4)
 
 ## Installation
 
@@ -82,10 +84,11 @@ php artisan app:create-user
 ### Docker
 
 ```bash
-docker-compose up          # MySQL + PHP-FPM app (development)
+docker network create dokploy-network  # Once, for the Dokploy compose topology
+docker compose up -d --build          # MySQL + Apache application
 ```
 
-Production uses `docker-compose.prod.yml`; see `scripts/deploy.sh`.
+Production uses `docker-compose.prod.yml` with host Apache and PHP-FPM. Read [operations and handover](docs/operations.md) before running `scripts/deploy.sh`; an encrypted backup and health URL are required.
 
 ### Pandora Configuration (Optional)
 
@@ -99,7 +102,7 @@ PANDORA_POLL_INTERVAL=2
 PANDORA_BLOCK_MALICIOUS=true
 ```
 
-Scanning runs on the queue, so a worker must be running (`php artisan queue:work`). For Docker deployments, `scripts/setup-pandora.sh` starts the Pandora stack alongside the application.
+Scanning runs on the queue, so a worker must be running (`php artisan queue:work --timeout=180`). For Docker deployments, `scripts/setup-pandora.sh` starts the Pandora stack alongside the application.
 
 ## Development
 

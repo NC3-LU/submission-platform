@@ -52,16 +52,8 @@ class FormController extends Controller
     {
         $this->authorize('create', Form::class);
 
-        // Get forms created by the user
-        $createdForms = Auth::user()->forms()->latest();
-
-        // Get forms the user is assigned to
-        $assignedForms = Form::whereHas('appointedUsers', function ($query) {
-            $query->where('user_id', Auth::id());
-        })->latest();
-
-        // Combine both queries and get the results
-        $forms = $createdForms->union($assignedForms)->get();
+        $forms = Form::where(fn ($q) => $q->where('user_id', Auth::id())->orWhereHas('appointedUsers', fn ($assigned) => $assigned->where('user_id', Auth::id())))
+            ->latest()->paginate(15);
 
         return view('forms.user-index', ['forms' => $forms]);
     }
@@ -172,10 +164,6 @@ class FormController extends Controller
     public function destroy(Form $form): RedirectResponse
     {
         $this->authorize('delete', $form);
-
-        if ($form->header_image) {
-            Storage::disk('public')->delete($form->header_image);
-        }
 
         $form->delete();
 

@@ -1,0 +1,14 @@
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires livewire/livewire 3.6.4 (exact version match: 3.6.4 or 3.6.4.0), found livewire/livewire[v3.6.4] but these were not loaded, because they are affected by security advisories ("PKSA-bgw4-5zmg-2njg"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.
+  Problem 2
+    - Root composer.json requires filament/filament ^3.3.4 -> satisfiable by filament/filament[v3.3.52, v3.3.53, v3.3.54, v3.3.55].
+    - filament/filament v3.3.52 requires filament/forms v3.3.52 -> found filament/forms[v3.3.52] but these were not loaded, because they are affected by security advisories ("PKSA-n7tx-gkfb-14yj"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.
+    - filament/filament v3.3.53 requires filament/support v3.3.53 -> satisfiable by filament/support[v3.3.53].
+    - filament/filament v3.3.54 requires filament/support v3.3.54 -> satisfiable by filament/support[v3.3.54].
+    - filament/filament v3.3.55 requires filament/support v3.3.55 -> satisfiable by filament/support[v3.3.55].
+    - filament/support[v3.3.53, ..., v3.3.55] require livewire/livewire ^3.5 -> found livewire/livewire[v3.5.0, ..., v3.8.8] but these were not loaded, because they are affected by security advisories ("PKSA-bgw4-5zmg-2njg", "PKSA-g5js-3ypd-k2kr", "PKSA-9tny-xycd-bd72"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.
+

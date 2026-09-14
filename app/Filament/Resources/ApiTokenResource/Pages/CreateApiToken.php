@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\ApiTokenResource\Pages;
 
 use App\Filament\Resources\ApiTokenResource;
+use App\Services\ApiTokenService;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateApiToken extends CreateRecord
 {
@@ -15,22 +16,22 @@ class CreateApiToken extends CreateRecord
     // Store the plain text token temporarily
     public $plainTextToken;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function handleRecordCreation(array $data): Model
     {
-        // Generate a secure token
-        $this->plainTextToken = Str::random(40);
+        $issuedToken = app(ApiTokenService::class)->issue(
+            (int) $data['user_id'],
+            [
+                'name' => $data['name'],
+                'abilities' => $data['abilities'] ?? ['forms:read'],
+                'allowed_ips' => $data['allowed_ips'] ?? null,
+                'expires_at' => $data['expires_at'] ?? null,
+            ],
+            actorUser: auth()->user(),
+            ipAddress: request()->ip(),
+        );
+        $this->plainTextToken = $issuedToken->plainTextToken;
 
-        // Store hashed token in the database
-        $data['token'] = hash('sha256', $this->plainTextToken);
-
-        // User ID is now selected in the form, not automatically assigned
-
-        // Store default abilities if none provided
-        if (! isset($data['abilities'])) {
-            $data['abilities'] = ['forms:read'];
-        }
-
-        return $data;
+        return $issuedToken->token;
     }
 
     protected function afterCreate(): void

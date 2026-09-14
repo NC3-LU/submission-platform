@@ -1,0 +1,250 @@
+ Image submission-handover:deployment-verified Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 593B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 6.30kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24-alpine
+#3 ...
+
+#4 [internal] load metadata for docker.io/library/php:8.3-cli-alpine
+#4 DONE 0.6s
+
+#5 [internal] load metadata for docker.io/library/php:8.3-apache
+#5 DONE 0.6s
+
+#3 [internal] load metadata for docker.io/library/node:24-alpine
+#3 DONE 0.8s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 453B done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#8 [runtime-apache  1/12] FROM docker.io/library/php:8.3-apache@sha256:060ed9c0f6e4bbe4f8b25a34ca1ec596b96d8f4011cf7ee7eb6b7eecf01cb74f
+#8 resolve docker.io/library/php:8.3-apache@sha256:060ed9c0f6e4bbe4f8b25a34ca1ec596b96d8f4011cf7ee7eb6b7eecf01cb74f
+#8 resolve docker.io/library/php:8.3-apache@sha256:060ed9c0f6e4bbe4f8b25a34ca1ec596b96d8f4011cf7ee7eb6b7eecf01cb74f 0.3s done
+#8 DONE 0.3s
+
+#9 [composer-builder 1/8] FROM docker.io/library/php:8.3-cli-alpine@sha256:afdf8b1fee58486ccc0dab5f30f634b86873d56dac985f71ba217945647c05ad
+#9 resolve docker.io/library/php:8.3-cli-alpine@sha256:afdf8b1fee58486ccc0dab5f30f634b86873d56dac985f71ba217945647c05ad 0.3s done
+#9 DONE 0.3s
+
+#10 [node-builder  1/11] FROM docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81
+#10 resolve docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81 0.3s done
+#10 DONE 0.3s
+
+#7 [internal] load build context
+#7 transferring context: 29.51kB 0.0s done
+#7 DONE 0.1s
+
+#11 [composer-builder 2/8] WORKDIR /app
+#11 CACHED
+
+#12 [composer-builder 3/8] RUN apk add --no-cache         icu-dev         libpng-dev         libzip-dev         git         curl         unzip     && docker-php-ext-configure intl     && docker-php-ext-install -j2 intl zip gd     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+#12 CACHED
+
+#13 [composer-builder 4/8] COPY composer.json composer.lock ./
+#13 CACHED
+
+#14 [composer-builder 5/8] RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-autoloader
+#14 CACHED
+
+#15 [composer-builder 6/8] COPY . .
+#15 DONE 0.2s
+
+#16 [composer-builder 7/8] RUN composer dump-autoload --no-dev --optimize --no-scripts
+#16 0.516 Generating optimized autoload files
+#16 2.187 Generated optimized autoload files containing 9011 classes
+#16 DONE 2.3s
+
+#17 [composer-builder 8/8] RUN mkdir -p storage/app/private storage/app/public storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache     && APP_ENV=production CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: composer run-script post-autoload-dump
+#17 0.606 > Illuminate\Foundation\ComposerScripts::postAutoloadDump
+#17 0.646 > @php artisan package:discover --ansi
+#17 0.942 
+#17 0.942    INFO  Discovering packages.  
+#17 0.942 
+#17 0.946   anourvalar/eloquent-serialize ......................................... DONE
+#17 0.947   barryvdh/laravel-dompdf ............................................... DONE
+#17 0.947   blade-ui-kit/blade-heroicons .......................................... DONE
+#17 0.947   blade-ui-kit/blade-icons .............................................. DONE
+#17 0.948   dedoc/scramble ........................................................ DONE
+#17 0.948   filament/actions ...................................................... DONE
+#17 0.948   filament/filament ..................................................... DONE
+#17 0.949   filament/forms ........................................................ DONE
+#17 0.949   filament/infolists .................................................... DONE
+#17 0.950   filament/notifications ................................................ DONE
+#17 0.950   filament/support ...................................................... DONE
+#17 0.950   filament/tables ....................................................... DONE
+#17 0.951   filament/widgets ...................................................... DONE
+#17 0.951   kirschbaum-development/eloquent-power-joins ........................... DONE
+#17 0.951   laravel/fortify ....................................................... DONE
+#17 0.951   laravel/jetstream ..................................................... DONE
+#17 0.952   laravel/passkeys ...................................................... DONE
+#17 0.952   laravel/sanctum ....................................................... DONE
+#17 0.952   laravel/tinker ........................................................ DONE
+#17 0.953   livewire/livewire ..................................................... DONE
+#17 0.953   nesbot/carbon ......................................................... DONE
+#17 0.953   nunomaduro/termwind ................................................... DONE
+#17 0.954   ryangjchandler/blade-capture-directive ................................ DONE
+#17 0.954 
+#17 0.962 > @php artisan filament:upgrade
+#17 1.206   ⇂ public/js/filament/forms/components/color-picker.js  
+#17 1.206   ⇂ public/js/filament/forms/components/date-time-picker.js  
+#17 1.206   ⇂ public/js/filament/forms/components/file-upload.js  
+#17 1.206   ⇂ public/js/filament/forms/components/key-value.js  
+#17 1.206   ⇂ public/js/filament/forms/components/markdown-editor.js  
+#17 1.206   ⇂ public/js/filament/forms/components/rich-editor.js  
+#17 1.206   ⇂ public/js/filament/forms/components/select.js  
+#17 1.206   ⇂ public/js/filament/forms/components/tags-input.js  
+#17 1.206   ⇂ public/js/filament/forms/components/textarea.js  
+#17 1.206   ⇂ public/js/filament/tables/components/table.js  
+#17 1.206   ⇂ public/js/filament/widgets/components/chart.js  
+#17 1.206   ⇂ public/js/filament/widgets/components/stats-overview/stat/chart.js  
+#17 1.206   ⇂ public/js/filament/filament/app.js  
+#17 1.206   ⇂ public/js/filament/filament/echo.js  
+#17 1.206   ⇂ public/js/filament/notifications/notifications.js  
+#17 1.206   ⇂ public/js/filament/support/support.js  
+#17 1.206   ⇂ public/css/filament/forms/forms.css  
+#17 1.206   ⇂ public/css/filament/support/support.css  
+#17 1.206   ⇂ public/css/filament/filament/app.css  
+#17 1.209 
+#17 1.209    INFO  Successfully published assets!  
+#17 1.209 
+#17 1.209    INFO  Configuration cache cleared successfully.  
+#17 1.209 
+#17 1.210    INFO  Route cache cleared successfully.  
+#17 1.210 
+#17 1.211    INFO  Compiled views cleared successfully.  
+#17 1.211 
+#17 1.212    INFO  Successfully upgraded!  
+#17 1.212 
+#17 DONE 1.3s
+
+#18 [runtime-apache  2/12] WORKDIR /var/www/html
+#18 CACHED
+
+#19 [runtime-apache  4/12] RUN docker-php-ext-install -j2 pdo_mysql mbstring exif pcntl bcmath gd zip &&     docker-php-ext-configure intl &&     docker-php-ext-install -j2 intl
+#19 CACHED
+
+#20 [runtime-apache  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     git     curl     libpng-dev     libonig-dev     libxml2-dev     libzip-dev     zip     unzip     libicu-dev     default-mysql-client     gosu     && rm -rf /var/lib/apt/lists/*
+#20 CACHED
+
+#21 [runtime-apache  5/12] RUN a2enmod rewrite &&     sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf &&     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf &&     sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+#21 CACHED
+
+#22 [runtime-apache  6/12] COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+#22 CACHED
+
+#23 [node-builder  6/11] COPY resources/ ./resources/
+#23 CACHED
+
+#24 [node-builder  8/11] COPY postcss.config.js ./
+#24 CACHED
+
+#25 [node-builder  3/11] WORKDIR /app
+#25 CACHED
+
+#26 [node-builder  2/11] RUN if [ -n "$PROXY" ]; then         npm config set proxy $PROXY &&         npm config set https-proxy $PROXY;     fi &&     npm config set registry https://registry.npmjs.org/
+#26 CACHED
+
+#27 [node-builder  4/11] RUN apk add --no-cache python3 make g++
+#27 CACHED
+
+#28 [node-builder 10/11] RUN npm ci --no-audit --no-progress
+#28 CACHED
+
+#29 [node-builder  9/11] COPY tailwind.config.js ./
+#29 CACHED
+
+#30 [node-builder  5/11] COPY package.json package-lock.json ./
+#30 CACHED
+
+#31 [node-builder  7/11] COPY vite.config.js ./
+#31 CACHED
+
+#32 [runtime-apache  7/12] COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+#32 CACHED
+
+#33 [node-builder 11/11] RUN NODE_ENV=production npm run build
+#33 CACHED
+
+#34 [runtime-apache  8/12] COPY --from=composer-builder /app /var/www/html
+#34 DONE 2.3s
+
+#35 [runtime-apache  9/12] COPY --from=node-builder /app/public/build /var/www/html/public/build
+#35 DONE 0.3s
+
+#36 [runtime-apache 10/12] RUN mkdir -p /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/framework/cache/data     && mkdir -p /var/www/html/storage/logs     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+#36 DONE 0.5s
+
+#37 [runtime-apache 11/12] COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+#37 DONE 0.2s
+
+#38 [runtime-apache 12/12] RUN chmod +x /usr/local/bin/entrypoint.sh
+#38 DONE 0.5s
+
+#39 exporting to image
+#39 exporting layers
+#39 exporting layers 3.3s done
+#39 exporting manifest sha256:67d63e75411e5e64b7686372567beb4deb1998bcc5615f524d20390f4bf6959c 0.0s done
+#39 exporting config sha256:9d0a3496ebfe28521918d4ce210055d6d1b2d3ef4513ef5b3b1593761cf42591 0.1s done
+#39 exporting attestation manifest sha256:034fe7c5fc49ad9ee112169d38e2434cfcc56baa474f1cbcc8cc1b39867864b3 0.1s done
+#39 exporting manifest list sha256:2cb0f070e364843b912220131e4396fe0372b8028b6b2ee870066333e715043f
+#39 exporting manifest list sha256:2cb0f070e364843b912220131e4396fe0372b8028b6b2ee870066333e715043f 0.1s done
+#39 naming to docker.io/library/submission-handover:deployment-verified done
+#39 unpacking to docker.io/library/submission-handover:deployment-verified
+#39 unpacking to docker.io/library/submission-handover:deployment-verified 3.9s done
+#39 DONE 7.5s
+
+#40 resolving provenance for metadata file
+#40 DONE 0.0s
+ Image submission-handover:deployment-verified Built 
+Rollback image: submission-platform:pre-deploy-20260914T120731Z
+
+   INFO  Application is now in maintenance mode.  
+
+ Container submission-backup-test-app-1 Stopping 
+ Container submission-backup-test-queue-1 Stopping 
+ Container submission-backup-test-scheduler-1 Stopping 
+ Container submission-backup-test-scheduler-1 Stopped 
+ Container submission-backup-test-app-1 Stopped 
+ Container submission-backup-test-queue-1 Stopped 
+ Container submission-backup-test-app-run-39bf33b5e161 Creating 
+ Container submission-backup-test-app-run-39bf33b5e161 Created 
+ Container submission-backup-test-app-run-dce7657f1f6b Creating 
+ Container submission-backup-test-app-run-dce7657f1f6b Created 
+Encrypted snapshot: <temporary-workspace>/backups/submission-20260914T120750Z.tar.gpg
+ Container submission-backup-test-app-run-30419b5a5a86 Creating 
+ Container submission-backup-test-app-run-30419b5a5a86 Created 
+
+   INFO  Nothing to migrate.  
+
+Published and verified assets from the release image.
+ Container submission-backup-test-scheduler-1 Recreate 
+ Container submission-backup-test-app-1 Recreate 
+ Container submission-backup-test-queue-1 Recreate 
+ Container submission-backup-test-scheduler-1 Recreated 
+ Container submission-backup-test-queue-1 Recreated 
+ Container submission-backup-test-app-1 Recreated 
+ Container submission-backup-test-app-1 Starting 
+ Container submission-backup-test-queue-1 Starting 
+ Container submission-backup-test-scheduler-1 Starting 
+ Container submission-backup-test-scheduler-1 Started 
+ Container submission-backup-test-queue-1 Started 
+ Container submission-backup-test-app-1 Started 
+{"database":true,"schema":true,"cache":true,"private_storage":true}
+{"database":true,"schema":true,"cache":true,"private_storage":true,"queue_age":true,"failed_jobs":true,"file_cleanup":true,"queue_heartbeat":true,"scheduler_heartbeat":true}
+
+   INFO  Application is now live.  
+
+curl: (56) Recv failure: Connection reset by peer
+Deployment verified. Release image: submission-handover:deployment-verified; rollback image: submission-platform:pre-deploy-20260914T120731Z
+real 90.59
+user 1.37
+sys 1.17

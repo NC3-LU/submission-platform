@@ -1,0 +1,8 @@
+Seeded all five legacy statuses and answers.
+
+   INFO  Running migrations.  
+
+  2026_09_14_000001_preserve_submission_data ......................... 2s DONE
+  2026_09_14_000002_create_pending_file_deletions .............. 218.38ms DONE
+
+Restored database and file contents match the backup manifest.

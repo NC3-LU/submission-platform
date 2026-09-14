@@ -3,9 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ApiTokenResource\Pages;
+use App\Models\ApiSetting;
 use App\Models\ApiToken;
+use App\Rules\ValidIpList;
+use App\Services\ApiTokenService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -35,14 +39,22 @@ class ApiTokenResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required()
+                            ->disabledOn('edit')
                             ->label('Token Owner')
                             ->helperText('User who will own this token and access its data'),
 
                         Forms\Components\TextInput::make('allowed_ips')
                             ->placeholder('192.168.1.1, 10.0.0.1')
-                            ->helperText('Comma separated IPs. Leave empty to allow all'),
+                            ->helperText('Comma-separated IPv4/IPv6 addresses or CIDR ranges. Leave empty to allow all')
+                            ->rules([new ValidIpList]),
 
                         Forms\Components\DateTimePicker::make('expires_at')
+                            ->minDate(now())
+                            ->maxDate(function () {
+                                $days = (int) ApiSetting::get('api_token_max_lifetime_days', 0);
+
+                                return $days > 0 ? now()->addDays($days) : null;
+                            })
                             ->nullable(),
                     ]),
 
@@ -61,6 +73,7 @@ class ApiTokenResource extends Resource
                                 'tokens:manage' => 'Manage API Tokens',
                                 '*' => 'All Permissions',
                             ])
+                            ->required()
                             ->default(['forms:read'])
                             ->columns(2),
                     ]),
@@ -134,12 +147,45 @@ class ApiTokenResource extends Resource
                     ->label('Filter by Owner'),
             ])
             ->actions([
+                Tables\Actions\Action::make('rotate')
+                    ->icon('heroicon-o-arrow-path')
+                    ->requiresConfirmation()
+                    ->action(function (ApiToken $record): void {
+                        $rotated = app(ApiTokenService::class)->rotate(
+                            $record,
+                            actorUser: auth()->user(),
+                            ipAddress: request()->ip(),
+                        );
+
+                        Notification::make()
+                            ->title('API token rotated')
+                            ->body('Copy this token now; it will not be shown again:<br><code style="user-select: all;">'.$rotated->plainTextToken.'</code>')
+                            ->success()
+                            ->persistent()
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->using(function (ApiToken $record): bool {
+                        app(ApiTokenService::class)->revoke(
+                            $record,
+                            actorUser: auth()->user(),
+                            ipAddress: request()->ip(),
+                        );
+
+                        return true;
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->using(function ($records): void {
+                            $records->each(fn (ApiToken $record) => app(ApiTokenService::class)->revoke(
+                                $record,
+                                actorUser: auth()->user(),
+                                ipAddress: request()->ip(),
+                            ));
+                        }),
                 ]),
             ]);
     }

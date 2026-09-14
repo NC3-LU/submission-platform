@@ -33,6 +33,8 @@ class ScanSubmissionFileJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
+    public bool $deleteWhenMissingModels = true;
+
     /**
      * Number of attempts before the job is considered permanently failed.
      */
@@ -66,6 +68,10 @@ class ScanSubmissionFileJob implements ShouldQueue
         // Nothing to scan if the file is missing, empty, or already quarantined.
         if (empty($path) || str_starts_with($path, '[REMOVED')) {
             return;
+        }
+
+        if (! $value->submission?->ownsFilePath($path)) {
+            throw new RuntimeException('Untrusted submission file reference.');
         }
 
         if (! Storage::disk('private')->exists($path)) {

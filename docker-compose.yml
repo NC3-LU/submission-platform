@@ -17,7 +17,7 @@ services:
       - dbdata:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql -h127.0.0.1 -uroot "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
       timeout: 20s
       retries: 15
       interval: 10s
@@ -83,7 +83,9 @@ services:
 
   # Queue worker — processes background jobs (e.g. async malware scans).
   # Without this, database-queued jobs never run.
-  queue:
+  queue: &worker
+    stop_signal: SIGTERM
+    stop_grace_period: 240s
     build:
       context: .
       dockerfile: Dockerfile
@@ -105,6 +107,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  scheduler:
+    <<: *worker
+    container_name: nc3_scheduler
+    command: php artisan schedule:work
 
   # --- Pandora file scanning stack (optional) ---
   # Activate with: COMPOSE_PROFILES=pandora docker compose up -d

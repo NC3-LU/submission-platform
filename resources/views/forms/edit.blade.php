@@ -3,7 +3,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="{{ route('forms.user_index') }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <a aria-label="Back" href="{{ route('forms.user_index') }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
@@ -19,12 +19,12 @@
                             {{ $form->status === 'archived' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400' : '' }}">
                             {{ ucfirst($form->status) }}
                         </span>
-                        <span class="text-gray-400 dark:text-gray-500">•</span>
+                        <span class="text-gray-600 dark:text-gray-500">•</span>
                         <span class="text-sm text-gray-500 dark:text-gray-400">{{ ucfirst($form->visibility) }}</span>
                     </div>
                 </div>
             </div>
-            <a href="{{ route('forms.show', $form) }}" target="_blank" 
+            <a href="{{ route('forms.preview', $form) }}" target="_blank"
                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -40,9 +40,9 @@
         <!-- Tab Navigation -->
         <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
             <nav class="flex gap-8" aria-label="Tabs">
-                <button @click="activeTab = 'fields'" 
-                        :class="activeTab === 'fields' 
-                            ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
+                <button @click="activeTab = 'fields'"
+                        :class="activeTab === 'fields'
+                            ? 'border-sky-500 text-sky-700 dark:text-sky-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                         class="flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,9 +50,9 @@
                     </svg>
                     Form Fields
                 </button>
-                <button @click="activeTab = 'settings'" 
-                        :class="activeTab === 'settings' 
-                            ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
+                <button @click="activeTab = 'settings'"
+                        :class="activeTab === 'settings'
+                            ? 'border-sky-500 text-sky-700 dark:text-sky-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                         class="flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,9 +61,9 @@
                     </svg>
                     Settings
                 </button>
-                <button @click="activeTab = 'access'" 
-                        :class="activeTab === 'access' 
-                            ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
+                <button @click="activeTab = 'access'"
+                        :class="activeTab === 'access'
+                            ? 'border-sky-500 text-sky-700 dark:text-sky-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
                         class="flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,7 @@
             <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                     <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
@@ -153,7 +153,7 @@
                                     </label>
                                     <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                         <input type="checkbox" name="remove_header_image" value="1"
-                                               class="rounded border-gray-300 dark:border-gray-600 text-sky-600 focus:ring-sky-500">
+                                               class="rounded border-gray-300 dark:border-gray-600 text-sky-700 focus:ring-sky-500">
                                         Remove header image
                                     </label>
                                 </div>
@@ -233,7 +233,7 @@
                     <!-- Submit Button -->
                     <div class="flex justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-700 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
@@ -251,7 +251,7 @@
                 <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
                     <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                         <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>
                         </div>
@@ -270,7 +270,7 @@
                                     <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                                <span class="text-sm font-medium text-sky-600 dark:text-sky-400">{{ substr($assignedUser->name, 0, 1) }}</span>
+                                                <span class="text-sm font-medium text-sky-700 dark:text-sky-400">{{ substr($assignedUser->name, 0, 1) }}</span>
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $assignedUser->name }}</p>
@@ -286,7 +286,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" onclick="return confirm('Are you sure you want to remove this user?')"
-                                                        class="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                                        class="p-1.5 text-gray-600 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                     </svg>
@@ -320,7 +320,7 @@
                         <div class="mb-4">
                             <label class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg cursor-pointer">
                                 <input type="checkbox" name="can_edit" value="1"
-                                       class="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500">
+                                       class="w-4 h-4 rounded border-gray-300 text-sky-700 focus:ring-sky-500">
                                 <div>
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Allow Editing</span>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">Users can modify form submissions</p>
@@ -328,7 +328,7 @@
                             </label>
                         </div>
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
+                                class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-700 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                             </svg>
@@ -341,7 +341,7 @@
                 <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
                     <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                         <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                             </svg>
                         </div>
@@ -361,7 +361,7 @@
                             </div>
                             <div class="flex items-end">
                                 <button type="submit"
-                                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
+                                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-700 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
@@ -395,7 +395,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                                class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                                class="p-2 text-gray-600 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                             </svg>
@@ -407,12 +407,12 @@
                     @else
                         <div class="text-center py-8">
                             <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                                 </svg>
                             </div>
                             <p class="text-gray-500 dark:text-gray-400">No access links created yet</p>
-                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Create a link above to share form access</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-500 mt-1">Create a link above to share form access</p>
                         </div>
                     @endif
                 </div>

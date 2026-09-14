@@ -77,7 +77,7 @@ class SubmissionExportController extends Controller
         ]);
 
         // Load all submissions with their values
-        $submissions = $form->submissions()
+        $submissions = $form->submissions()->visibleTo(auth()->user())->whereNotIn('status', Submission::EDITABLE_STATUSES)
             ->with(['values', 'user'])
             ->latest()
             ->get();
@@ -167,7 +167,7 @@ class SubmissionExportController extends Controller
             abort(403);
         }
 
-        $submissions = Submission::where('user_id', $user->id)
+        $submissions = Submission::where('user_id', $user->id)->whereNotIn('status', Submission::EDITABLE_STATUSES)
             ->with(['form', 'values', 'values.field'])
             ->latest()
             ->get();
@@ -181,7 +181,7 @@ class SubmissionExportController extends Controller
                     $submission->id,
                     $submission->form->title,
                     $submission->created_at->format('Y-m-d H:i:s'),
-                    'Submitted',
+                    $submission->status,
                 ]);
             }
 
@@ -269,11 +269,12 @@ class SubmissionExportController extends Controller
             $first = true;
 
             // Process submissions in chunks to avoid memory issues
-            $form->submissions()
+            $form->submissions()->visibleTo(auth()->user())->whereNotIn('status', Submission::EDITABLE_STATUSES)
                 ->with(['values', 'values.field', 'user'])
                 ->latest()
-                ->chunk(100, function ($submissions) use ($output, &$first) {
+                ->chunk(100, function ($submissions) use ($form, $output, &$first) {
                     foreach ($submissions as $submission) {
+                        $submission->setRelation('form', $form);
                         if (! $first) {
                             fwrite($output, ',');
                         }
@@ -365,8 +366,7 @@ class SubmissionExportController extends Controller
                         $fieldData['value'] = $fileName;
                     } else {
                         // Cast boolean values properly
-                        $fieldData['value'] = $field->type === 'checkbox' ?
-                            (bool) $value->value : $value->value;
+                        $fieldData['value'] = $value->value;
                     }
                 }
 

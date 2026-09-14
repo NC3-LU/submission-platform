@@ -1,8 +1,8 @@
 {{-- Cookie Consent Banner for Essential Cookies --}}
 {{-- GDPR: Essential cookies are exempt from consent, but users must be informed --}}
 
-<div 
-    x-data="{ 
+<div
+    x-data="{
         show: false,
         init() {
             this.show = !localStorage.getItem('cookie_consent_acknowledged');
@@ -20,12 +20,12 @@
     x-transition:leave-start="opacity-100 translate-y-0"
     x-transition:leave-end="opacity-0 translate-y-4"
     x-cloak
-    class="fixed bottom-0 inset-x-0 z-50 pb-2 sm:pb-5"
-    role="dialog"
+    class="relative py-3"
+    role="region"
     aria-label="Cookie notice"
 >
     <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div class="p-4 rounded-lg bg-gray-800 dark:bg-gray-700 shadow-lg sm:p-6">
+        <div class="p-4 rounded-lg bg-gray-800 dark:bg-gray-700 shadow-lg sm:p-4">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex-1 flex items-start sm:items-center">
                     {{-- Cookie Icon --}}
@@ -35,24 +35,24 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                         </svg>
                     </span>
-                    
+
                     <p class="ml-3 text-sm text-white">
                         <span class="font-medium">Cookie Notice:</span>
                         <span class="ml-1">
-                            This website uses essential cookies required for basic functionality, including session management and security. 
-                            No tracking or third-party cookies are used.
+                            This website uses essential cookies required for basic functionality, including session management and security.
+                            Read the privacy policy for details about the services this site uses.
                         </span>
                         <a href="{{ route('policy.show') }}" class="ml-1 font-medium text-sky-400 hover:text-sky-300 underline whitespace-nowrap">
                             Learn more
                         </a>
                     </p>
                 </div>
-                
+
                 <div class="shrink-0 flex items-center gap-3">
                     {{-- Dismiss button --}}
-                    <button 
+                    <button
                         @click="acknowledge()"
-                        type="button" 
+                        type="button"
                         class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-800 bg-sky-400 hover:bg-sky-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-sky-500 transition-colors duration-200"
                     >
                         Got it

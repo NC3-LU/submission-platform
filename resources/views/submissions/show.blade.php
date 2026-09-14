@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ $backLink }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <a aria-label="Back" href="{{ $backLink }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -52,11 +52,11 @@
                                                 @endphp
                                                 <div class="flex items-center gap-2">
                                                     @if($downloadBlocked)
-                                                        <span class="text-gray-400 dark:text-gray-500 font-medium cursor-not-allowed line-through" title="This file cannot be downloaded until it passes the malware scan.">
+                                                        <span class="text-gray-600 dark:text-gray-500 font-medium cursor-not-allowed line-through" title="This file cannot be downloaded until it passes the malware scan.">
                                                             {{ basename($field['value']) }}
                                                         </span>
                                                     @else
-                                                        <a href="{{ $field['displayValue'] }}" target="_blank" class="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 font-medium transition-colors">
+                                                        <a href="{{ $field['displayValue'] }}" target="_blank" class="text-sky-700 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 font-medium transition-colors">
                                                             {{ basename($field['value']) }}
                                                         </a>
                                                     @endif
@@ -65,7 +65,7 @@
                                                     @endif
                                                 </div>
                                             @else
-                                                <p class="text-gray-400 dark:text-gray-500 italic">No file uploaded</p>
+                                                <p class="text-gray-600 dark:text-gray-500 italic">No file uploaded</p>
                                             @endif
                                         @elseif($field['type'] === 'checkbox')
                                             <p class="text-gray-900 dark:text-white">{{ $field['displayValue'] ?: 'No' }}</p>

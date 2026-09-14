@@ -12,6 +12,7 @@
             @endif
 
             <x-dashboard.user-forms :form-stats="$formStats" />
+            {{ $formStats->links() }}
         </div>
     </div>
 </x-app-layout>

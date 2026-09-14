@@ -1,9 +1,18 @@
-<div x-data="{ 
+<div x-data="{
     showQuickAdd: null,
     draggedField: null,
-    showFieldTypeMenu: false 
+    showFieldTypeMenu: false
 }" class="space-y-6">
-    
+
+    @php($structureLocked = $form->submissions()->exists())
+    @if($structureLocked)
+        <div role="status" class="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900">
+            This form has responses. Its questions are locked to preserve existing answers. Duplicate the form to create a revised version.
+        </div>
+    @endif
+    <x-validation-errors />
+    <fieldset @disabled($structureLocked) class="min-w-0 space-y-6">
+    <legend class="sr-only">Form structure</legend>
     <!-- Toolbar -->
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
         <div class="p-4">
@@ -12,7 +21,7 @@
                 <div class="flex items-center gap-6">
                     <div class="flex items-center gap-2">
                         <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                             </svg>
                         </div>
@@ -23,7 +32,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
@@ -44,18 +53,18 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-2">
-                    <button wire:click="openAddCategoryPanel" 
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <button wire:click="openAddCategoryPanel"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-sky-700 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         Add Section
                     </button>
                     <button wire:click="openAddFieldPanel"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-sky-700 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -63,34 +72,34 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Search and Filters -->
             <div class="flex flex-wrap items-center gap-3">
                 <div class="relative flex-1 min-w-[200px]">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input type="text" 
+                    <input type="text"
                            wire:model.live.debounce.300ms="searchQuery"
-                           placeholder="Search fields..." 
+                           aria-label="Search fields" placeholder="Search fields..."
                            class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                 </div>
-                
+
                 @if($searchQuery || $activeFieldTypeFilter)
                     <button wire:click="clearFilters" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                         Clear filters
                     </button>
                 @endif
-                
+
                 <div class="flex items-center gap-1">
-                    <button wire:click="expandAllCategories" 
+                    <button wire:click="expandAllCategories"
                             class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                             title="Expand all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
                         </svg>
                     </button>
-                    <button wire:click="collapseAllCategories" 
+                    <button wire:click="collapseAllCategories"
                             class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                             title="Collapse all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,25 +120,29 @@
         @forelse($filteredCategories as $index => $category)
             <div wire:sortable.item="{{ $category['id'] }}" wire:key="category-{{ $category['id'] }}"
                  class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
-                
+
                 <!-- Category Header -->
                 <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 border-b border-gray-200 dark:border-gray-700">
                     <!-- Drag Handle -->
                     <div wire:sortable.handle class="category-drag-handle cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM14 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM14 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
                         </svg>
                     </div>
-                    
+
+                    <div class="flex flex-col text-xs">
+                        <button type="button" wire:click="moveCategoryUp({{ $category['id'] }})" aria-label="Move {{ $category['name'] }} section up" class="p-1 hover:underline">↑</button>
+                        <button type="button" wire:click="moveCategoryDown({{ $category['id'] }})" aria-label="Move {{ $category['name'] }} section down" class="p-1 hover:underline">↓</button>
+                    </div>
                     <!-- Collapse Toggle -->
-                    <button wire:click="toggleCategoryCollapse({{ $category['id'] }})" 
+                    <button aria-label="Toggle {{ $category['name'] }} section" aria-expanded="{{ in_array($category['id'], $collapsedCategories) ? 'false' : 'true' }}" wire:click="toggleCategoryCollapse({{ $category['id'] }})"
                             class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                        <svg class="w-5 h-5 text-gray-500 transition-transform duration-200 {{ in_array($category['id'], $collapsedCategories) ? '' : 'rotate-90' }}" 
+                        <svg class="w-5 h-5 text-gray-500 transition-transform duration-200 {{ in_array($category['id'], $collapsedCategories) ? '' : 'rotate-90' }}"
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </button>
-                    
+
                     <!-- Category Info -->
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
@@ -142,31 +155,31 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ $category['description'] }}</p>
                         @endif
                     </div>
-                    
+
                     <!-- Category Actions -->
                     <div class="flex items-center gap-1">
-                        <button wire:click="openAddFieldPanel({{ $category['id'] }})" 
-                                class="p-2 text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors"
+                        <button wire:click="openAddFieldPanel({{ $category['id'] }})"
+                                class="p-2 text-sky-700 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors"
                                 title="Add field to this section">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
                         </button>
-                        <button wire:click="editCategory({{ $category['id'] }})" 
-                                class="p-2 text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors"
+                        <button wire:click="editCategory({{ $category['id'] }})"
+                                class="p-2 text-sky-700 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors"
                                 title="Edit section">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
                         </button>
-                        <button wire:click="duplicateCategory({{ $category['id'] }})" 
+                        <button wire:click="duplicateCategory({{ $category['id'] }})"
                                 class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                                 title="Duplicate section">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                             </svg>
                         </button>
-                        <button wire:click="confirmDeleteCategory({{ $category['id'] }})" 
+                        <button wire:click="confirmDeleteCategory({{ $category['id'] }})"
                                 class="p-2 text-red-500 hover:text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 title="Delete section">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,23 +188,32 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Category Fields -->
                 @if(!in_array($category['id'], $collapsedCategories))
                     <div class="p-4 space-y-2 min-h-[5rem]"
                          wire:sortable-group.item-group="{{ $category['id'] }}">
-                        
+
                         @forelse($category['fields'] as $fieldIndex => $field)
                             <div wire:sortable-group.item="{{ $field['id'] }}" wire:key="field-{{ $field['id'] }}"
                                  class="group flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-gray-600 transition-all">
-                                
+
                                 <!-- Field Drag Handle -->
                                 <div wire:sortable-group.handle class="cursor-grab active:cursor-grabbing p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                                    <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM14 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM14 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
                                     </svg>
                                 </div>
-                                
+
+                                <div class="flex flex-col text-xs">
+                                    <button type="button" wire:click="moveFieldUp({{ $field['id'] }})" aria-label="Move {{ $field['label'] }} up" class="p-1 hover:underline">↑</button>
+                                    <button type="button" wire:click="moveFieldDown({{ $field['id'] }})" aria-label="Move {{ $field['label'] }} down" class="p-1 hover:underline">↓</button>
+                                    <select aria-label="Move {{ $field['label'] }} to section" class="max-w-28 text-xs rounded" wire:change="moveFieldToCategory({{ $field['id'] }}, $event.target.value)">
+                                        @foreach($categories as $destination)
+                                            <option value="{{ $destination['id'] }}" @selected($destination['id'] === $category['id'])>{{ $destination['name'] }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <!-- Field Type Icon -->
                                 <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
                                     @if($field['type'] === 'header') bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400
@@ -224,7 +246,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                                     @endif
                                 </div>
-                                
+
                                 <!-- Field Content -->
                                 <div class="flex-1 min-w-0">
                                     @if($field['type'] === 'header')
@@ -241,29 +263,29 @@
                                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">Required</span>
                                             @endif
                                             @if($field['char_limit'])
-                                                <span class="text-xs text-gray-400">Max {{ $field['char_limit'] }} chars</span>
+                                                <span class="text-xs text-gray-600">Max {{ $field['char_limit'] }} chars</span>
                                             @endif
                                         </div>
                                     @endif
                                 </div>
-                                
+
                                 <!-- Field Actions -->
                                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button wire:click="editField({{ $field['id'] }})" 
-                                            class="p-1.5 text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded transition-colors"
+                                    <button wire:click="editField({{ $field['id'] }})"
+                                            class="p-1.5 text-sky-700 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded transition-colors"
                                             title="Edit field">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button wire:click="duplicateField({{ $field['id'] }})" 
+                                    <button wire:click="duplicateField({{ $field['id'] }})"
                                             class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
                                             title="Duplicate field">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                         </svg>
                                     </button>
-                                    <button wire:click="confirmDeleteField({{ $field['id'] }})" 
+                                    <button wire:click="confirmDeleteField({{ $field['id'] }})"
                                             class="p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                                             title="Delete field">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,13 +298,13 @@
                             <!-- Empty State for Category -->
                             <div class="flex flex-col items-center justify-center py-8 text-center">
                                 <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
                                 </div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">No fields in this section yet</p>
                                 <button wire:click="openAddFieldPanel({{ $category['id'] }})"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors">
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
@@ -290,18 +312,18 @@
                                 </button>
                             </div>
                         @endforelse
-                        
+
                         <!-- Quick Add Field Row -->
                         @if(count($category['fields']) > 0)
                             <div x-data="{ showMenu: false }" class="relative">
-                                <button @click="showMenu = !showMenu" 
-                                        class="w-full flex items-center justify-center gap-2 py-2 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border-2 border-dashed border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 rounded-lg transition-colors">
+                                <button @click="showMenu = !showMenu"
+                                        class="w-full flex items-center justify-center gap-2 py-2 text-sm text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 border-2 border-dashed border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 rounded-lg transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
                                     Quick add field
                                 </button>
-                                
+
                                 <!-- Quick Add Menu -->
                                 <div x-show="showMenu"
                                      x-cloak
@@ -316,7 +338,7 @@
                                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Field Types</p>
                                     <div class="grid grid-cols-4 gap-2">
                                         @foreach($fieldTypes as $type => $config)
-                                            <button wire:click="quickAddField('{{ $type }}', {{ $category['id'] }})" 
+                                            <button wire:click="quickAddField('{{ $type }}', {{ $category['id'] }})"
                                                     @click="showMenu = false"
                                                     class="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center
@@ -360,7 +382,7 @@
             <!-- Empty State - No Categories -->
             <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
                 <div class="w-16 h-16 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-8 h-8 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                     </svg>
                 </div>
@@ -368,8 +390,8 @@
                 <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                     Create sections to organize your form fields. Each section can contain multiple fields that users will fill out.
                 </p>
-                <button wire:click="openAddCategoryPanel" 
-                        class="inline-flex items-center gap-2 px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
+                <button wire:click="openAddCategoryPanel"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-sky-700 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -446,7 +468,7 @@
                         <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
                                 </div>
@@ -469,7 +491,7 @@
                         </div>
                         <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl flex gap-3 justify-end">
                             <button type="button" wire:click="$set('editingCategory', false)" class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">Cancel</button>
-                            <button type="submit" class="px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">Save Changes</button>
+                            <button type="submit" class="px-4 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-700 rounded-lg transition-colors">Save Changes</button>
                         </div>
                     </form>
                 </div>
@@ -491,20 +513,20 @@
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                         </div>
                                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Field</h2>
                                     </div>
-                                    <button wire:click="$set('editingField', false)" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <button wire:click="$set('editingField', false)" class="p-2 text-gray-600 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <!-- Form -->
                             <form wire:submit.prevent="updateField" class="flex-1 flex flex-col">
                                 <div class="flex-1 px-6 py-5 space-y-5 overflow-y-auto">
@@ -529,7 +551,7 @@
                                             <textarea id="edit-field-content" wire:model.live="fieldBeingEdited.content" rows="4"
                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"></textarea>
                                             @error('fieldBeingEdited.content') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
-                                            
+
                                             @if($fieldBeingEdited['type'] === 'description' && !empty($fieldBeingEdited['content']))
                                                 <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                                                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Preview:</p>
@@ -569,7 +591,7 @@
 
                                         <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                             <input type="checkbox" id="edit-field-required" wire:model.defer="fieldBeingEdited.required"
-                                                   class="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500">
+                                                   class="w-4 h-4 rounded border-gray-300 text-sky-700 focus:ring-sky-500">
                                             <label for="edit-field-required" class="flex-1">
                                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required field</span>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">Users must fill this field to submit</p>
@@ -594,7 +616,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                
+
                                 <!-- Footer -->
                                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                                     <div class="flex gap-3">
@@ -603,7 +625,7 @@
                                             Cancel
                                         </button>
                                         <button type="submit"
-                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
+                                                class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-700 rounded-lg transition-colors">
                                             Save Changes
                                         </button>
                                     </div>
@@ -628,13 +650,13 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
                                 </div>
                                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Section</h2>
                             </div>
-                            <button wire:click="closeAddCategoryPanel" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <button wire:click="closeAddCategoryPanel" class="p-2 text-gray-600 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -668,7 +690,7 @@
                                 Cancel
                             </button>
                             <button type="submit"
-                                    class="px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
+                                    class="px-4 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-700 rounded-lg transition-colors">
                                 Add Section
                             </button>
                         </div>
@@ -690,13 +712,13 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-sky-700 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
                                 </div>
                                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add New Field</h2>
                             </div>
-                            <button wire:click="closeAddFieldPanel" class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <button wire:click="closeAddFieldPanel" class="p-2 text-gray-600 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -777,7 +799,7 @@
                                                     <textarea id="field-content" wire:model.live="newField.content" rows="3"
                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"></textarea>
                                                     @error('newField.content') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
-                                                    
+
                                                     @if($newField['type'] === 'description' && $newField['content'])
                                                         <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                                                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Preview:</p>
@@ -819,7 +841,7 @@
 
                                                 <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                                     <input type="checkbox" id="field-required" wire:model.live="newField.required"
-                                                           class="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500">
+                                                           class="w-4 h-4 rounded border-gray-300 text-sky-700 focus:ring-sky-500">
                                                     <label for="field-required" class="flex-1">
                                                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required field</span>
                                                         <p class="text-xs text-gray-500 dark:text-gray-400">Users must fill this field to submit</p>
@@ -846,14 +868,14 @@
                                         </div>
                                     @endif
                                 </div>
-                                
+
                         <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl shrink-0 flex gap-3 justify-end">
                             <button type="button" wire:click="closeAddFieldPanel"
                                     class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
                                 Cancel
                             </button>
                             <button type="submit"
-                                    class="px-4 py-2.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">
+                                    class="px-4 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-700 rounded-lg transition-colors">
                                 Add Field
                             </button>
                         </div>
@@ -862,6 +884,7 @@
             </div>
         </div>
     @endif
+</fieldset>
 </div>
 
 

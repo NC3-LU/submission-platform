@@ -1,0 +1,281 @@
+[
+  {
+    "package": "livewire/livewire",
+    "latest": [
+      {
+        "version": "v4.4.4",
+        "require": {
+          "php": "^8.1",
+          "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
+          "illuminate/routing": "^10.0|^11.0|^12.0|^13.0",
+          "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+          "illuminate/validation": "^10.0|^11.0|^12.0|^13.0",
+          "league/mime-type-detection": "^1.9",
+          "symfony/console": "^6.0|^7.0|^8.0",
+          "symfony/http-kernel": "^6.2|^7.0|^8.0",
+          "laravel/prompts": "^0.1.24|^0.2|^0.3"
+        },
+        "source": {
+          "url": "https://github.com/livewire/livewire.git",
+          "type": "git",
+          "reference": "00bf1b9959807d7cbcf38fc088515a7261cb6fa8"
+        }
+      },
+      {
+        "version": "v3.8.8",
+        "require": {
+          "php": "^8.1",
+          "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
+          "illuminate/routing": "^10.0|^11.0|^12.0|^13.0",
+          "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+          "illuminate/validation": "^10.0|^11.0|^12.0|^13.0",
+          "league/mime-type-detection": "^1.9",
+          "symfony/console": "^6.0|^7.0|^8.0",
+          "symfony/http-kernel": "^6.2|^7.0|^8.0",
+          "laravel/prompts": "^0.1.24|^0.2|^0.3"
+        },
+        "source": {
+          "url": "https://github.com/livewire/livewire.git",
+          "type": "git",
+          "reference": "ec19e5fb1e0b60df22ad15b901c2f7740267ba11"
+        }
+      }
+    ]
+  },
+  {
+    "package": "filament/support",
+    "latest": [
+      {
+        "version": "v5.8.1",
+        "require": {
+          "php": "^8.2",
+          "composer-runtime-api": "^2.1",
+          "ext-intl": "*",
+          "blade-ui-kit/blade-heroicons": "^2.5",
+          "danharrin/livewire-rate-limiting": "^2.0",
+          "illuminate/contracts": "^11.28|^12.0|^13.0",
+          "kirschbaum-development/eloquent-power-joins": "^4.0",
+          "league/uri-components": "^7.0",
+          "livewire/livewire": "^4.1",
+          "nette/php-generator": "^4.0",
+          "ryangjchandler/blade-capture-directive": "^1.0",
+          "spatie/invade": "^2.0",
+          "spatie/laravel-package-tools": "^1.9",
+          "symfony/html-sanitizer": "^7.0|^8.0",
+          "symfony/console": "^7.0|^8.0"
+        },
+        "source": {
+          "url": "https://github.com/filamentphp/support.git",
+          "type": "git",
+          "reference": "1feb02e2535bdcab7e6acbf9e56ca1f5411ed24a"
+        }
+      },
+      {
+        "version": "v3.3.55",
+        "require": {
+          "php": "^8.1",
+          "blade-ui-kit/blade-heroicons": "^2.5",
+          "doctrine/dbal": "^3.2|^4.0",
+          "ext-intl": "*",
+          "illuminate/contracts": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/support": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/view": "^10.45|^11.0|^12.0|^13.0",
+          "kirschbaum-development/eloquent-power-joins": "^3.0|^4.0",
+          "livewire/livewire": "^3.5",
+          "ryangjchandler/blade-capture-directive": "^0.2|^0.3|^1.0",
+          "spatie/color": "^1.5",
+          "spatie/invade": "^1.0|^2.0",
+          "spatie/laravel-package-tools": "^1.9",
+          "symfony/html-sanitizer": "^6.1|^7.0",
+          "symfony/console": "^6.0|^7.0"
+        },
+        "source": {
+          "url": "https://github.com/filamentphp/support.git",
+          "type": "git",
+          "reference": "e2ce3ca8fd1007103e4a16ab564a76b6fee87968"
+        }
+      }
+    ]
+  },
+  {
+    "package": "filament/filament",
+    "latest": [
+      {
+        "version": "v5.8.1",
+        "require": {
+          "php": "^8.2",
+          "composer-runtime-api": "^2.1",
+          "chillerlan/php-qrcode": "^5.0",
+          "filament/actions": "self.version",
+          "filament/forms": "self.version",
+          "filament/infolists": "self.version",
+          "filament/notifications": "self.version",
+          "filament/schemas": "self.version",
+          "filament/support": "self.version",
+          "filament/tables": "self.version",
+          "filament/widgets": "self.version",
+          "pragmarx/google2fa": "^8.0|^9.0",
+          "pragmarx/google2fa-qrcode": "^3.0|^4.0"
+        },
+        "source": {
+          "url": "https://github.com/filamentphp/panels.git",
+          "type": "git",
+          "reference": "1c2d8ed04959da6da7b54bcd6e6b75aeb50ab19a"
+        }
+      },
+      {
+        "version": "v3.3.55",
+        "require": {
+          "php": "^8.1",
+          "danharrin/livewire-rate-limiting": "^0.3|^1.0|^2.0",
+          "filament/actions": "self.version",
+          "filament/forms": "self.version",
+          "filament/infolists": "self.version",
+          "filament/notifications": "self.version",
+          "filament/support": "self.version",
+          "filament/tables": "self.version",
+          "filament/widgets": "self.version",
+          "illuminate/auth": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/console": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/contracts": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/cookie": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/database": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/http": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/routing": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/session": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/support": "^10.45|^11.0|^12.0|^13.0",
+          "illuminate/view": "^10.45|^11.0|^12.0|^13.0",
+          "spatie/laravel-package-tools": "^1.9"
+        },
+        "source": {
+          "url": "https://github.com/filamentphp/panels.git",
+          "type": "git",
+          "reference": "04e29df86858bf42bb8c07895c35703be8bdd6e5"
+        }
+      }
+    ]
+  },
+  {
+    "package": "laravel/jetstream",
+    "latest": [
+      {
+        "version": "v5.5.3",
+        "require": {
+          "php": "^8.2.0",
+          "ext-json": "*",
+          "illuminate/console": "^11.0|^12.0|^13.0",
+          "illuminate/support": "^11.0|^12.0|^13.0",
+          "laravel/fortify": "^1.20",
+          "mobiledetect/mobiledetectlib": "^4.8.08",
+          "symfony/console": "^7.0|^8.0"
+        },
+        "source": {
+          "url": "https://github.com/laravel/jetstream.git",
+          "type": "git",
+          "reference": "61cac5cde455311890f6981fb2da47acd298e4e2"
+        }
+      }
+    ]
+  },
+  {
+    "package": "laravel/sanctum",
+    "latest": [
+      {
+        "version": "v4.3.3",
+        "require": {
+          "php": "^8.2",
+          "ext-json": "*",
+          "illuminate/console": "^11.0|^12.0|^13.0",
+          "illuminate/contracts": "^11.0|^12.0|^13.0",
+          "illuminate/database": "^11.0|^12.0|^13.0",
+          "illuminate/support": "^11.0|^12.0|^13.0",
+          "symfony/console": "^7.0|^8.0"
+        },
+        "source": {
+          "url": "https://github.com/laravel/sanctum.git",
+          "type": "git",
+          "reference": "fee27a573d1a013af3721d86153a65e0b11927e6"
+        }
+      }
+    ]
+  },
+  {
+    "package": "dedoc/scramble",
+    "latest": [
+      {
+        "version": "0.13.43",
+        "require": {
+          "php": "^8.1",
+          "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+          "myclabs/deep-copy": "^1.12",
+          "nikic/php-parser": "^5.0",
+          "phpstan/phpdoc-parser": "^1.0|^2.0",
+          "spatie/laravel-package-tools": "^1.9.2"
+        },
+        "source": {
+          "url": "https://github.com/dedoc/scramble.git",
+          "type": "git",
+          "reference": "2226e6664b88b3af1e5c10693f8e63a07ffd8fc0"
+        }
+      }
+    ]
+  },
+  {
+    "package": "barryvdh/laravel-dompdf",
+    "latest": [
+      {
+        "version": "v3.1.2",
+        "require": {
+          "php": "^8.1",
+          "dompdf/dompdf": "^3.0",
+          "illuminate/support": "^9|^10|^11|^12|^13.0"
+        },
+        "source": {
+          "url": "https://github.com/barryvdh/laravel-dompdf.git",
+          "type": "git",
+          "reference": "ee3b72b19ccdf57d0243116ecb2b90261344dedc"
+        }
+      }
+    ]
+  },
+  {
+    "package": "laravel/tinker",
+    "latest": [
+      {
+        "version": "v3.0.2",
+        "require": {
+          "php": "^8.1",
+          "illuminate/console": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+          "illuminate/contracts": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+          "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+          "psy/psysh": "^0.12.0",
+          "symfony/var-dumper": "^5.4|^6.0|^7.0|^8.0"
+        },
+        "source": {
+          "url": "https://github.com/laravel/tinker.git",
+          "type": "git",
+          "reference": "4faba77764bd33411735936acdf30446d058c78b"
+        }
+      }
+    ]
+  },
+  {
+    "package": "nunomaduro/collision",
+    "latest": [
+      {
+        "version": "v8.9.5",
+        "require": {
+          "php": "^8.2.0",
+          "filp/whoops": "^2.18.4",
+          "nunomaduro/termwind": "^2.4.0",
+          "symfony/console": "^7.4.14 || ^8.1.1"
+        },
+        "source": {
+          "url": "https://github.com/nunomaduro/collision.git",
+          "type": "git",
+          "reference": "fb53eacd509a1d303858e2d20cfebf2d630254ec"
+        }
+      }
+    ]
+  }
+]

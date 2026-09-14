@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Form;
 use App\Models\User;
 use App\Services\DashboardStatisticsService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -40,15 +40,15 @@ class DashboardController extends Controller
     /**
      * Get statistics for forms owned by or assigned to the current user.
      */
-    private function getUserFormStatistics(): Collection
+    private function getUserFormStatistics(): LengthAwarePaginator
     {
         $forms = $this->getUserForms();
 
-        return $forms->map(function (Form $form) {
+        return $forms->through(function (Form $form) {
             return [
                 'form' => $form,
-                'draft_count' => $this->statisticsService->getFormDraftCount($form),
-                'submitted_count' => $this->statisticsService->getFormSubmittedCount($form),
+                'draft_count' => $form->draft_count,
+                'submitted_count' => $form->submitted_count,
             ];
         });
     }
@@ -56,14 +56,13 @@ class DashboardController extends Controller
     /**
      * Get forms owned by or assigned to the current user.
      */
-    private function getUserForms(): Collection
+    private function getUserForms(): LengthAwarePaginator
     {
-        $createdForms = Auth::user()->forms()->latest();
-        $assignedForms = Form::whereHas('appointedUsers', function ($query) {
-            $query->where('user_id', Auth::id());
-        })->latest();
-
-        return $createdForms->union($assignedForms)->get();
+        return Form::where(fn ($q) => $q->where('user_id', Auth::id())->orWhereHas('appointedUsers', fn ($assigned) => $assigned->where('user_id', Auth::id())))
+            ->withCount([
+                'submissions as draft_count' => fn ($q) => $q->visibleTo(Auth::user())->whereIn('status', ['draft', 'ongoing']),
+                'submissions as submitted_count' => fn ($q) => $q->where('status', 'submitted'),
+            ])->latest()->paginate(12);
     }
 
     /**

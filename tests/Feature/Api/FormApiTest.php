@@ -158,6 +158,30 @@ class FormApiTest extends TestCase
             ->assertJsonValidationErrors(['title', 'status', 'visibility']);
     }
 
+    public function test_rejects_unknown_form_field_types(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->postJson('/api/v1/forms', [
+                'title' => 'Invalid form',
+                'status' => 'draft',
+                'visibility' => 'private',
+                'categories' => [[
+                    'name' => 'Category',
+                    'order' => 1,
+                    'fields' => [[
+                        'type' => 'executable',
+                        'label' => 'Unsafe field',
+                        'required' => false,
+                        'order' => 1,
+                    ]],
+                ]],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('categories.0.fields.0.type');
+
+        $this->assertDatabaseMissing('forms', ['title' => 'Invalid form']);
+    }
+
     public function test_can_filter_forms_by_status(): void
     {
         Form::factory()->create(['user_id' => $this->user->id, 'status' => 'draft']);
@@ -171,5 +195,13 @@ class FormApiTest extends TestCase
         $forms = $response->json('data');
         $this->assertCount(1, $forms);
         $this->assertEquals('published', $forms[0]['status']);
+    }
+
+    public function test_form_list_query_parameters_are_validated(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->getJson('/api/v1/forms?status=unknown&visibility=secret&per_page=100000')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['status', 'visibility', 'per_page']);
     }
 }

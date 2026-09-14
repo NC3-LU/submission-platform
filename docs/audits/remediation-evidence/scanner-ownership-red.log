@@ -1,0 +1,21 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.6
+Configuration: <project>/phpunit.xml
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:00.340, Memory: 71.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\ScanSubmissionFileJobTest::test_scanner_never_reads_a_legacy_reference_to_another_submissions_file
+Requests were recorded.
+Failed asserting that an array is empty.
+
+<project>/vendor/laravel/framework/src/Illuminate/Http/Client/Factory.php:547
+<project>/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+<project>/tests/Feature/ScanSubmissionFileJobTest.php:206
+
+FAILURES!
+Tests: 1, Assertions: 1, Failures: 1.

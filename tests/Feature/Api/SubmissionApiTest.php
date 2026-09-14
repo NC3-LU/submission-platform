@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\ApiLog;
 use App\Models\ApiToken;
 use App\Models\Form;
 use App\Models\FormCategory;
@@ -81,8 +82,6 @@ class SubmissionApiTest extends TestCase
 
     public function test_can_create_submission(): void
     {
-        $this->markTestIncomplete('Needs investigation - getting 500 error, likely validation issue');
-
         $field = $this->form->fields()->first();
 
         $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
@@ -116,7 +115,7 @@ class SubmissionApiTest extends TestCase
 
     public function test_can_show_submission(): void
     {
-        $submission = Submission::factory()->create(['form_id' => $this->form->id]);
+        $submission = Submission::factory()->submitted()->create(['form_id' => $this->form->id]);
 
         $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->getJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}");
@@ -131,7 +130,7 @@ class SubmissionApiTest extends TestCase
 
     public function test_can_update_submission_status(): void
     {
-        $submission = Submission::factory()->create(['form_id' => $this->form->id]);
+        $submission = Submission::factory()->submitted()->create(['form_id' => $this->form->id]);
 
         $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->putJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}", [
@@ -148,7 +147,7 @@ class SubmissionApiTest extends TestCase
 
     public function test_can_delete_submission(): void
     {
-        $submission = Submission::factory()->create(['form_id' => $this->form->id]);
+        $submission = Submission::factory()->submitted()->create(['form_id' => $this->form->id]);
 
         $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->deleteJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}");
@@ -173,6 +172,61 @@ class SubmissionApiTest extends TestCase
 
         $response->assertStatus(403)
             ->assertJson(['message' => 'Form is not available for submissions']);
+    }
+
+    public function test_cannot_submit_outside_the_form_availability_window(): void
+    {
+        $this->form->update(['available_until' => now()->subMinute()]);
+        $field = $this->form->fields()->firstOrFail();
+
+        $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->postJson("/api/v1/forms/{$this->form->id}/submissions", [
+                'values' => [$field->id => 'Too late'],
+            ])
+            ->assertForbidden()
+            ->assertJson(['message' => 'Form is not available for submissions']);
+
+        $this->assertDatabaseMissing('submissions', ['form_id' => $this->form->id]);
+    }
+
+    public function test_values_must_be_an_array_even_when_a_form_has_no_fields(): void
+    {
+        $form = Form::factory()->published()->public()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->postJson("/api/v1/forms/{$form->id}/submissions", [
+                'values' => 'not-an-array',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('values');
+
+        $this->assertDatabaseMissing('submissions', ['form_id' => $form->id]);
+    }
+
+    public function test_submission_page_size_is_bounded(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->getJson("/api/v1/forms/{$this->form->id}/submissions?per_page=100000")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('per_page');
+    }
+
+    public function test_submission_answers_are_redacted_from_api_audit_logs(): void
+    {
+        $field = $this->form->fields()->firstOrFail();
+
+        $this->withHeader('Authorization', 'Bearer '.$this->token)
+            ->postJson("/api/v1/forms/{$this->form->id}/submissions", [
+                'values' => [$field->id => 'highly-sensitive-answer'],
+            ])
+            ->assertCreated();
+
+        $requestData = ApiLog::query()->latest('id')->firstOrFail()->getRawOriginal('request_data');
+
+        $this->assertStringNotContainsString('highly-sensitive-answer', $requestData);
+        $this->assertStringContainsString('REDACTED', $requestData);
     }
 
     public function test_cannot_access_private_form_submissions(): void

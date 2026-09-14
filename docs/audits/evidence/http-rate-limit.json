@@ -1,0 +1,16 @@
+[
+  {
+    "request": 1,
+    "status": 200,
+    "limit": "10",
+    "remaining": "9",
+    "retry_after": null
+  },
+  {
+    "request": 11,
+    "status": 500,
+    "limit": null,
+    "remaining": null,
+    "retry_after": null
+  }
+]

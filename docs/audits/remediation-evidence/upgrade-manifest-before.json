@@ -1,0 +1,38 @@
+{
+    "tables": {
+        "users": {
+            "count": 6,
+            "sha256": "6e73c3e36e87bec9491f18caf9f79603c94f571a289b70a7fa2c686bb386c7c2"
+        },
+        "forms": {
+            "count": 1,
+            "sha256": "6885c6884496474d64948d67f1aa551d9cfb5c572745fa88cbe16fffe5af5b97"
+        },
+        "form_categories": {
+            "count": 1,
+            "sha256": "1aaa67285f66af3120c82dd421a727e77ed6d446026a2a70cd56229a2c96dfe3"
+        },
+        "form_fields": {
+            "count": 1,
+            "sha256": "d600453b998fb8ba099d6faa96ea8c57f854a0636994e673a935d1abc10f11bc"
+        },
+        "submissions": {
+            "count": 5,
+            "sha256": "41979ca017071a2ae2a3cf652bc26992e9871a20860ea9637fffabeb3c4d9ce1"
+        },
+        "submission_values": {
+            "count": 5,
+            "sha256": "789b7b2edf696a200c77697ca56995933ab0bc923169c949187101199949157c"
+        }
+    },
+    "files": {
+        "private": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "public": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+    }
+}

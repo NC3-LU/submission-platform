@@ -20,12 +20,29 @@ concurrency:
 
 jobs:
   php:
-    name: PHP quality and tests
+    name: PHP tests (${{ matrix.database }})
+    strategy:
+      matrix:
+        database: [sqlite, mysql]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
+      DB_CONNECTION: ${{ matrix.database }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: synthetic-ci-only
+      DB_DATABASE: ${{ matrix.database == 'mysql' && 'submission_test' || ':memory:' }}
       APP_ENV: testing
       APP_KEY: base64:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-ci-only
+          MYSQL_DATABASE: submission_test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -34,7 +51,7 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.3'
-          extensions: ctype, dom, fileinfo, iconv, mbstring, pdo_sqlite, sqlite3, xml
+          extensions: ctype, dom, fileinfo, gd, iconv, intl, mbstring, pcntl, pdo_mysql, pdo_sqlite, sqlite3, xml, zip
           coverage: none
           tools: composer:v2
 
@@ -64,7 +81,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '20.x'
+          node-version: '24.x'
           cache: npm
 
       - name: Install frontend dependencies
@@ -75,6 +92,51 @@ jobs:
 
       - name: Build frontend assets
         run: npm run build
+
+  browser:
+    name: Browser workflows and accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: gd, intl, mbstring, pdo_sqlite, zip
+          coverage: none
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.x'
+          cache: npm
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: failure()
+        with:
+          name: browser-failures
+          path: test-results/
+          retention-days: 7
+
+  containers:
+    name: Container (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        target: [runtime-fpm, runtime-apache]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - run: docker build --target ${{ matrix.target }} -t submission-ci:test .
+      - name: Verify isolated image and built assets
+        run: |
+          docker run --rm --entrypoint sh submission-ci:test -c 'test ! -e .env && test ! -e public/hot && test -s public/build/manifest.json && test -z "$(find storage/app -type f -print -quit)"'
+          if docker run --rm -e DB_CONNECTION=mysql -e DB_HOST=127.0.0.1 -e DB_DATABASE=unavailable submission-ci:test true; then
+            echo 'Startup incorrectly accepted an unavailable database'
+            exit 1
+          fi
 
   dependency-review:
     name: Dependency review

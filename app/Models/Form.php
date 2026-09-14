@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Services\FileCleanup;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class Form extends Model
 {
@@ -16,20 +19,32 @@ class Form extends Model
     protected static function booted(): void
     {
         static::deleting(function (Form $form) {
-            $filePaths = SubmissionValues::whereIn(
+            if ($form->header_image && $form->header_image === 'form-headers/'.basename($form->header_image)) {
+                FileCleanup::schedule('public', [$form->header_image]);
+            }
+            $fileValues = SubmissionValues::whereIn(
                 'submission_id',
                 $form->submissions()->select('id')
             )
                 ->whereHas('field', fn ($q) => $q->where('type', 'file'))
-                ->pluck('value')
-                ->filter();
+                ->with('submission')
+                ->get();
 
-            foreach ($filePaths as $path) {
-                Storage::disk('private')->delete($path);
-                $tempPath = str_replace('submissions/', 'temp-submissions/', $path);
-                Storage::disk('private')->delete($tempPath);
+            foreach ($fileValues as $fileValue) {
+                $path = $fileValue->value;
+
+                if (! is_string($path) || ! $fileValue->submission?->ownsFilePath($path)) {
+                    continue;
+                }
+
+                FileCleanup::schedule('private', $fileValue->submission->ownedFilePathVariants($path));
             }
         });
+    }
+
+    public function delete()
+    {
+        return DB::transaction(fn () => parent::delete());
     }
 
     protected $fillable = [
@@ -117,10 +132,19 @@ class Form extends Model
 
             return $user->isAdmin() ||
                 $user->id === $this->user_id ||
-                $this->users->contains($user->id);
+                $this->appointedUsers()->where('user_id', $user->id)->exists();
         }
 
         return false;
+    }
+
+    public function ensureStructureEditable(): void
+    {
+        if ($this->submissions()->exists()) {
+            throw ValidationException::withMessages([
+                'structure' => 'This form has responses. Duplicate it to change its questions while preserving existing answers.',
+            ]);
+        }
     }
 
     public function isWithinAvailabilityWindow(): bool

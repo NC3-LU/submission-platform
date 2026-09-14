@@ -64,6 +64,21 @@ class SubmissionPagesRenderTest extends TestCase
             ->assertOk();
     }
 
+    public function test_submission_edit_rejects_a_submission_from_another_form(): void
+    {
+        $otherForm = Form::factory()->for($this->owner)->create([
+            'status' => 'published',
+            'visibility' => 'authenticated',
+        ]);
+
+        $this->actingAs($this->owner)
+            ->get(route('submissions.edit', [
+                'form' => $otherForm,
+                'submission' => $this->submission,
+            ]))
+            ->assertNotFound();
+    }
+
     public function test_submission_show_page_renders(): void
     {
         $this->actingAs($this->owner)

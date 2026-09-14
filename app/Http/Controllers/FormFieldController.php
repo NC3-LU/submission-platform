@@ -7,16 +7,50 @@ use App\Models\FormField;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class FormFieldController extends Controller
 {
     use AuthorizesRequests;
 
+    public function store(Request $request, Form $form): RedirectResponse
+    {
+        return DB::transaction(function () use ($request, $form) {
+            $form = Form::whereKey($form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $form);
+            $form->ensureStructureEditable();
+
+            return $this->performStore($request, $form);
+        });
+    }
+
+    public function update(Request $request, Form $form, FormField $field): RedirectResponse
+    {
+        return DB::transaction(function () use ($request, $form, $field) {
+            $form = Form::whereKey($form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $form);
+            $form->ensureStructureEditable();
+
+            return $this->performUpdate($request, $form, $field);
+        });
+    }
+
+    public function destroy(Form $form, FormField $field): RedirectResponse
+    {
+        return DB::transaction(function () use ($form, $field) {
+            $form = Form::whereKey($form->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('update', $form);
+            $form->ensureStructureEditable();
+
+            return $this->performDestroy($form, $field);
+        });
+    }
+
     /**
      * Store a newly created form field in storage.
      */
-    public function store(Request $request, Form $form): RedirectResponse
+    protected function performStore(Request $request, Form $form): RedirectResponse
     {
         // $this->authorize('update', $form);
 
@@ -77,7 +111,7 @@ class FormFieldController extends Controller
     /**
      * Update the specified form field in storage.
      */
-    public function update(Request $request, Form $form, FormField $field): RedirectResponse
+    protected function performUpdate(Request $request, Form $form, FormField $field): RedirectResponse
     {
         // $this->authorize('update', $form);
 
@@ -135,7 +169,7 @@ class FormFieldController extends Controller
     /**
      * Remove the specified form field from storage.
      */
-    public function destroy(Form $form, FormField $field): RedirectResponse
+    protected function performDestroy(Form $form, FormField $field): RedirectResponse
     {
         //  $this->authorize('update', $form);
 

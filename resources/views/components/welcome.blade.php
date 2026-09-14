@@ -16,7 +16,7 @@
             Submit applications, track progress, and collaborate with Cybersecurity Luxembourg Ecosystem through our streamlined and secure platform.
         </p>
 
-        <a href="#forms" class="mt-8 inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg transition-colors shadow-lg shadow-sky-600/20">
+        <a href="#forms" class="mt-8 inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-sky-700 hover:bg-sky-500 rounded-lg transition-colors shadow-lg shadow-sky-600/20">
             Browse Available Forms
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
@@ -58,14 +58,14 @@
                                 @else
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Login Required</span>
                                 @endif
-                                <span class="text-xs text-slate-400">{{ $form->created_at->diffForHumans() }}</span>
+                                <span class="text-xs text-slate-600">{{ $form->created_at->diffForHumans() }}</span>
                             </div>
                             @if($form->availabilityState() === 'scheduled')
                                 <span class="shrink-0 text-sm text-amber-600 dark:text-amber-400">Opens {{ $form->available_from->format('M j, Y') }}</span>
                             @elseif($form->availabilityState() === 'closed')
                                 <span class="shrink-0 text-sm text-red-600 dark:text-red-400">Closed {{ $form->available_until->format('M j, Y') }}</span>
                             @elseif($canFill)
-                                <span class="shrink-0 inline-flex items-center text-sm font-medium text-sky-600 dark:text-sky-400">
+                                <span class="shrink-0 inline-flex items-center text-sm font-medium text-sky-700 dark:text-sky-400">
                                     Fill
                                     <svg class="ml-1 w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </span>
@@ -84,7 +84,7 @@
                 {{-- Empty state --}}
                 <div class="col-span-full text-center py-12">
                     <div class="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-8 h-8 text-slate-600 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
@@ -96,7 +96,7 @@
 
         @if($totalForms > 6)
         <div class="mt-8 text-center">
-            <a href="{{ route('forms.public_index') }}" class="inline-flex items-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium">
+            <a href="{{ route('forms.public_index') }}" class="inline-flex items-center text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium">
                 View all available forms
                 <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>

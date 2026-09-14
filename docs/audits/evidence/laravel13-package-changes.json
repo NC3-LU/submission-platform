@@ -1,0 +1,492 @@
+[
+  {
+    "name": "anourvalar/eloquent-serialize",
+    "before": "1.3.10",
+    "after": "1.3.12"
+  },
+  {
+    "name": "brick/math",
+    "before": "0.14.8",
+    "after": "0.18.0"
+  },
+  {
+    "name": "carbonphp/carbon-doctrine-types",
+    "before": "3.2.0",
+    "after": "3.2.1"
+  },
+  {
+    "name": "danharrin/livewire-rate-limiting",
+    "before": "v2.2.0",
+    "after": "v2.2.1"
+  },
+  {
+    "name": "dedoc/scramble",
+    "before": "v0.12.36",
+    "after": "0.13.43"
+  },
+  {
+    "name": "doctrine/dbal",
+    "before": "4.4.3",
+    "after": "4.4.4"
+  },
+  {
+    "name": "filament/actions",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "filament/filament",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "filament/forms",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "filament/infolists",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "filament/notifications",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "filament/support",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "filament/tables",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "filament/widgets",
+    "before": "v3.3.54",
+    "after": "v3.3.55"
+  },
+  {
+    "name": "graham-campbell/result-type",
+    "before": "v1.1.4",
+    "after": "v1.2.0"
+  },
+  {
+    "name": "guzzlehttp/guzzle",
+    "before": "7.15.1",
+    "after": "8.2.0"
+  },
+  {
+    "name": "guzzlehttp/promises",
+    "before": "2.5.1",
+    "after": "3.0.2"
+  },
+  {
+    "name": "guzzlehttp/psr7",
+    "before": "2.13.0",
+    "after": "3.1.0"
+  },
+  {
+    "name": "guzzlehttp/uri-template",
+    "before": "v1.0.10",
+    "after": "v2.0.1"
+  },
+  {
+    "name": "kirschbaum-development/eloquent-power-joins",
+    "before": "4.3.2",
+    "after": "4.3.3"
+  },
+  {
+    "name": "laravel/fortify",
+    "before": "v1.37.2",
+    "after": "v1.39.0"
+  },
+  {
+    "name": "laravel/framework",
+    "before": "v12.64.0",
+    "after": "v13.31.0"
+  },
+  {
+    "name": "laravel/prompts",
+    "before": "v0.3.21",
+    "after": "v0.3.24"
+  },
+  {
+    "name": "laravel/serializable-closure",
+    "before": "v2.0.13",
+    "after": "v2.0.16"
+  },
+  {
+    "name": "laravel/tinker",
+    "before": "v2.11.1",
+    "after": "v3.0.2"
+  },
+  {
+    "name": "league/commonmark",
+    "before": "2.8.3",
+    "after": "2.10.1"
+  },
+  {
+    "name": "league/flysystem",
+    "before": "3.35.2",
+    "after": "3.36.0"
+  },
+  {
+    "name": "league/flysystem-local",
+    "before": "3.31.0",
+    "after": "3.35.3"
+  },
+  {
+    "name": "livewire/livewire",
+    "before": "v3.6.4",
+    "after": "v3.8.8"
+  },
+  {
+    "name": "masterminds/html5",
+    "before": "2.10.1",
+    "after": "2.11.0"
+  },
+  {
+    "name": "monolog/monolog",
+    "before": "3.10.0",
+    "after": "3.12.0"
+  },
+  {
+    "name": "myclabs/deep-copy",
+    "before": "1.13.4",
+    "after": "1.14.0"
+  },
+  {
+    "name": "nesbot/carbon",
+    "before": "3.13.1",
+    "after": "3.14.0"
+  },
+  {
+    "name": "nette/schema",
+    "before": "v1.3.5",
+    "after": "v1.3.6"
+  },
+  {
+    "name": "nikic/php-parser",
+    "before": "v5.8.0",
+    "after": "v5.9.0"
+  },
+  {
+    "name": "phpoption/phpoption",
+    "before": "1.9.5",
+    "after": "1.10.0"
+  },
+  {
+    "name": "phpstan/phpdoc-parser",
+    "before": "2.3.3",
+    "after": "2.3.5"
+  },
+  {
+    "name": "pragmarx/google2fa",
+    "before": "v9.0.0",
+    "after": "v9.1.0"
+  },
+  {
+    "name": "spatie/invade",
+    "before": "2.1.0",
+    "after": "2.1.1"
+  },
+  {
+    "name": "spatie/laravel-package-tools",
+    "before": "1.93.1",
+    "after": "1.93.2"
+  },
+  {
+    "name": "spomky-labs/cbor-php",
+    "before": "3.3.0",
+    "after": "3.4.1"
+  },
+  {
+    "name": "spomky-labs/pki-framework",
+    "before": "1.5.0",
+    "after": "1.6.3"
+  },
+  {
+    "name": "symfony/console",
+    "before": "v7.4.14",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/css-selector",
+    "before": "v7.4.9",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/error-handler",
+    "before": "v7.4.14",
+    "after": "v7.4.17"
+  },
+  {
+    "name": "symfony/event-dispatcher",
+    "before": "v7.4.14",
+    "after": "v7.4.17"
+  },
+  {
+    "name": "symfony/finder",
+    "before": "v7.4.14",
+    "after": "v7.4.17"
+  },
+  {
+    "name": "symfony/html-sanitizer",
+    "before": "v7.4.14",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/http-foundation",
+    "before": "v7.4.14",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/http-kernel",
+    "before": "v7.4.14",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/mailer",
+    "before": "v7.4.14",
+    "after": "v7.4.17"
+  },
+  {
+    "name": "symfony/mime",
+    "before": "v7.4.13",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/polyfill-intl-grapheme",
+    "before": "v1.38.1",
+    "after": "v1.41.0"
+  },
+  {
+    "name": "symfony/polyfill-intl-idn",
+    "before": "v1.38.1",
+    "after": "v1.42.0"
+  },
+  {
+    "name": "symfony/polyfill-intl-normalizer",
+    "before": "v1.38.0",
+    "after": "v1.42.0"
+  },
+  {
+    "name": "symfony/polyfill-php82",
+    "before": null,
+    "after": "v1.38.1"
+  },
+  {
+    "name": "symfony/polyfill-php83",
+    "before": "v1.38.2",
+    "after": "v1.41.0"
+  },
+  {
+    "name": "symfony/polyfill-php85",
+    "before": "v1.38.1",
+    "after": "v1.41.0"
+  },
+  {
+    "name": "symfony/polyfill-php86",
+    "before": null,
+    "after": "v1.41.0"
+  },
+  {
+    "name": "symfony/process",
+    "before": "v7.4.13",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/property-access",
+    "before": "v7.4.8",
+    "after": "v7.4.16"
+  },
+  {
+    "name": "symfony/property-info",
+    "before": "v7.4.8",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/routing",
+    "before": "v7.4.13",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/serializer",
+    "before": "v7.4.14",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "symfony/service-contracts",
+    "before": "v3.7.1",
+    "after": "v3.7.3"
+  },
+  {
+    "name": "symfony/string",
+    "before": "v7.4.13",
+    "after": "v7.4.15"
+  },
+  {
+    "name": "symfony/translation",
+    "before": "v7.4.14",
+    "after": "v7.4.17"
+  },
+  {
+    "name": "symfony/type-info",
+    "before": "v7.4.9",
+    "after": "v7.4.17"
+  },
+  {
+    "name": "symfony/uid",
+    "before": "v7.4.9",
+    "after": "v7.4.17"
+  },
+  {
+    "name": "symfony/var-dumper",
+    "before": "v7.4.14",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "vlucas/phpdotenv",
+    "before": "v5.6.4",
+    "after": "v5.7.0"
+  },
+  {
+    "name": "web-auth/cose-lib",
+    "before": "4.6.0",
+    "after": "4.8.1"
+  },
+  {
+    "name": "web-auth/webauthn-lib",
+    "before": "5.3.5",
+    "after": "5.3.9"
+  },
+  {
+    "name": "hamcrest/hamcrest-php",
+    "before": "v2.1.1",
+    "after": "v3.0.0"
+  },
+  {
+    "name": "laravel/pint",
+    "before": "v1.29.3",
+    "after": "v1.32.1"
+  },
+  {
+    "name": "laravel/sail",
+    "before": "v1.64.0",
+    "after": "v1.67.0"
+  },
+  {
+    "name": "mockery/mockery",
+    "before": "1.6.12",
+    "after": "1.6.15"
+  },
+  {
+    "name": "phpunit/php-code-coverage",
+    "before": "11.0.12",
+    "after": "12.5.7"
+  },
+  {
+    "name": "phpunit/php-file-iterator",
+    "before": "5.1.1",
+    "after": "6.0.2"
+  },
+  {
+    "name": "phpunit/php-invoker",
+    "before": "5.0.1",
+    "after": "6.0.0"
+  },
+  {
+    "name": "phpunit/php-text-template",
+    "before": "4.0.1",
+    "after": "5.0.0"
+  },
+  {
+    "name": "phpunit/php-timer",
+    "before": "7.0.1",
+    "after": "8.0.0"
+  },
+  {
+    "name": "phpunit/phpunit",
+    "before": "11.5.56",
+    "after": "12.5.35"
+  },
+  {
+    "name": "sebastian/cli-parser",
+    "before": "3.0.2",
+    "after": "4.2.1"
+  },
+  {
+    "name": "sebastian/comparator",
+    "before": "6.3.3",
+    "after": "7.1.8"
+  },
+  {
+    "name": "sebastian/complexity",
+    "before": "4.0.1",
+    "after": "5.0.0"
+  },
+  {
+    "name": "sebastian/diff",
+    "before": "6.0.2",
+    "after": "7.0.1"
+  },
+  {
+    "name": "sebastian/environment",
+    "before": "7.2.1",
+    "after": "8.1.2"
+  },
+  {
+    "name": "sebastian/exporter",
+    "before": "6.3.2",
+    "after": "7.0.3"
+  },
+  {
+    "name": "sebastian/global-state",
+    "before": "7.0.2",
+    "after": "8.0.3"
+  },
+  {
+    "name": "sebastian/lines-of-code",
+    "before": "3.0.1",
+    "after": "4.0.1"
+  },
+  {
+    "name": "sebastian/object-enumerator",
+    "before": "6.0.1",
+    "after": "7.0.0"
+  },
+  {
+    "name": "sebastian/object-reflector",
+    "before": "4.0.1",
+    "after": "5.0.0"
+  },
+  {
+    "name": "sebastian/recursion-context",
+    "before": "6.0.3",
+    "after": "7.0.1"
+  },
+  {
+    "name": "sebastian/type",
+    "before": "5.1.3",
+    "after": "6.0.4"
+  },
+  {
+    "name": "sebastian/version",
+    "before": "5.0.2",
+    "after": "6.0.0"
+  },
+  {
+    "name": "symfony/yaml",
+    "before": "v7.4.14",
+    "after": "v7.4.18"
+  },
+  {
+    "name": "theseer/tokenizer",
+    "before": "1.3.1",
+    "after": "2.0.1"
+  }
+]

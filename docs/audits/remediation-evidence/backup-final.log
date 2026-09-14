@@ -1,0 +1,29 @@
+
+   INFO  Application is now in maintenance mode.  
+
+ Container submission-backup-test-scheduler-1 Stopping 
+ Container submission-backup-test-queue-1 Stopping 
+ Container submission-backup-test-app-1 Stopping 
+ Container submission-backup-test-queue-1 Stopped 
+ Container submission-backup-test-scheduler-1 Stopped 
+ Container submission-backup-test-app-1 Stopped 
+ Container submission-backup-test-app-run-1f41721289ad Creating 
+ Container submission-backup-test-app-run-1f41721289ad Created 
+ Container submission-backup-test-app-run-b19b206c7a16 Creating 
+ Container submission-backup-test-app-run-b19b206c7a16 Created 
+Encrypted snapshot: <temporary-workspace>/backups/submission-20260914T121019Z.tar.gpg
+ Container submission-backup-test-db-1 Waiting 
+ Container submission-backup-test-db-1 Waiting 
+ Container submission-backup-test-db-1 Waiting 
+ Container submission-backup-test-db-1 Healthy 
+ Container submission-backup-test-queue-1 Starting 
+ Container submission-backup-test-db-1 Healthy 
+ Container submission-backup-test-app-1 Starting 
+ Container submission-backup-test-db-1 Healthy 
+ Container submission-backup-test-scheduler-1 Starting 
+ Container submission-backup-test-scheduler-1 Started 
+ Container submission-backup-test-app-1 Started 
+ Container submission-backup-test-queue-1 Started 
+real 6.33
+user 0.80
+sys 0.47

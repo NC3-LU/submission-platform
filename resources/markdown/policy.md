@@ -1,14 +1,13 @@
 # Legal Notice
 
-These terms govern the use of the website [https://lhc.lu](https://lhc.lu).
+These terms govern the use of the website [https://applications.nc3.lu](https://applications.nc3.lu).
 
 ## Intellectual Property
 This site is published by Luxembourg House of Cybersecurity g.i.e. Unless explicitly stated otherwise, this site and its content are the intellectual property of Luxembourg House of Cybersecurity, with all rights reserved.
 
-The following fonts, with their respective licenses, are used:
-- **Open Sans**: Humanist sans-serif typeface designed by Steve Matteson, licensed under the Apache v2 license.
-- **Fjalla One**: Designed by Sorkin Type Co, licensed under the SIL Open Font License, Version 1.1. Fjalla is a trademark of Sorkin Type Co.
-- **Roboto Family Font**: Licensed under the Apache License, Version 2.0.
+The interface uses Figtree, currently served by `fonts.bunny.net`, alongside system fallback fonts. Loading the hosted font makes a request to that service and exposes network information such as your IP address to it.
+
+The application source code is available under the GNU Affero General Public License v3.0; see the project's LICENSE. The source-code licence is separate from rights in submitted content.
 
 You may download or print content for personal use, ensuring copyright or proprietary notices remain intact. Reproduction, modification, or commercial use of the website content is prohibited without prior written consent.
 
@@ -16,7 +15,7 @@ You may download or print content for personal use, ensuring copyright or propri
 By using this site, you agree that any disputes are governed by Luxembourg law and fall under the exclusive jurisdiction of Luxembourg courts.
 
 ## Links
-Luxembourg House of Cybersecurity is not responsible for the content of external websites linked from [https://lhc.lu](https://lhc.lu).
+Luxembourg House of Cybersecurity is not responsible for the content of external websites linked from [https://applications.nc3.lu](https://applications.nc3.lu).
 
 ---
 
@@ -58,7 +57,7 @@ Terms were last updated on 30 January 2023. Updates will be posted on the websit
 
 # Privacy Policy
 
-We process personal data in compliance with GDPR and relevant data protection laws.
+This notice describes the data used by the NC3 Submission Platform. Contact the data controller below for the retention period and legal basis that apply to a particular form.
 
 ### Processing of Personal Data
 - **Definition**: Personal data refers to information identifying you, directly or indirectly. Processing includes any operations performed on personal data, such as collection, storage, and destruction.
@@ -68,7 +67,10 @@ We process personal data in compliance with GDPR and relevant data protection la
 
 ### Data Collection and Purpose
 - **Web Server Logs**: Collects IP addresses, user agents, URLs, and timestamps for security and technical management.
-- **Contact Information**: Used for case management and to facilitate the ticket system, in the public interest.
+- **Accounts**: Name, email address, password hash, optional profile photo and two-factor authentication settings support authentication and account management.
+- **Forms and responses**: Form answers and uploaded files are stored for the purpose stated by the form owner. Signed-in users can save drafts. Guest responses are stored when submitted.
+- **Access and API activity**: Form assignments, access links, API token hashes and lifecycle/activity metadata support access control and security monitoring. API submissions also record the client IP address.
+- **File scanning**: Uploaded attachments may be sent to the organization's configured malware scanning service. Download access is restricted while scanning is pending or has failed when scan blocking is enabled.
 
 Personal data is processed lawfully, transparently, and only for legitimate purposes.
 
@@ -86,7 +88,7 @@ This website uses only essential cookies that are strictly necessary for the web
 #### Why These Cookies Are Essential
 
 - **Session Cookie**: Required to keep you logged in and remember your actions during a browsing session (e.g., form submissions, authentication state).
-- **XSRF-TOKEN**: A security measure required by law to protect your data and prevent malicious attacks.
+- **XSRF-TOKEN**: Helps reject forged requests that could change your data without your intent.
 
 #### Your Rights Regarding Cookies
 
@@ -97,7 +99,11 @@ Under GDPR, essential cookies are exempt from the consent requirement as they ar
 
 
 ### Retention Period
-Personal data is retained only as long as necessary. Once the retention period expires, data is erased, destroyed, or anonymized, unless required by law to retain it longer.
+Retention of completed responses, audit logs and encrypted backups depends on the organization's policy and the purpose of each form; this application does not automatically erase completed responses after a fixed period. Contact the form owner or privacy contact for the applicable period.
+
+Unreferenced temporary uploads expire after the configured period (48 hours by default) and are removed by scheduled maintenance. Empty, untouched drafts older than 30 days are also removed. Drafts containing answers are preserved.
+
+Deleting a submitter account removes its link to stored responses. It does not necessarily remove personal data written in the answers or attachments. Form owners must transfer their forms before account deletion; contact the privacy address below for requests concerning the response contents or backups.
 
 ### Data Security
 We implement appropriate measures to prevent unauthorized access to personal data, including encrypted traffic between the site and your browser.

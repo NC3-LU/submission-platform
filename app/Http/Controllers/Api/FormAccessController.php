@@ -51,9 +51,7 @@ class FormAccessController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
             'expires_at' => 'nullable|date|after:now',
-            'max_submissions' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -69,10 +67,7 @@ class FormAccessController extends Controller
         $accessLink = FormAccessLink::create([
             'form_id' => $form->id,
             'token' => $token,
-            'name' => $request->name,
-            'expires_at' => $request->expires_at,
-            'max_submissions' => $request->max_submissions,
-            'submission_count' => 0,
+            'expires_at' => $validator->validated()['expires_at'] ?? null,
         ]);
 
         return new FormAccessLinkResource($accessLink);
@@ -124,9 +119,7 @@ class FormAccessController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string|max:255',
             'expires_at' => 'nullable|date|after:now',
-            'max_submissions' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -136,7 +129,7 @@ class FormAccessController extends Controller
             ], 422);
         }
 
-        $accessLink->update($request->only(['name', 'expires_at', 'max_submissions']));
+        $accessLink->update($validator->validated());
 
         return new FormAccessLinkResource($accessLink);
     }

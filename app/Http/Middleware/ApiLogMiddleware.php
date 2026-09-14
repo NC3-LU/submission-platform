@@ -74,9 +74,11 @@ class ApiLogMiddleware
 
             // Log to database if token is valid (for authenticated requests)
             if ($apiToken) {
+                $persistedTokenId = ApiToken::whereKey($tokenId)->exists() ? $tokenId : null;
+
                 ApiLog::create([
                     'user_id' => $userId,
-                    'token_id' => $tokenId,
+                    'token_id' => $persistedTokenId,
                     'method' => $request->method(),
                     'endpoint' => $request->path(),
                     'ip_address' => $request->ip(),
@@ -139,7 +141,7 @@ class ApiLogMiddleware
      */
     private function sanitizeNestedData(array $data): array
     {
-        $sensitiveFields = ['password', 'token', 'api_token', 'secret', 'key', 'authorization'];
+        $sensitiveFields = ['password', 'token', 'api_token', 'secret', 'key', 'authorization', 'values'];
         $sanitized = [];
 
         foreach ($data as $key => $value) {
