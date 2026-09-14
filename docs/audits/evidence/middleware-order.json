@@ -1,0 +1,18 @@
+{
+  "resolved_api_middleware": [
+    "Illuminate\\Routing\\Middleware\\ThrottleRequests:api",
+    "Illuminate\\Routing\\Middleware\\SubstituteBindings",
+    "App\\Http\\Middleware\\ApiLogMiddleware",
+    "App\\Http\\Middleware\\RemoveServerHeaders",
+    "App\\Http\\Middleware\\ApiTokenIPMiddleware",
+    "App\\Http\\Middleware\\RequireApiTokenAbility:forms:read"
+  ],
+  "rate_settings": {
+    "rate_limit_api_authenticated": "100",
+    "rate_limit_api_unauthenticated": "10",
+    "rate_limit_auth_attempts": "3",
+    "rate_limit_submissions_read": "100",
+    "rate_limit_submissions_write": "30",
+    "rate_limit_submissions_daily": "500"
+  }
+}

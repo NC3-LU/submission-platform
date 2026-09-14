@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ url()->previous() }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <a aria-label="Back" href="{{ url()->previous() }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -18,10 +18,11 @@
     <div class="py-6">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             @if($form->header_image)
-                <div class="mb-6 overflow-hidden rounded-xl shadow"
+                <div class="mb-6 aspect-[3/1] overflow-hidden rounded-xl shadow"
                      @if($form->header_theme_color) style="border-top: 4px solid {{ $form->header_theme_color }}" @endif>
                     <img src="{{ $form->header_image_url }}" alt="{{ $form->title }}"
-                         class="w-full h-48 sm:h-64 object-cover"
+                         width="1200" height="400" fetchpriority="high"
+                         class="block h-full w-full object-cover"
                          style="object-position: 50% {{ $form->header_image_position }}%">
                 </div>
             @endif

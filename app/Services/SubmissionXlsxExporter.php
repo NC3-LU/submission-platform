@@ -75,7 +75,7 @@ final class SubmissionXlsxExporter
 
             $writer->addRow($this->row($headers, $headerStyle));
 
-            $form->submissions()
+            $form->submissions()->visibleTo(auth()->user())->whereNotIn('status', Submission::EDITABLE_STATUSES)
                 ->with(['user', 'values'])
                 ->lazyById(100)
                 ->each(function (Submission $submission) use ($fields, $writer): void {

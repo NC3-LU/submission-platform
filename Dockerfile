@@ -1,4 +1,4 @@
-FROM node:20-alpine AS node-builder
+FROM node:24-alpine AS node-builder
 ARG PROXY
 ENV http_proxy=$PROXY \
     HTTP_PROXY=$PROXY \
@@ -26,7 +26,7 @@ COPY vite.config.js ./
 COPY postcss.config.js ./
 COPY tailwind.config.js ./
 
-RUN npm install --prefer-offline --no-audit --no-progress
+RUN npm ci --no-audit --no-progress
 
 # Build assets with explicit env
 RUN NODE_ENV=production npm run build
@@ -44,25 +44,26 @@ WORKDIR /app
 # Install system deps, intl/zip extensions and Composer itself
 RUN apk add --no-cache \
         icu-dev \
+        libpng-dev \
         libzip-dev \
         git \
         curl \
         unzip \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install intl zip \
+    && docker-php-ext-install -j2 intl zip gd \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copy composer files first
 COPY composer.json composer.lock ./
 
-# Copy the rest of the application before installing
+# Cache dependency installation independently from application code.
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-autoloader
 COPY . .
-
-# Install dependencies without running scripts
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
+RUN composer dump-autoload --no-dev --optimize --no-scripts
 
 # Now run the post-install scripts
-RUN composer run-script post-autoload-dump
+RUN mkdir -p storage/app/private storage/app/public storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache \
+    && APP_ENV=production CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: composer run-script post-autoload-dump
 
 # ---------------------------------------------------------------------------
 # Two runtime targets, because the environments serve PHP differently:
@@ -100,12 +101,13 @@ RUN apk update && apk add --no-cache \
     unzip \
     bash \
     icu-dev \
-    mysql-client
+    mysql-client \
+    su-exec
 
 # Extension set matches runtime-apache so the app behaves identically in both.
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
+RUN docker-php-ext-install -j2 pdo_mysql mbstring exif pcntl bcmath gd zip && \
     docker-php-ext-configure intl && \
-    docker-php-ext-install intl
+    docker-php-ext-install -j2 intl
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
@@ -113,7 +115,7 @@ COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 COPY --from=composer-builder /app /var/www/html
 COPY --from=node-builder /app/public/build /var/www/html/public/build
 
-RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
+RUN mkdir -p /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/framework/cache/data \
     && mkdir -p /var/www/html/storage/logs \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
@@ -150,12 +152,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     libicu-dev \
     default-mysql-client \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
+RUN docker-php-ext-install -j2 pdo_mysql mbstring exif pcntl bcmath gd zip && \
     docker-php-ext-configure intl && \
-    docker-php-ext-install intl
+    docker-php-ext-install -j2 intl
 
 # Enable Apache modules, set document root, and allow .htaccess
 RUN a2enmod rewrite && \
@@ -171,7 +174,7 @@ COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 COPY --from=composer-builder /app /var/www/html
 COPY --from=node-builder /app/public/build /var/www/html/public/build
 
-RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
+RUN mkdir -p /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/framework/cache/data \
     && mkdir -p /var/www/html/storage/logs \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache

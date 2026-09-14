@@ -1,0 +1,332 @@
+[
+  {
+    "page": "home",
+    "status": 200,
+    "title": "NC3 Audit",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              "a[aria-current=\"page\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".lg\\:space-x-3 > .hover\\:bg-sky-700.bg-sky-600[href$=\"register\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".px-6"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "page": "login",
+    "status": 200,
+    "title": "NC3 Audit",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              ".lg\\:space-x-3 > .hover\\:bg-sky-700.bg-sky-600[href$=\"register\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "page": "public-form",
+    "status": 200,
+    "title": "NC3 Audit",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              ".lg\\:space-x-3 > .hover\\:bg-sky-700.bg-sky-600[href$=\"register\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".px-5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "link-name",
+        "impact": "serious",
+        "help": "Links must have discernible text",
+        "nodes": [
+          {
+            "target": [
+              ".hover\\:text-gray-700"
+            ],
+            "summary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+          }
+        ]
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "guest_draft_button": true,
+    "guest_draft_feedback": "Home\nForms\nLogin\nRegister\nHandover audit \u2014 public report\n\nSubmit Form\n\nSynthetic form for testing submission flow.\nContact details\nStep 1 of 2\nPlease provide your contact information.\n1\nContact details\n2\nReport\nYour name *\nInclude details?\nSelect an option\nYes\nNo\nSave as Draft\nNext\n\nCybersecurity Luxembourg\n\nNational Cybersecurity Competence Center\n\nCo-funded by the EU\nDigital Europe Programme\nQUICK LINKS\nHome\nForms\nCybersecurity Luxembourg\nNC3\nCIRCL\nLHC\nLEGAL\nTerms of Service\nPrivacy Policy\nCookie Settings\n\n\u00a9 2026 Luxembourg House of Cybersecurity. All rights reserved.\n\nCookie Notice: This website uses essential cookies required for basic functionality, including session management and security. No tracking or third-party cookies are used. Learn more\n\nGot it"
+  },
+  {
+    "conditional_after_select": true
+  },
+  {
+    "invalid_submission_url": "http://127.0.0.1:8766/forms/1/submit",
+    "first_required_field_visible": false,
+    "visible_errors": [],
+    "focused_element": "<body class=\"font-sans antialiased\">\n\n        <div x-data=\"{&quot;show&quot;:true,&quot;style&quot;:&quot;success&quot;,&quot;message&quot;:null}\" :class=\"{ 'bg-sky-500': style == 'success', 'bg-red-700': style == 'danger', 'bg-yellow-500': style == 'warning', 'bg-gray-500': style != 'success' &amp;&amp; style != 'danger' &amp;&amp; style != 'warning'}\" style=\"display: none;\" x-show=\"show &amp;&amp; message\" x-on:banner-message.window=\"\n                style = event.detail.style;\n               "
+  },
+  {
+    "page": "public-form-mobile",
+    "status": 200,
+    "title": "NC3 Audit",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              ".px-5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "link-name",
+        "impact": "serious",
+        "help": "Links must have discernible text",
+        "nodes": [
+          {
+            "target": [
+              ".hover\\:text-gray-700"
+            ],
+            "summary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+          }
+        ]
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "mobile_step_2_overflow": false,
+    "mobile_scroll_width": 390
+  },
+  {
+    "admin_login_url": "http://127.0.0.1:8766/dashboard"
+  },
+  {
+    "page": "dashboard",
+    "status": 200,
+    "title": "NC3 Audit",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              "a[aria-current=\"page\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".border-l-4.border-l-sky-500.p-5:nth-child(1) > .justify-end.pt-3.border-t > .hover\\:text-sky-700.dark\\:hover\\:text-sky-300.text-sky-600:nth-child(1)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".border-l-4.border-l-sky-500.p-5:nth-child(1) > .justify-end.pt-3.border-t > .hover\\:text-sky-700.dark\\:hover\\:text-sky-300.text-sky-600:nth-child(2)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".border-l-4.border-l-sky-500.p-5:nth-child(2) > .justify-end.pt-3.border-t > .hover\\:text-sky-700.dark\\:hover\\:text-sky-300.text-sky-600:nth-child(1)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".border-l-4.border-l-sky-500.p-5:nth-child(2) > .justify-end.pt-3.border-t > .hover\\:text-sky-700.dark\\:hover\\:text-sky-300.text-sky-600:nth-child(2)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".border-l-4.border-l-sky-500.p-5:nth-child(3) > .justify-end.pt-3.border-t > .hover\\:text-sky-700.dark\\:hover\\:text-sky-300.text-sky-600:nth-child(1)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".border-l-4.border-l-sky-500.p-5:nth-child(3) > .justify-end.pt-3.border-t > .hover\\:text-sky-700.dark\\:hover\\:text-sky-300.text-sky-600:nth-child(2)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "page": "form-builder",
+    "status": 200,
+    "title": "NC3 Audit",
+    "violations": [
+      {
+        "id": "button-name",
+        "impact": "critical",
+        "help": "Buttons must have discernible text",
+        "nodes": [
+          {
+            "target": [
+              ".overflow-hidden.hover\\:shadow-md.shadow-sm:nth-child(1) > .bg-gradient-to-r.from-gray-50.to-white > .p-1.hover\\:bg-gray-200.dark\\:hover\\:bg-gray-600:nth-child(2)"
+            ],
+            "summary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          },
+          {
+            "target": [
+              ".overflow-hidden.hover\\:shadow-md.shadow-sm:nth-child(2) > .bg-gradient-to-r.from-gray-50.to-white > .p-1.hover\\:bg-gray-200.dark\\:hover\\:bg-gray-600:nth-child(2)"
+            ],
+            "summary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              "button[\\@click=\"activeTab = 'fields'\"]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #0284c7, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-2.flex.items-center > .hover\\:bg-sky-700.bg-sky-600.text-white:nth-child(1)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".hover\\:bg-sky-700.bg-sky-600.text-white:nth-child(2)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #ffffff, background color: #0284c7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".overflow-hidden.hover\\:shadow-md.shadow-sm:nth-child(1) > .min-h-\\[5rem\\].space-y-2.p-4 > .relative[x-data=\"{ showMenu: false }\"] > .hover\\:text-gray-600.border-2.border-dashed"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".mt-0\\.5.gap-2.flex > .text-gray-400"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.42 (foreground color: #9ca3af, background color: #f9fafb, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".overflow-hidden.hover\\:shadow-md.shadow-sm:nth-child(2) > .min-h-\\[5rem\\].space-y-2.p-4 > .relative[x-data=\"{ showMenu: false }\"] > .hover\\:text-gray-600.border-2.border-dashed"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "link-name",
+        "impact": "serious",
+        "help": "Links must have discernible text",
+        "nodes": [
+          {
+            "target": [
+              ".gap-4.flex.items-center > .dark\\:hover\\:text-gray-200.hover\\:text-gray-700.dark\\:hover\\:bg-gray-700"
+            ],
+            "summary": "Fix all of the following:\n  Element is in tab order and does not have accessible text\n\nFix any of the following:\n  Element does not have text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+          }
+        ]
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "page": "admin",
+    "status": 200,
+    "title": "Dashboard - NC3 Audit",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              ".fi-wi-stats-overview.gap-y-4.col-\\[--col-span-default\\]:nth-child(3) > .fi-wi-stats-overview-stats-ctn.md\\:grid-cols-3.gap-6 > .fi-wi-stats-overview-stat.p-6.shadow-sm:nth-child(1) > .gap-y-2.grid > .gap-x-1.items-center.flex > .fi-color-success.fi-wi-stats-overview-stat-description.fi-color-custom"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.29 (foreground color: #16a34a, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".fi-wi-stats-overview-stat.p-6.shadow-sm:nth-child(3) > .gap-y-2.grid > .gap-x-1.items-center.flex > .fi-color-success.fi-wi-stats-overview-stat-description.fi-color-custom"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.29 (foreground color: #16a34a, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".fi-wi-stats-overview.gap-y-4.col-\\[--col-span-default\\]:nth-child(4) > .fi-wi-stats-overview-stats-ctn.md\\:grid-cols-3.gap-6 > .fi-wi-stats-overview-stat.p-6.shadow-sm:nth-child(1) > .gap-y-2.grid > .gap-x-1.items-center.flex > .fi-color-success.fi-wi-stats-overview-stat-description.fi-color-custom"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.29 (foreground color: #16a34a, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-primary-600.dark\\:text-primary-400.fi-sidebar-item-label"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.89 (foreground color: #d97706, background color: #f4f4f5, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ],
+    "overflow": false
+  },
+  {
+    "page_errors": []
+  }
+]

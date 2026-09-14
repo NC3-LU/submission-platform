@@ -26,3 +26,11 @@ docker-compose.env
 CLAUDE.md
 **/CLAUDE.md
 .claude/
+
+.release-image
+/backups
+/bootstrap/cache/*.php
+
+/.browser
+/test-results
+/playwright-report

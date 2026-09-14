@@ -4,16 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SubmissionResource;
+use App\Jobs\ScanSubmissionFileJob;
 use App\Models\ApiToken;
 use App\Models\Form;
 use App\Models\Submission;
 use App\Models\SubmissionValues;
+use App\Services\SubmissionAnswers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class SubmissionController extends Controller
 {
@@ -27,28 +34,31 @@ class SubmissionController extends Controller
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
 
-        // Check if user owns or has access to the form
-        if ($form->user_id !== $userId &&
-            ! $form->appointedUsers()->where('user_id', $userId)->exists()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        Gate::forUser($apiToken->user)->authorize('viewAny', [Submission::class, $form]);
 
-        $query = $form->submissions();
+        $filters = $request->validate([
+            'status' => 'sometimes|string|in:draft,ongoing,submitted,under_review,approved,rejected,processing,completed',
+            'start_date' => 'sometimes|date',
+            'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+
+        $query = $form->submissions()->visibleTo($apiToken->user);
 
         // Apply filters if provided
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
         }
 
-        if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
+        if (isset($filters['start_date'])) {
+            $query->whereDate('created_at', '>=', $filters['start_date']);
         }
 
-        if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
+        if (isset($filters['end_date'])) {
+            $query->whereDate('created_at', '<=', $filters['end_date']);
         }
 
-        $submissions = $query->latest()->paginate($request->per_page ?? 15);
+        $submissions = $query->latest()->paginate($filters['per_page'] ?? 15);
 
         // Load values relationship for each submission
         $submissions->load('values.field');
@@ -69,52 +79,23 @@ class SubmissionController extends Controller
             return response()->json(['message' => 'Form is not available for submissions'], 403);
         }
 
+        if (! $form->isWithinAvailabilityWindow()) {
+            return response()->json(['message' => 'Form is not available for submissions'], 403);
+        }
+
         // For API-based submissions, we need to validate against the API token
         // rather than the authenticated user
-        if ($form->visibility === 'private' && $form->user_id !== $userId) {
+        if (! $form->canAccess($apiToken->user)) {
             return response()->json(['message' => 'Unauthorized access to this form'], 403);
         }
 
         // Get all form fields for validation
         $formFields = $form->fields()->with('category')->get();
 
-        // Build validation rules based on form fields
-        $rules = [];
-        foreach ($formFields as $field) {
-            $fieldName = 'values.'.$field->id;
-            $fieldRules = [];
-
-            // Add required rule if the field is required
-            if ($field->required) {
-                $fieldRules[] = 'required';
-            } else {
-                $fieldRules[] = 'nullable';
-            }
-
-            // Add type-specific validation
-            switch ($field->type) {
-                case 'email':
-                    $fieldRules[] = 'email';
-                    break;
-                case 'number':
-                    $fieldRules[] = 'numeric';
-                    break;
-                case 'checkbox':
-                    $fieldRules[] = 'boolean';
-                    break;
-                case 'select':
-                case 'radio':
-                    if ($field->options) {
-                        $options = explode(',', $field->options);
-                        $fieldRules[] = 'in:'.implode(',', $options);
-                    }
-                    break;
-                default:
-                    $fieldRules[] = 'string';
-            }
-
-            $rules[$fieldName] = implode('|', $fieldRules);
-        }
+        $request->validate(['values' => 'sometimes|array']);
+        $answers = app(SubmissionAnswers::class);
+        $form->setRelation('fields', $formFields);
+        $rules = $answers->rules($form, $request->input('values', []));
 
         // Validate the submission
         $validator = Validator::make($request->all(), $rules);
@@ -126,9 +107,16 @@ class SubmissionController extends Controller
             ], 422);
         }
 
+        $values = $validator->validated()['values'] ?? [];
+        $ownFieldIds = $formFields->pluck('id')->all();
+
         try {
             // Use a transaction to ensure data integrity
-            return DB::transaction(function () use ($request, $form) {
+            return DB::transaction(function () use ($request, $form, $values, $ownFieldIds, $answers) {
+                $form = Form::whereKey($form->id)->lockForUpdate()->firstOrFail();
+                abort_unless($form->status === 'published' && $form->isWithinAvailabilityWindow() && $form->canAccess(ApiToken::fromRequest($request)->user), 403);
+                $values = Validator::make($request->all(), $answers->rules($form, $request->input('values', [])))->validate()['values'] ?? [];
+                $ownFieldIds = $form->fields->pluck('id')->all();
                 // Create the submission
                 $submission = Submission::create([
                     'form_id' => $form->id,
@@ -141,19 +129,27 @@ class SubmissionController extends Controller
                 // The keys of `values` are client-supplied field ids, so they
                 // are matched against this form's fields — otherwise a caller
                 // could attach answers to another form's fields.
-                if ($request->has('values')) {
-                    $ownFieldIds = $form->fields()->pluck('id')->all();
+                foreach ($values as $fieldId => $value) {
+                    if (! in_array((int) $fieldId, $ownFieldIds, true)) {
+                        continue;
+                    }
 
-                    foreach ($request->values as $fieldId => $value) {
-                        if (! in_array((int) $fieldId, $ownFieldIds, true)) {
-                            continue;
-                        }
-
-                        SubmissionValues::create([
-                            'submission_id' => $submission->id,
-                            'form_field_id' => $fieldId,
-                            'value' => $value,
-                        ]);
+                    $field = $form->fields->firstWhere('id', (int) $fieldId);
+                    if (in_array($field->type, ['header', 'description']) || ! $answers->visible($field, $values, $form)) {
+                        continue;
+                    }
+                    if ($value instanceof UploadedFile) {
+                        $value = $value->store('submissions/'.$submission->id, 'private');
+                    } else {
+                        $value = $answers->storedValue($field, $value);
+                    }
+                    $savedValue = SubmissionValues::create([
+                        'submission_id' => $submission->id,
+                        'form_field_id' => $fieldId,
+                        'value' => $value,
+                    ]);
+                    if ($field->type === 'file' && $value && config('services.pandora.enabled')) {
+                        ScanSubmissionFileJob::dispatch($savedValue)->afterCommit();
                     }
                 }
 
@@ -165,6 +161,8 @@ class SubmissionController extends Controller
                     'data' => new SubmissionResource($submission),
                 ], 201);
             });
+        } catch (ValidationException|HttpExceptionInterface $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('API Submission creation failed', [
                 'error' => $e->getMessage(),
@@ -197,11 +195,7 @@ class SubmissionController extends Controller
             return response()->json(['message' => 'Submission not found for this form'], 404);
         }
 
-        // Check if user owns or has access to the form
-        if ($form->user_id !== $userId &&
-            ! $form->appointedUsers()->where('user_id', $userId)->exists()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        Gate::forUser($apiToken->user)->authorize('view', $submission);
 
         // Load values relationship with fields
         $submission->load('values.field');
@@ -224,14 +218,8 @@ class SubmissionController extends Controller
             return response()->json(['message' => 'Submission not found for this form'], 404);
         }
 
-        // Check if user owns or has access to the form
-        if ($form->user_id !== $userId &&
-            ! $form->appointedUsers()->where('user_id', $userId)->where('can_edit', true)->exists()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:submitted,processing,completed,rejected',
+            'status' => ['required', Rule::in(Submission::REVIEW_STATUSES)],
         ]);
 
         if ($validator->fails()) {
@@ -241,11 +229,16 @@ class SubmissionController extends Controller
             ], 422);
         }
 
-        $submission->update([
-            'status' => $request->status,
-        ]);
+        DB::transaction(function () use ($apiToken, $submission, $request) {
+            $submission = Submission::whereKey($submission->id)->lockForUpdate()->firstOrFail();
+            Gate::forUser($apiToken->user)->authorize('manageStatus', $submission);
+            if (in_array($submission->status, Submission::EDITABLE_STATUSES)) {
+                throw ValidationException::withMessages(['status' => 'Drafts must be submitted by their author.']);
+            }
+            $submission->update(['status' => $request->status]);
+        });
 
-        return new SubmissionResource($submission);
+        return new SubmissionResource($submission->refresh());
     }
 
     /**
@@ -261,14 +254,10 @@ class SubmissionController extends Controller
             return response()->json(['message' => 'Submission not found for this form'], 404);
         }
 
-        // Check if user owns the form
-        if ($form->user_id !== $userId) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        Gate::forUser($apiToken->user)->authorize('deleteAsEvaluator', $submission);
 
         // Delete submission and its values
         DB::transaction(function () use ($submission) {
-            $submission->values()->delete();
             $submission->delete();
         });
 

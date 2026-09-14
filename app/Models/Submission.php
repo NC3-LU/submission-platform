@@ -2,18 +2,58 @@
 
 namespace App\Models;
 
+use App\Services\FileCleanup;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class Submission extends Model
 {
     use HasFactory;
     use HasUuids;
 
+    public const EDITABLE_STATUSES = ['draft', 'ongoing'];
+
+    public const REVIEW_STATUSES = ['submitted', 'under_review', 'processing', 'approved', 'rejected', 'completed'];
+
+    public const STATUSES = [...self::EDITABLE_STATUSES, ...self::REVIEW_STATUSES];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Submission $submission) {
+            if (! in_array($submission->status, self::STATUSES, true)) {
+                throw ValidationException::withMessages(['status' => 'Invalid submission status.']);
+            }
+        });
+        static::deleting(function (Submission $submission) {
+            foreach ($submission->values()->whereHas('field', fn ($q) => $q->where('type', 'file'))->get() as $value) {
+                if (is_string($value->value)) {
+                    FileCleanup::schedule('private', $submission->ownedFilePathVariants($value->value));
+                }
+            }
+        });
+    }
+
+    public function scopeVisibleTo($query, User $user)
+    {
+        if (! $user->isAdmin()) {
+            $query->where(fn ($q) => $q->whereNotIn('status', ['draft', 'ongoing'])->orWhere('user_id', $user->id));
+        }
+
+        return $query;
+    }
+
+    public function delete()
+    {
+        return DB::transaction(fn () => parent::delete());
+    }
+
     protected $fillable = [
+        'request_key',
         'form_id',
         'user_id',
         'ip_address',
@@ -77,5 +117,43 @@ class Submission extends Model
     public function getScannedFilesCount(): int
     {
         return $this->scanResults()->count();
+    }
+
+    /**
+     * Determine whether a private-disk path belongs to this submission.
+     * Submission files are flat within their server-controlled UUID directory.
+     */
+    public function ownsFilePath(string $path): bool
+    {
+        foreach (["submissions/{$this->id}/", "temp-submissions/{$this->id}/"] as $prefix) {
+            if (! str_starts_with($path, $prefix)) {
+                continue;
+            }
+
+            $filename = substr($path, strlen($prefix));
+
+            return $filename !== ''
+                && $filename === basename($filename)
+                && ! in_array($filename, ['.', '..'], true)
+                && ! str_contains($filename, chr(92))
+                && ! str_contains($filename, "\0");
+        }
+
+        return false;
+    }
+
+    /** @return array<int, string> */
+    public function ownedFilePathVariants(string $path): array
+    {
+        if (! $this->ownsFilePath($path)) {
+            return [];
+        }
+
+        $filename = basename($path);
+
+        return [
+            "temp-submissions/{$this->id}/{$filename}",
+            "submissions/{$this->id}/{$filename}",
+        ];
     }
 }

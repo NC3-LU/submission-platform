@@ -4,14 +4,20 @@ namespace App\Livewire;
 
 use App\Jobs\ScanSubmissionFileJob;
 use App\Models\Form;
+use App\Models\FormAccessLink;
 use App\Models\Submission;
+use App\Models\SubmissionValues;
+use App\Services\FileCleanup;
+use App\Services\SubmissionAnswers;
 use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -25,6 +31,9 @@ class SubmissionForm extends Component
      * The form being submitted
      */
     public Form $form;
+
+    #[Locked]
+    public string $requestKey;
 
     /**
      * The current submission instance
@@ -103,7 +112,6 @@ class SubmissionForm extends Component
      */
     protected $listeners = [
         'autosaveDraft',
-        'updateSubmissionStatus',
     ];
 
     /**
@@ -112,7 +120,7 @@ class SubmissionForm extends Component
      * @var array<string, string>
      */
     protected $messages = [
-        'fieldValues.*.required' => 'This field is required.',
+        'fieldValues.*.required' => 'The :attribute field is required.',
         'tempFiles.*.max' => 'The file must not be larger than 10MB.',
         'tempFiles.*.mimes' => 'The file must be a valid document type (jpeg, png, pdf, doc, docx, xls, xlsx).',
     ];
@@ -127,6 +135,7 @@ class SubmissionForm extends Component
             'categories.fields' => fn ($query) => $query->orderBy('order'),
         ]);
 
+        $this->requestKey = (string) Str::uuid();
         $this->totalSteps = $this->form->categories->count();
         $this->isEditMode = $isEditMode;
 
@@ -137,7 +146,8 @@ class SubmissionForm extends Component
             ];
         })->toArray();
 
-        if ($submission) {
+        if ($submission?->exists) {
+            abort_unless($submission->form_id === $form->id && auth()->check() && auth()->user()->can('update', $submission), 403);
             $this->submission = $submission;
             $this->loadSubmissionValues();
         } else {
@@ -294,7 +304,18 @@ class SubmissionForm extends Component
      */
     public function updatedTempFiles($value, $key): void
     {
+        if (! $this->authorizeMutation()) {
+            return;
+        }
+        $quotaKey = 'upload:'.$this->form->id.':'.(auth()->id() ?? request()->ip());
+        if (RateLimiter::tooManyAttempts($quotaKey, max(1, config('submissions.uploads_per_minute')))) {
+            $this->addError('quota', 'You have reached the upload limit. Please wait a minute before trying again.');
+
+            return;
+        }
+        RateLimiter::hit($quotaKey, 60);
         $fieldId = str_replace('field_', '', $key);
+        abort_unless($this->form->fields()->whereKey($fieldId)->where('type', 'file')->exists(), 403);
 
         try {
             // Validate BEFORE the file is written to disk.
@@ -355,6 +376,9 @@ class SubmissionForm extends Component
      */
     public function deleteFile(int $fieldId): void
     {
+        if (! $this->authorizeMutation()) {
+            return;
+        }
         $path = $this->fieldValues[$fieldId] ?? null;
 
         if (! is_string($path) || $path === '') {
@@ -378,7 +402,13 @@ class SubmissionForm extends Component
         }
 
         try {
-            Storage::disk('private')->delete($path);
+            DB::transaction(function () use ($fieldId, $path) {
+                if (! $this->authorizeMutation(true)) {
+                    return;
+                }
+                $this->submission?->values()->where('form_field_id', $fieldId)->where('value', $path)->delete();
+                FileCleanup::schedule('private', [$path]);
+            });
             unset($this->fieldValues[$fieldId], $this->uploadedTempPaths[$fieldId]);
             $this->dispatch('success', 'File deleted successfully');
         } catch (Exception $e) {
@@ -406,6 +436,7 @@ class SubmissionForm extends Component
         }
 
         return $this->submission !== null
+            && $this->submission->ownsFilePath($path)
             && $this->submission->values()
                 ->where('form_field_id', $fieldId)
                 ->where('value', $path)
@@ -447,139 +478,108 @@ class SubmissionForm extends Component
      */
     protected function saveDraft(bool $showNotification = true): void
     {
-        // Drafts belong to a user; guests only ever persist on submit().
-        if (! auth()->check()) {
+        if (! auth()->check() || (! $this->submission && ! $this->hasEnteredContent())) {
             return;
         }
-
-        // Never materialise a row for an untouched form.
-        if ((! $this->submission || ! $this->submission->exists) && ! $this->hasEnteredContent()) {
-            return;
-        }
-
+        $beforeValues = $this->fieldValues;
+        $beforeUploads = $this->uploadedTempPaths;
         try {
-            DB::beginTransaction();
-
-            if (! $this->submission || ! $this->submission->exists) {
-                // firstOrCreate keeps overlapping autosaves (and a remount racing an
-                // in-flight autosave) from each inserting their own draft row.
-                $this->submission = Submission::firstOrCreate(
-                    [
-                        'form_id' => $this->form->id,
-                        'user_id' => auth()->id(),
-                        'status' => 'draft',
-                    ]
-                );
-            } else {
-                // Safeguard: ensure required fields are present on existing instance
-                if (empty($this->submission->form_id)) {
-                    $this->submission->form_id = $this->form->id;
+            DB::transaction(function () {
+                if (! $this->authorizeMutation(true)) {
+                    return;
                 }
-                if (auth()->check() && empty($this->submission->user_id)) {
-                    $this->submission->user_id = auth()->id();
-                }
-                // Touch to update the updated_at timestamp as activity indicator
+                $this->validate($this->rules(true), $this->messages, $this->fieldLabels());
+                $this->submission ??= Submission::firstOrCreate([
+                    'form_id' => $this->form->id,
+                    'user_id' => auth()->id(),
+                    'status' => 'draft',
+                ]);
+                $this->persistAnswers();
                 $this->submission->touch();
-            }
-
-            // Deep clone the fieldValues to avoid reference issues
-            $originalFieldValues = [];
-            foreach ($this->fieldValues as $key => $value) {
-                if (is_array($value)) {
-                    $originalFieldValues[$key] = array_merge([], $value);
-                } else {
-                    $originalFieldValues[$key] = $value;
-                }
-            }
-
-            // Save checkbox values as they are (they're already arrays in the UI)
-            foreach ($this->fieldValues as $fieldId => $value) {
-                if (! $this->ownsField($fieldId)) {
-                    continue;
-                }
-
-                if (is_array($value)) {
-                    // This is likely a checkbox field, preserve the array values in the session
-                    // but store a string representation in the database
-
-                    // Get the field to access its options
-                    $field = null;
-                    foreach ($this->form->categories as $category) {
-                        $foundField = $category->fields->firstWhere('id', $fieldId);
-                        if ($foundField && $foundField->type === 'checkbox') {
-                            $field = $foundField;
-                            break;
-                        }
-                    }
-
-                    if ($field) {
-                        // Convert the checkbox array to a readable string for storage
-                        $selectedOptions = [];
-                        $options = explode(',', $field->options);
-
-                        foreach ($value as $index => $isChecked) {
-                            if ($isChecked && isset($options[$index])) {
-                                $selectedOptions[] = trim($options[$index]);
-                            }
-                        }
-
-                        $valueForStorage = ! empty($selectedOptions) ? implode(', ', $selectedOptions) : null;
-
-                        // Store the string representation in the database
-                        $this->submission->values()->updateOrCreate(
-                            ['form_field_id' => $fieldId],
-                            ['value' => $valueForStorage]
-                        );
-                    }
-                } else {
-                    // For non-array values, store as is
-                    $this->submission->values()->updateOrCreate(
-                        ['form_field_id' => $fieldId],
-                        ['value' => $value]
-                    );
-                }
-            }
-
-            // Handle any file uploads
-            $this->handleFileUploads();
-
-            // Keep the array representation in the UI
-            $this->fieldValues = $originalFieldValues;
-
-            DB::commit();
-
-            if ($showNotification) {
+            });
+            if ($showNotification && ! $this->getErrorBag()->has('availability')) {
                 $this->dispatch('success', 'Draft saved');
             }
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Draft save failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            foreach ($this->fieldValues as $fieldId => $path) {
+                if (is_string($path) && $path !== ($beforeValues[$fieldId] ?? null) && $this->submission?->ownsFilePath($path) && ! SubmissionValues::where('value', $path)->exists()) {
+                    FileCleanup::schedule('private', [$path]);
+                }
+            }
+            $this->fieldValues = $beforeValues;
+            $this->uploadedTempPaths = $beforeUploads;
+            $this->submission = $this->submission?->fresh();
+            report($e);
+            $this->addError('save', 'Your draft could not be saved. Your answers are still on this page. Please try again.');
         }
     }
 
-    /**
-     * Process and format any checkbox values before saving
-     */
-    protected function processCheckboxValues(): void
+    /** Reload access and status for every write; the form lock serializes overlapping draft writes. */
+    protected function authorizeMutation(bool $lock = false): bool
     {
-        $this->form->categories->each(function ($category) {
-            $category->fields->where('type', 'checkbox')->each(function ($field) {
-                if (isset($this->fieldValues[$field->id]) && is_array($this->fieldValues[$field->id])) {
-                    // Convert checkbox array to a comma-separated string of selected values
-                    $selectedOptions = [];
-                    foreach ($this->fieldValues[$field->id] as $index => $value) {
-                        if ($value) {
-                            $options = explode(',', $field->options);
-                            $selectedOptions[] = trim($options[$index]);
-                        }
-                    }
-                    $this->fieldValues[$field->id] = ! empty($selectedOptions) ? implode(', ', $selectedOptions) : null;
+        $query = Form::whereKey($this->form->id);
+        $form = ($lock ? $query->lockForUpdate() : $query)->first();
+        $access = $form && $form->canAccess(auth()->user());
+        if ($form && ! $access && $form->visibility === 'private') {
+            $grant = session('form_access_'.$form->id);
+            $link = is_array($grant) && is_string($grant['token'] ?? null)
+                ? FormAccessLink::findValidByToken($grant['token']) : null;
+            $access = $link && $link->form_id === $form->id
+                && (! isset($grant['expires_at']) || $grant['expires_at'] >= now()->timestamp);
+        }
+        if (! $form || $form->status !== 'published' || ! $form->isWithinAvailabilityWindow() || ! $access) {
+            $this->addError('availability', 'This form is no longer available to you. Your answers have not been submitted.');
+            $this->dispatch('error', 'This form is not accepting submissions.');
+
+            return false;
+        }
+        if ($this->submission) {
+            $submission = Submission::whereKey($this->submission->id)->lockForUpdate()->first();
+            if (! $submission || $submission->form_id !== $form->id || ! auth()->check()
+                || $submission->user_id !== auth()->id() || ! in_array($submission->status, ['draft', 'ongoing'], true)) {
+                $this->addError('availability', 'This response can no longer be edited. Reload the page to see its current status.');
+
+                return false;
+            }
+            $this->submission = $submission;
+        }
+        $this->form = $form->load('categories.fields', 'fields');
+        $this->ownFieldIdCache = null;
+        $this->ownFieldTypeCache = null;
+        $this->resetErrorBag('availability');
+
+        return true;
+    }
+
+    protected function persistAnswers(): void
+    {
+        $answers = app(SubmissionAnswers::class);
+        $existingValues = $this->submission->values()->get()->keyBy('form_field_id');
+        foreach ($this->form->fields as $field) {
+            $previous = $existingValues->get($field->id);
+            if (in_array($field->type, ['header', 'description']) || ! $answers->visible($field, $this->fieldValues, $this->form)) {
+                if ($previous && $field->type === 'file') {
+                    FileCleanup::schedule('private', $this->submission->ownedFilePathVariants((string) $previous->value));
                 }
-            });
-        });
+                $previous?->delete();
+
+                continue;
+            }
+            $value = $this->fieldValues[$field->id] ?? null;
+            if (! $this->canPersistFieldValue($field->id, $value)) {
+                continue;
+            }
+            if ($previous && $field->type === 'file' && $previous->value !== $value) {
+                FileCleanup::schedule('private', $this->submission->ownedFilePathVariants((string) $previous->value));
+                $previous->delete();
+            }
+            $this->submission->values()->updateOrCreate(
+                ['form_field_id' => $field->id], ['value' => $answers->storedValue($field, $value)]
+            );
+        }
+        $this->handleFileUploads();
     }
 
     /**
@@ -588,6 +588,9 @@ class SubmissionForm extends Component
      * @var array<int, int>|null
      */
     protected ?array $ownFieldIdCache = null;
+
+    /** @var array<int, string>|null */
+    protected ?array $ownFieldTypeCache = null;
 
     /**
      * Whether a client-supplied field id belongs to this form.
@@ -604,22 +607,23 @@ class SubmissionForm extends Component
     }
 
     /**
-     * Save form field values to the database
+     * File paths round-trip through the browser and must remain
+     * server-authoritative. Only paths uploaded by this component or already
+     * attached to the current submission may be persisted.
      */
-    protected function saveValues(): void
+    protected function canPersistFieldValue(int|string $fieldId, mixed $value): bool
     {
-        $this->processCheckboxValues();
-
-        foreach ($this->fieldValues as $fieldId => $value) {
-            if (! $this->ownsField($fieldId)) {
-                continue;
-            }
-
-            $this->submission->values()->updateOrCreate(
-                ['form_field_id' => $fieldId],
-                ['value' => $value]
-            );
+        if (! $this->ownsField($fieldId)) {
+            return false;
         }
+
+        $this->ownFieldTypeCache ??= $this->form->fields()->pluck('type', 'id')->all();
+
+        if (($this->ownFieldTypeCache[(int) $fieldId] ?? null) !== 'file') {
+            return true;
+        }
+
+        return is_string($value) && $this->ownsUploadedFile((int) $fieldId, $value);
     }
 
     /**
@@ -647,121 +651,71 @@ class SubmissionForm extends Component
      */
     public function submit(): void
     {
-        // Re-check the availability window at the point of persistence.
-        //
-        // SubmissionController only enforces it when it renders the page, but
-        // Livewire posts straight to this component, so a form left open past
-        // available_until (or opened early) could still be submitted. Re-read
-        // the form so a window edited since mount is respected.
-        if (! $this->isEditMode) {
-            $form = $this->form->fresh();
-
-            // Status is re-read for the same reason as the window below: the
-            // page render is the only other place it is checked, and Livewire
-            // posts straight here. A form unpublished since mount must stop
-            // accepting submissions.
-            if ($form && $form->status !== 'published') {
-                $this->dispatch('error', 'This form is not accepting submissions.');
-
-                return;
-            }
-
-            if ($form && ! $form->isWithinAvailabilityWindow()) {
-                $this->dispatch('error', $form->availabilityState() === 'scheduled'
-                    ? 'This form is not open for submissions yet.'
-                    : 'This form is closed and no longer accepts submissions.');
-
-                return;
-            }
-        }
-
+        $beforeValues = $this->fieldValues;
+        $beforeUploads = $this->uploadedTempPaths;
         try {
-            // Validate all form data
-            $this->validate($this->rules(), [], $this->fieldLabels());
-
-            DB::beginTransaction();
-
-            // Ensure we always persist with required attributes
-            if (! $this->submission || ! $this->submission->exists) {
-                $this->submission = new Submission([
-                    'form_id' => $this->form->id,
-                    'user_id' => auth()->id(),
-                    'status' => 'submitted',
-                ]);
-                $this->submission->save();
-            } else {
-                // Safeguard: ensure required fields are present on existing instance
-                if (empty($this->submission->form_id)) {
-                    $this->submission->form_id = $this->form->id;
+            $saved = DB::transaction(function () {
+                if (! $this->authorizeMutation(true)) {
+                    return false;
                 }
-                if (auth()->check() && empty($this->submission->user_id)) {
-                    $this->submission->user_id = auth()->id();
-                }
-                $this->submission->status = 'submitted';
-                $this->submission->save();
-            }
+                $this->validate($this->rules(), $this->messages, $this->fieldLabels());
+                $existing = Submission::where('request_key', $this->requestKey)->first();
+                if ($existing) {
+                    $this->submission = $existing;
 
-            // Store submission values
-            foreach ($this->fieldValues as $fieldId => $value) {
-                if (! $this->ownsField($fieldId)) {
-                    continue;
+                    return true;
                 }
+                $quotaKey = 'submission:'.$this->form->id.':'.(auth()->check() ? 'user:'.auth()->id() : 'ip:'.request()->ip());
+                foreach (['minute' => 60, 'day' => 86400] as $period => $seconds) {
+                    if (RateLimiter::tooManyAttempts($quotaKey.':'.$period, max(1, config('submissions.per_'.$period)))) {
+                        $this->addError('quota', 'You have reached the submission limit. Please try again later.');
 
-                if (is_array($value)) {
-                    // This is likely a checkbox field
-                    // Get the field to access its options
-                    $field = null;
-                    foreach ($this->form->categories as $category) {
-                        $foundField = $category->fields->firstWhere('id', $fieldId);
-                        if ($foundField && $foundField->type === 'checkbox') {
-                            $field = $foundField;
-                            break;
-                        }
+                        return false;
                     }
-
-                    if ($field) {
-                        // Convert the checkbox array to a readable string for storage
-                        $selectedOptions = [];
-                        $options = explode(',', $field->options);
-
-                        foreach ($value as $index => $isChecked) {
-                            if ($isChecked && isset($options[$index])) {
-                                $selectedOptions[] = trim($options[$index]);
-                            }
-                        }
-
-                        $valueForStorage = ! empty($selectedOptions) ? implode(', ', $selectedOptions) : null;
-
-                        // Store the string representation in the database
-                        $this->submission->values()->updateOrCreate(
-                            ['form_field_id' => $fieldId],
-                            ['value' => $valueForStorage]
-                        );
-                    }
+                }
+                if (! $this->submission) {
+                    $this->submission = Submission::create([
+                        'request_key' => $this->requestKey,
+                        'form_id' => $this->form->id,
+                        'user_id' => auth()->id(),
+                        'status' => 'submitted',
+                    ]);
                 } else {
-                    // For non-array values, store as is
-                    $this->submission->values()->updateOrCreate(
-                        ['form_field_id' => $fieldId],
-                        ['value' => $value]
-                    );
+                    $this->submission->update(['status' => 'submitted', 'request_key' => $this->requestKey]);
+                }
+                $this->persistAnswers();
+                RateLimiter::hit($quotaKey.':minute', 60);
+                RateLimiter::hit($quotaKey.':day', 86400);
+
+                return true;
+            });
+            if ($saved) {
+                session()->put('submission_receipt', $this->submission->id);
+                $this->redirect(route('submissions.thankyou'));
+            }
+        } catch (ValidationException $e) {
+            $first = array_key_first($e->errors());
+            foreach ($this->form->categories as $index => $category) {
+                foreach ($category->fields as $field) {
+                    if ($first === 'fieldValues.'.$field->id || $first === 'tempFiles.field_'.$field->id) {
+                        $this->currentStep = $index + 1;
+                        $this->dispatch('focus-field', id: 'field_'.$field->id);
+                        break 2;
+                    }
                 }
             }
-
-            // Handle file uploads
-            $this->handleFileUploads();
-
-            DB::commit();
-
-            $this->redirect(route('submissions.thankyou'));
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Submission failed', [
-                'error' => $e->getMessage(),
-                'submission_id' => $this->submission?->id ?? null,
-                'authenticated' => auth()->check(),
-                'trace' => $e->getTraceAsString(),
-            ]);
             throw $e;
+        } catch (\Throwable $e) {
+            foreach ($this->fieldValues as $fieldId => $path) {
+                if (is_string($path) && $path !== ($beforeValues[$fieldId] ?? null) && $this->submission?->ownsFilePath($path) && ! SubmissionValues::where('value', $path)->exists()) {
+                    FileCleanup::schedule('private', [$path]);
+                }
+            }
+            $this->fieldValues = $beforeValues;
+            $this->uploadedTempPaths = $beforeUploads;
+            $this->submission = $this->submission?->fresh();
+            report($e);
+            $this->addError('save', 'Your response could not be submitted. Your answers are still on this page. Please try again.');
         }
     }
 
@@ -787,9 +741,13 @@ class SubmissionForm extends Component
                 continue;
             }
 
-            if (str_starts_with($value, 'temp-submissions/')) {
+            if (str_starts_with($value, 'temp-submissions/') && ($this->uploadedTempPaths[(int) $fieldId] ?? null) === $value && $value === 'temp-submissions/'.basename($value)) {
                 $newPath = "submissions/{$this->submission->id}/".basename($value);
-                Storage::disk('private')->move($value, $newPath);
+                if (! Storage::disk('private')->copy($value, $newPath)) {
+                    throw new \RuntimeException('Unable to store attachment.');
+                }
+                FileCleanup::schedule('private', [$value]);
+                unset($this->uploadedTempPaths[(int) $fieldId]);
 
                 // Update the submission value with the new path
                 $submissionValue = $this->submission->values()->updateOrCreate(
@@ -819,93 +777,19 @@ class SubmissionForm extends Component
      *
      * @return array<string, string>
      */
-    public function rules(): array
+    public function rules(bool $draft = false): array
     {
-        $rules = [];
-
-        foreach ($this->form->categories as $category) {
-            foreach ($category->fields as $field) {
-                // If field depends on another field, check if the condition is met
-                if ($field->depends_on_field_id && $field->depends_on_value !== null) {
-                    $parentValue = $this->fieldValues[$field->depends_on_field_id] ?? null;
-                    if ($parentValue != $field->depends_on_value) {
-                        // Condition not met — skip validation for this hidden field
-                        continue;
-                    }
-                }
-
-                $fieldValueRules = [];
-                // Base rules: required or nullable for fieldValues
-                if ($field->required) {
-                    $fieldValueRules[] = 'required';
-                } else {
-                    $fieldValueRules[] = 'nullable';
-                }
-
-                // Type-specific rules for fieldValues and tempFiles
-                switch ($field->type) {
-                    case 'text':
-                    case 'textarea':
-                        $fieldValueRules[] = 'string';
-                        if (! empty($field->char_limit)) {
-                            $fieldValueRules[] = "max:{$field->char_limit}";
-                        }
-                        break;
-
-                    case 'select':
-                    case 'radio':
-                        $fieldValueRules[] = 'string';
-                        if (! empty($field->options)) {
-                            // Split the options and validate against individual options
-                            $optionsArray = array_map('trim', explode(',', $field->options));
-                            $fieldValueRules[] = 'in:'.implode(',', $optionsArray);
-                        }
-                        break;
-
-                    case 'checkbox':
-                        $fieldValueRules[] = 'array';
-                        // Validate that each checkbox value is boolean
-                        if (! empty($field->options)) {
-                            $rules["fieldValues.{$field->id}.*"] = 'boolean';
-                        }
-                        break;
-
-                    case 'file':
-                        // For file fields, fieldValues might contain paths (existing files) or be empty
-                        // Only validate as string/path when it exists
-                        if (isset($this->fieldValues[$field->id]) && is_string($this->fieldValues[$field->id])) {
-                            $fieldValueRules[] = 'string';
-                        } else {
-                            // If no existing file, remove required rule as tempFiles will handle new uploads
-                            $fieldValueRules = array_filter($fieldValueRules, fn ($rule) => $rule !== 'required');
-                            $fieldValueRules[] = 'nullable';
-                        }
-
-                        // Add validation rules for new file uploads
-                        $tempFileRules = [];
-                        if ($field->required && ! isset($this->fieldValues[$field->id])) {
-                            $tempFileRules[] = 'required';
-                        } else {
-                            $tempFileRules[] = 'nullable';
-                        }
-                        $tempFileRules[] = 'file';
-                        $tempFileRules[] = 'max:'.self::MAX_FILE_SIZE;
-                        $tempFileRules[] = 'mimes:'.implode(',', self::ALLOWED_FILE_TYPES);
-
-                        $rules["tempFiles.field_{$field->id}"] = $tempFileRules;
-                        break;
-                }
-
-                // Add rules for field values (skip files as they're handled above)
-                if ($field->type !== 'file') {
-                    $rules["fieldValues.{$field->id}"] = $fieldValueRules;
-                } else {
-                    // For file fields, only validate fieldValues if it contains a path
-                    if (! empty($fieldValueRules)) {
-                        $rules["fieldValues.{$field->id}"] = $fieldValueRules;
-                    }
-                }
+        $rules = app(SubmissionAnswers::class)->rules($this->form, $this->fieldValues, 'fieldValues', $draft);
+        foreach ($this->form->fields->where('type', 'file') as $field) {
+            $key = 'fieldValues.'.$field->id;
+            if (! isset($rules[$key])) {
+                continue;
             }
+            $rules[$key] = [$field->required && ! $draft ? 'required' : 'nullable', 'string', function ($attribute, $value, $fail) use ($field) {
+                if (! $this->ownsUploadedFile($field->id, $value)) {
+                    $fail('Upload a valid file for '.$field->label.'.');
+                }
+            }];
         }
 
         return $rules;

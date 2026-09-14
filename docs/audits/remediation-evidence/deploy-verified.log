@@ -1,0 +1,192 @@
+ Image submission-handover:deployment-verified Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 593B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile:
+#2 transferring dockerfile: 6.30kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24-alpine
+#3 ...
+
+#4 [internal] load metadata for docker.io/library/php:8.3-cli-alpine
+#4 DONE 0.5s
+
+#3 [internal] load metadata for docker.io/library/node:24-alpine
+#3 DONE 0.5s
+
+#5 [internal] load metadata for docker.io/library/php:8.3-apache
+#5 DONE 0.5s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 453B done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#8 [node-builder  1/11] FROM docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81
+#8 resolve docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81
+#8 resolve docker.io/library/node:24-alpine@sha256:50c8e8ca1d27439048670df5883f32d57cf81cff6233222c893fd0d9884cbd81 0.2s done
+#8 DONE 0.2s
+
+#9 [composer-builder 1/8] FROM docker.io/library/php:8.3-cli-alpine@sha256:afdf8b1fee58486ccc0dab5f30f634b86873d56dac985f71ba217945647c05ad
+#9 resolve docker.io/library/php:8.3-cli-alpine@sha256:afdf8b1fee58486ccc0dab5f30f634b86873d56dac985f71ba217945647c05ad 0.2s done
+#9 DONE 0.3s
+
+#10 [runtime-apache  1/12] FROM docker.io/library/php:8.3-apache@sha256:060ed9c0f6e4bbe4f8b25a34ca1ec596b96d8f4011cf7ee7eb6b7eecf01cb74f
+#10 resolve docker.io/library/php:8.3-apache@sha256:060ed9c0f6e4bbe4f8b25a34ca1ec596b96d8f4011cf7ee7eb6b7eecf01cb74f 0.2s done
+#10 DONE 0.3s
+
+#7 [internal] load build context
+#7 transferring context: 27.47kB 0.0s done
+#7 DONE 0.1s
+
+#11 [composer-builder 7/8] RUN composer dump-autoload --no-dev --optimize --no-scripts
+#11 CACHED
+
+#12 [composer-builder 2/8] WORKDIR /app
+#12 CACHED
+
+#13 [composer-builder 3/8] RUN apk add --no-cache         icu-dev         libpng-dev         libzip-dev         git         curl         unzip     && docker-php-ext-configure intl     && docker-php-ext-install -j2 intl zip gd     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+#13 CACHED
+
+#14 [composer-builder 5/8] RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-autoloader
+#14 CACHED
+
+#15 [composer-builder 6/8] COPY . .
+#15 CACHED
+
+#16 [composer-builder 4/8] COPY composer.json composer.lock ./
+#16 CACHED
+
+#17 [composer-builder 8/8] RUN mkdir -p storage/app/private storage/app/public storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache     && APP_ENV=production CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: composer run-script post-autoload-dump
+#17 CACHED
+
+#18 [runtime-apache  2/12] WORKDIR /var/www/html
+#18 CACHED
+
+#19 [runtime-apache  5/12] RUN a2enmod rewrite &&     sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf &&     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf &&     sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+#19 CACHED
+
+#20 [runtime-apache  4/12] RUN docker-php-ext-install -j2 pdo_mysql mbstring exif pcntl bcmath gd zip &&     docker-php-ext-configure intl &&     docker-php-ext-install -j2 intl
+#20 CACHED
+
+#21 [runtime-apache  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     git     curl     libpng-dev     libonig-dev     libxml2-dev     libzip-dev     zip     unzip     libicu-dev     default-mysql-client     gosu     && rm -rf /var/lib/apt/lists/*
+#21 CACHED
+
+#22 [runtime-apache  6/12] COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+#22 CACHED
+
+#23 [runtime-apache  7/12] COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+#23 CACHED
+
+#24 [node-builder  7/11] COPY vite.config.js ./
+#24 CACHED
+
+#25 [node-builder  8/11] COPY postcss.config.js ./
+#25 CACHED
+
+#26 [node-builder 10/11] RUN npm ci --no-audit --no-progress
+#26 CACHED
+
+#27 [node-builder  5/11] COPY package.json package-lock.json ./
+#27 CACHED
+
+#28 [node-builder  3/11] WORKDIR /app
+#28 CACHED
+
+#29 [node-builder  9/11] COPY tailwind.config.js ./
+#29 CACHED
+
+#30 [node-builder  4/11] RUN apk add --no-cache python3 make g++
+#30 CACHED
+
+#31 [node-builder  2/11] RUN if [ -n "$PROXY" ]; then         npm config set proxy $PROXY &&         npm config set https-proxy $PROXY;     fi &&     npm config set registry https://registry.npmjs.org/
+#31 CACHED
+
+#32 [node-builder  6/11] COPY resources/ ./resources/
+#32 CACHED
+
+#33 [node-builder 11/11] RUN NODE_ENV=production npm run build
+#33 CACHED
+
+#34 [runtime-apache  8/12] COPY --from=composer-builder /app /var/www/html
+#34 DONE 4.4s
+
+#35 [runtime-apache  9/12] COPY --from=node-builder /app/public/build /var/www/html/public/build
+#35 DONE 0.3s
+
+#36 [runtime-apache 10/12] RUN mkdir -p /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/framework/cache/data     && mkdir -p /var/www/html/storage/logs     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+#36 DONE 0.5s
+
+#37 [runtime-apache 11/12] COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+#37 DONE 0.2s
+
+#38 [runtime-apache 12/12] RUN chmod +x /usr/local/bin/entrypoint.sh
+#38 DONE 0.5s
+
+#39 exporting to image
+#39 exporting layers
+#39 exporting layers 3.6s done
+#39 exporting manifest sha256:211b08f944d2d08c0e425a7d762a45a7aa3d1731958bd5d0a4471b43576e1865 0.1s done
+#39 exporting config sha256:21a9f8e3fbfb68c5c6dce04ec1ef62552c33f4616691decabc7db0a3f836cebb
+#39 exporting config sha256:21a9f8e3fbfb68c5c6dce04ec1ef62552c33f4616691decabc7db0a3f836cebb 0.1s done
+#39 exporting attestation manifest sha256:4dd8ee20be997facc0fdb42ec1ca8837b928048ee29c8d375070dcbf5508b4da
+#39 exporting attestation manifest sha256:4dd8ee20be997facc0fdb42ec1ca8837b928048ee29c8d375070dcbf5508b4da 0.1s done
+#39 exporting manifest list sha256:0c69db663fd233d392166b6f8bb08454b9340d813fab9bbc90777d326c2b6745
+#39 exporting manifest list sha256:0c69db663fd233d392166b6f8bb08454b9340d813fab9bbc90777d326c2b6745 0.1s done
+#39 naming to docker.io/library/submission-handover:deployment-verified
+#39 naming to docker.io/library/submission-handover:deployment-verified 0.0s done
+#39 unpacking to docker.io/library/submission-handover:deployment-verified
+#39 unpacking to docker.io/library/submission-handover:deployment-verified 3.2s done
+#39 DONE 7.5s
+
+#40 resolving provenance for metadata file
+#40 DONE 0.0s
+ Image submission-handover:deployment-verified Built 
+Rollback image: sha256:ddb3244a697ef9a9a5c8794aff5f4ac4a0ff0a400d6b6a26e159c92ea10994de
+
+   INFO  Maintenance mode options updated.  
+
+ Container submission-backup-test-scheduler-1 Stopping 
+ Container submission-backup-test-app-1 Stopping 
+ Container submission-backup-test-queue-1 Stopping 
+ Container submission-backup-test-app-1 Stopped 
+ Container submission-backup-test-scheduler-1 Stopped 
+ Container submission-backup-test-queue-1 Stopped 
+ Container submission-backup-test-app-run-fd46e4b94bc0 Creating 
+ Container submission-backup-test-app-run-fd46e4b94bc0 Created 
+ Container submission-backup-test-app-run-3d49de0f4cb3 Creating 
+ Container submission-backup-test-app-run-3d49de0f4cb3 Created 
+Encrypted snapshot: <temporary-workspace>/backups/submission-20260914T120313Z.tar.gpg
+ Container submission-backup-test-app-run-c9fa245ccfc1 Creating 
+ Container submission-backup-test-app-run-c9fa245ccfc1 Created 
+
+   INFO  Nothing to migrate.  
+
+Published and verified assets from the release image.
+ Container submission-backup-test-queue-1 Recreate 
+ Container submission-backup-test-app-1 Recreate 
+ Container submission-backup-test-scheduler-1 Recreate 
+ Container submission-backup-test-app-1 Recreated 
+ Container submission-backup-test-scheduler-1 Recreated 
+ Container submission-backup-test-queue-1 Recreated 
+ Container submission-backup-test-app-1 Starting 
+ Container submission-backup-test-queue-1 Starting 
+ Container submission-backup-test-scheduler-1 Starting 
+ Container submission-backup-test-queue-1 Started 
+ Container submission-backup-test-app-1 Started 
+ Container submission-backup-test-scheduler-1 Started 
+{"database":true,"schema":true,"cache":true,"private_storage":true}
+{"database":true,"schema":true,"cache":true,"private_storage":true,"queue_age":true,"failed_jobs":true,"file_cleanup":true,"queue_heartbeat":false,"scheduler_heartbeat":true}
+{"database":true,"schema":true,"cache":true,"private_storage":true,"queue_age":true,"failed_jobs":true,"file_cleanup":true,"queue_heartbeat":true,"scheduler_heartbeat":true}
+
+   INFO  Application is now live.  
+
+Deployment verified. Release image: submission-handover:deployment-verified; rollback image: sha256:ddb3244a697ef9a9a5c8794aff5f4ac4a0ff0a400d6b6a26e159c92ea10994de
+real 91.02
+user 1.40
+sys 1.16

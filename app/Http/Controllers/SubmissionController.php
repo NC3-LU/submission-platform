@@ -67,6 +67,10 @@ class SubmissionController extends Controller
      */
     public function edit(Form $form, Submission $submission): Factory|View|Application|RedirectResponse
     {
+        if ($submission->form_id !== $form->id) {
+            abort(404);
+        }
+
         $this->authorize('update', $submission);
 
         if (! in_array($submission->status, ['draft', 'ongoing'])) {
@@ -224,22 +228,6 @@ class SubmissionController extends Controller
         try {
             \DB::beginTransaction();
 
-            // Get all file paths from submission values
-            $filePaths = $submission->values()
-                ->whereHas('field', function ($query) {
-                    $query->where('type', 'file');
-                })
-                ->pluck('value')
-                ->filter();
-
-            // Delete all associated files from storage
-            foreach ($filePaths as $path) {
-                // Delete from both temporary and permanent locations
-                Storage::disk('private')->delete($path);
-                Storage::disk('private')->delete(str_replace('temp-submissions/', 'submissions/', $path));
-            }
-
-            // Delete the submission and its related values
             $submission->delete();
 
             \DB::commit();

@@ -1,0 +1,15 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.6
+Configuration: /home/ppa/projects/submission-platform/phpunit.xml
+
+...............................................................  63 / 255 ( 24%)
+................................S......S..S.................... 126 / 255 ( 49%)
+............................................................... 189 / 255 ( 74%)
+....................S.......................................... 252 / 255 ( 98%)
+...                                                             255 / 255 (100%)
+
+Time: 00:10.538, Memory: 99.00 MB
+
+OK, but some tests were skipped!
+Tests: 255, Assertions: 601, Skipped: 4.

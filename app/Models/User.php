@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
@@ -65,6 +66,20 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(fn (User $user) => $user->ensureOwnershipTransferred());
+    }
+
+    public function ensureOwnershipTransferred(): void
+    {
+        if ($this->forms()->exists()) {
+            throw ValidationException::withMessages([
+                'ownership' => 'Transfer your forms to another owner before deleting this account. Existing submissions must be preserved.',
+            ]);
+        }
     }
 
     public function forms(): HasMany

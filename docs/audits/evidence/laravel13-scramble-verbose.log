@@ -1,0 +1,10 @@
+SubmissionValueResource 1 warning ............................................  
+
+1. WARN [JR001] Cannot infer the resource model
+Source at app/Http/Resources/SubmissionValueResource.php:9                      
+Tip       Add a `@mixin`, `@property`, or `@property-read` PHPDoc annotation to 
+          the resource class with the wrapped model type, or name the resource  
+          following Laravel conventions (e.g. `UserResource` → `App\Models      
+          \User`).                                                              
+
+[WARNING] OpenAPI document exported to api.json with 1 warning. 

@@ -11,6 +11,23 @@ class FormField extends Model
 {
     use HasFactory;
 
+    public const TYPES = [
+        'text',
+        'textarea',
+        'select',
+        'checkbox',
+        'radio',
+        'file',
+        'header',
+        'description',
+    ];
+
+    protected static function booted(): void
+    {
+        static::saving(fn (FormField $record) => $record->form->ensureStructureEditable());
+        static::deleting(fn (FormField $record) => $record->form->ensureStructureEditable());
+    }
+
     protected $fillable = ['form_id', 'form_category_id', 'type', 'order', 'label', 'options', 'required', 'content', 'char_limit', 'depends_on_field_id', 'depends_on_value'];
 
     /**
@@ -50,6 +67,6 @@ class FormField extends Model
      */
     public function getOptionsArrayAttribute(): array
     {
-        return $this->options ? explode(',', $this->options) : [];
+        return $this->options ? array_map('trim', explode(',', $this->options)) : [];
     }
 }

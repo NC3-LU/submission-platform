@@ -52,6 +52,7 @@ class ScanSubmissionFileJobTest extends TestCase
             'label' => 'Attachment',
         ]);
         $submission = Submission::factory()->create(['form_id' => $form->id, 'status' => 'submitted']);
+        $path = 'submissions/'.$submission->id.'/'.basename($path);
 
         Storage::disk('private')->put($path, 'file contents');
 
@@ -77,7 +78,7 @@ class ScanSubmissionFileJobTest extends TestCase
         $this->assertSame(ScanResult::STATUS_CLEAN, $scan->status);
         $this->assertFalse($scan->is_malicious);
         $this->assertTrue(Storage::disk('private')->exists($value->value));
-        $this->assertSame('submissions/X/doc.pdf', $value->fresh()->value);
+        $this->assertSame($value->value, $value->fresh()->value);
     }
 
     public function test_malicious_file_is_quarantined_when_blocking_enabled(): void
@@ -94,7 +95,7 @@ class ScanSubmissionFileJobTest extends TestCase
         $this->assertSame(ScanResult::STATUS_MALICIOUS, $scan->status);
         $this->assertTrue($scan->is_malicious);
         // File removed, value marked as quarantined.
-        $this->assertFalse(Storage::disk('private')->exists('submissions/Y/malware.pdf'));
+        $this->assertFalse(Storage::disk('private')->exists($value->value));
         $this->assertStringContainsString('[REMOVED-MALICIOUS]', $value->fresh()->value);
     }
 
@@ -188,5 +189,22 @@ class ScanSubmissionFileJobTest extends TestCase
         }
 
         Notification::assertSentToTimes($form->user, SubmissionFileScanAlert::class, 1);
+    }
+
+    public function test_scanner_never_reads_a_legacy_reference_to_another_submissions_file(): void
+    {
+        Http::fake();
+        $value = $this->makeFileValue();
+        $other = Submission::factory()->submitted()->create();
+        $path = 'submissions/'.$other->id.'/private.pdf';
+        Storage::disk('private')->put($path, 'private');
+        $value->update(['value' => $path]);
+        try {
+            (new ScanSubmissionFileJob($value))->handle(app(FileScanService::class));
+        } catch (\RuntimeException) {
+            // Untrusted legacy references must fail before a scanner request is sent.
+        }
+        Http::assertNothingSent();
+        Storage::disk('private')->assertExists($path);
     }
 }

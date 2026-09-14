@@ -133,8 +133,41 @@ class ApiSecuritySettings extends Page implements HasForms
                     ]),
 
                 Forms\Components\Section::make('Token Configuration')
-                    ->description('Configure Sanctum token behavior.')
+                    ->description('Configure API token identification and optional lifecycle limits. Blank limits remain disabled.')
                     ->schema([
+                        Forms\Components\TextInput::make('api_token_prefix')
+                            ->label('Custom API Token Prefix')
+                            ->maxLength(20)
+                            ->helperText('Applied to new /api/v1 credentials, for example nc3_.')
+                            ->alphaDash()
+                            ->nullable(),
+
+                        Forms\Components\TextInput::make('api_token_default_lifetime_days')
+                            ->label('Default Lifetime')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(3650)
+                            ->suffix('days')
+                            ->helperText('Optional. Leave blank to create non-expiring tokens when no date is supplied.')
+                            ->nullable(),
+
+                        Forms\Components\TextInput::make('api_token_max_lifetime_days')
+                            ->label('Maximum Lifetime')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(3650)
+                            ->suffix('days')
+                            ->helperText('Optional. Leave blank to permit any future expiration date.')
+                            ->nullable(),
+
+                        Forms\Components\TextInput::make('api_token_max_active_per_user')
+                            ->label('Maximum Active Tokens per User')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(1000)
+                            ->helperText('Optional. Leave blank for no active-token quota.')
+                            ->nullable(),
+
                         Forms\Components\TextInput::make('sanctum_token_prefix')
                             ->label('Sanctum Token Prefix')
                             ->maxLength(20)

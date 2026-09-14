@@ -46,4 +46,33 @@ class FormDeletionCleanupTest extends TestCase
 
         Storage::disk('private')->assertMissing($filePath);
     }
+
+    public function test_deleting_form_never_removes_a_path_outside_its_submission_directory(): void
+    {
+        Storage::fake('private');
+
+        $user = User::factory()->create(['role' => 'admin']);
+        $form = Form::factory()->for($user)->create(['status' => 'draft']);
+        $category = $form->categories()->create(['name' => 'General', 'order' => 1]);
+        $field = $category->fields()->create([
+            'form_id' => $form->id,
+            'label' => 'Document',
+            'type' => 'file',
+            'order' => 1,
+        ]);
+        $submission = $form->submissions()->create([
+            'user_id' => $user->id,
+            'status' => 'submitted',
+        ]);
+        $unrelatedPath = 'exports/quarterly-report.pdf';
+        Storage::disk('private')->put($unrelatedPath, 'unrelated');
+        $submission->values()->create([
+            'form_field_id' => $field->id,
+            'value' => $unrelatedPath,
+        ]);
+
+        $form->delete();
+
+        Storage::disk('private')->assertExists($unrelatedPath);
+    }
 }

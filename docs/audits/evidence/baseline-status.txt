@@ -1,0 +1,51 @@
+ M .env.example
+ M app/Filament/Pages/ApiSecuritySettings.php
+ M app/Filament/Resources/ApiTokenResource.php
+ M app/Filament/Resources/ApiTokenResource/Pages/CreateApiToken.php
+ M app/Filament/Resources/ApiTokenResource/Pages/EditApiToken.php
+ M app/Filament/Resources/UserResource.php
+ M app/Http/Controllers/Api/ApiTokenController.php
+ M app/Http/Controllers/Api/FormAccessController.php
+ M app/Http/Controllers/Api/FormController.php
+ M app/Http/Controllers/Api/SubmissionController.php
+ M app/Http/Controllers/SubmissionController.php
+ M app/Http/Middleware/ApiLogMiddleware.php
+ M app/Http/Middleware/ApiTokenIPMiddleware.php
+ M app/Http/Middleware/FormAccessMiddleware.php
+ M app/Http/Resources/FormAccessLinkResource.php
+ M app/Livewire/SubmissionForm.php
+ M app/Models/ApiToken.php
+ M app/Models/Form.php
+ M app/Models/FormField.php
+ M app/Models/Submission.php
+ M app/Providers/AppServiceProvider.php
+ M bootstrap/app.php
+ M bootstrap/cache/packages.php
+ M bootstrap/cache/services.php
+ M config/app.php
+ M routes/api.php
+ M tests/Feature/Api/ApiTokenAbilityEnforcementTest.php
+ M tests/Feature/Api/ApiTokenTest.php
+ M tests/Feature/Api/FormApiTest.php
+ M tests/Feature/Api/SubmissionApiTest.php
+ M tests/Feature/FilamentAdminPanelTest.php
+ M tests/Feature/FormDeletionCleanupTest.php
+ M tests/Feature/SubmissionFileDeletionTest.php
+ M tests/Feature/SubmissionPagesRenderTest.php
+ M tests/Unit/RateLimiterDefaultsTest.php
+ M tests/Unit/SecurityDefaultsTest.php
+?? app/Http/Middleware/RequireApiTokenAbility.php
+?? app/Http/Requests/Api/
+?? app/Http/Resources/ApiTokenResource.php
+?? app/Models/ApiTokenEvent.php
+?? app/Rules/
+?? app/Services/ApiTokenService.php
+?? app/Services/IssuedApiToken.php
+?? config/trustedproxy.php
+?? database/migrations/2026_07_31_000001_create_api_token_events_table.php
+?? database/migrations/2026_07_31_000002_add_api_token_lifecycle_settings.php
+?? database/migrations/2026_07_31_000003_make_api_token_abilities_required.php
+?? docs/plans/
+?? tests/Feature/Api/ApiTokenLifecycleTest.php
+?? tests/Feature/Api/FormAccessApiTest.php
+?? tests/Feature/FormAccessMiddlewareTest.php

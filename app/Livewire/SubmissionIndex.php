@@ -92,7 +92,8 @@ class SubmissionIndex extends Component
     public function render(): Factory|View|Application
     {
 
-        $query = $this->form->submissions()->with(['user', 'form', 'scanResults']);
+        Gate::authorize('viewAny', [Submission::class, $this->form->fresh()]);
+        $query = $this->form->submissions()->visibleTo(auth()->user())->with(['user', 'form', 'scanResults']);
 
         if ($this->statusFilter !== 'all') {
             $query->where('status', $this->statusFilter);
@@ -113,7 +114,7 @@ class SubmissionIndex extends Component
         }
 
         $submissions = $query
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->orderBy(in_array($this->sortField, ['id', 'status', 'created_at', 'updated_at']) ? $this->sortField : 'updated_at', $this->sortDirection === 'asc' ? 'asc' : 'desc')
             ->paginate(10);
 
         return view('livewire.submission-index', [

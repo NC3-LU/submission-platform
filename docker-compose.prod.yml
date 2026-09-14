@@ -48,13 +48,14 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql -h127.0.0.1 -uroot "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
       timeout: 20s
       retries: 15
       interval: 10s
       start_period: 60s
 
   app:
+    image: ${APP_IMAGE:-submission-platform:local}
     build:
       context: .
       dockerfile: Dockerfile
@@ -70,6 +71,7 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 3306
+      RUN_MIGRATIONS: "false"
       PROXY: ${PROXY}
     volumes:
       - storage_data:/var/www/html/storage
@@ -98,7 +100,10 @@ services:
     networks:
       - app_network
 
-  queue:
+  queue: &worker
+    image: ${APP_IMAGE:-submission-platform:local}
+    stop_signal: SIGTERM
+    stop_grace_period: 240s
     build:
       context: .
       dockerfile: Dockerfile
@@ -113,8 +118,7 @@ services:
       DB_HOST: db
       DB_PORT: 3306
       PROXY: ${PROXY}
-      # The app container owns migrations; running them from both races on an
-      # unlocked schema. See docker/entrypoint.sh.
+      # Deployment runs migrations once; workers never migrate.
       RUN_MIGRATIONS: "false"
     command: php artisan queue:work --tries=3 --sleep=3 --timeout=180 --max-time=3600
     volumes:
@@ -129,6 +133,11 @@ services:
         condition: service_healthy
     networks:
       - app_network
+
+  scheduler:
+    <<: *worker
+    container_name: nc3_scheduler
+    command: php artisan schedule:work
 
   # --- Pandora file-scanning stack ---
   # Mirrors the pandora-profile services in docker-compose.yml, adapted for prod:

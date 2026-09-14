@@ -37,4 +37,21 @@ class SecurityDefaultsTest extends TestCase
         // is a stored-XSS primitive.
         $this->assertNotContains('svg', config('livewire.temporary_file_upload.preview_mimes'));
     }
+
+    public function test_runtime_code_does_not_read_environment_variables_directly(): void
+    {
+        $runtimeFiles = [
+            base_path('bootstrap/app.php'),
+            app_path('Providers/AppServiceProvider.php'),
+        ];
+
+        foreach ($runtimeFiles as $file) {
+            $this->assertStringNotContainsString('env(', file_get_contents($file), $file);
+        }
+    }
+
+    public function test_forwarded_client_addresses_are_not_trusted_by_default(): void
+    {
+        $this->assertNull(config('trustedproxy.proxies'));
+    }
 }

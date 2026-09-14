@@ -1,0 +1,62 @@
+ Container submission-backup-test-app-run-318b673937bf Creating 
+ Container submission-backup-test-app-run-318b673937bf Created 
+
+   INFO  Application is now in maintenance mode.  
+
+ Container submission-backup-test-queue-1 Stopping 
+ Container submission-backup-test-scheduler-1 Stopping 
+ Container submission-backup-test-scheduler-1 Stopped 
+ Container submission-backup-test-queue-1 Stopped 
+Published and verified assets from the release image.
+ Container submission-backup-test-queue-1 Recreate 
+ Container submission-backup-test-app-1 Recreate 
+ Container submission-backup-test-queue-1 Recreated 
+ Container submission-backup-test-app-1 Recreated 
+ Container submission-backup-test-app-1 Starting 
+ Container submission-backup-test-queue-1 Starting 
+ Container submission-backup-test-app-1 Started 
+ Container submission-backup-test-queue-1 Started 
+
+  Migration name .............................................. Batch / Status  
+  0001_01_01_000000_create_users_table ............................... [1] Ran  
+  0001_01_01_000001_create_cache_table ............................... [1] Ran  
+  0001_01_01_000002_create_jobs_table ................................ [1] Ran  
+  2024_09_24_150144_add_two_factor_columns_to_users_table ............ [1] Ran  
+  2024_09_24_150156_create_personal_access_tokens_table .............. [1] Ran  
+  2024_10_08_141558_create_forms_table ............................... [1] Ran  
+  2024_10_08_141821_create_form_fields_table ......................... [1] Ran  
+  2024_10_08_142022_create_submissions_table ......................... [1] Ran  
+  2024_10_08_142804_create_submission_values_table ................... [1] Ran  
+  2024_10_09_192748_create_form_categories_table ..................... [1] Ran  
+  2024_10_10_150619_create_form_users_table .......................... [1] Ran  
+  2024_10_16_082944_create_form_access_links_table ................... [1] Ran  
+  2024_10_31_153758_uuidtoidsubmission ............................... [1] Ran  
+  2024_12_02_080808_create_status_types_table ........................ [1] Ran  
+  2024_12_03_151628_submission_status_change ......................... [1] Ran  
+  2025_03_27_131509_create_api_tokens_table .......................... [1] Ran  
+  2025_03_27_131831_create_api_logs_table ............................ [1] Ran  
+  2025_03_27_163208_add_usage_count_to_api_tokens_table .............. [1] Ran  
+  2025_03_27_163831_create_api_settings_table ........................ [1] Ran  
+  2025_05_20_114718_create_scan_results_table ........................ [1] Ran  
+  2025_08_06_121551_change_value_column_in_submission_values_table ... [1] Ran  
+  2026_03_04_000001_add_scan_results_indexes ......................... [1] Ran  
+  2026_03_09_000001_make_submissions_user_id_nullable ................ [1] Ran  
+  2026_03_09_000002_add_ip_address_to_submissions .................... [1] Ran  
+  2026_03_09_000003_add_availability_dates_to_forms .................. [1] Ran  
+  2026_03_09_000004_add_conditional_fields_to_form_fields ............ [1] Ran  
+  2026_06_19_000001_add_status_to_scan_results ....................... [1] Ran  
+  2026_07_22_000001_add_header_image_to_forms ........................ [1] Ran  
+  2026_07_31_000001_create_api_token_events_table .................... [1] Ran  
+  2026_07_31_000002_add_api_token_lifecycle_settings ................. [1] Ran  
+  2026_07_31_000003_make_api_token_abilities_required ................ [1] Ran  
+  2026_09_14_000001_preserve_submission_data ......................... [1] Ran  
+  2026_09_14_000002_create_pending_file_deletions .................... [1] Ran  
+
+
+   INFO  Application is now live.  
+
+curl: (56) Recv failure: Connection reset by peer
+Previous code and image assets restored. Database preserved. Perform login, submission and download smoke checks; review scheduler support for the selected release.
+real 8.92
+user 0.38
+sys 0.49

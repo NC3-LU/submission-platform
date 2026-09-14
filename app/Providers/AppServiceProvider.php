@@ -4,9 +4,18 @@ namespace App\Providers;
 
 use App\Models\ApiSetting;
 use App\Models\User;
+use App\Services\OperationalHealth;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Events\WorkerStarting;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,6 +34,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Looping events pause in maintenance mode; deployment still needs proof of worker startup.
+        Event::listen(WorkerStarting::class, fn () => Cache::put('health:queue', now()->timestamp, 300));
+        Queue::looping(fn () => Cache::put('health:queue', now()->timestamp, 300));
+        Event::listen(DiagnosingHealth::class, function () {
+            if (in_array(false, app(OperationalHealth::class)->checks(), true)) {
+                throw new \RuntimeException('An application dependency is unavailable.');
+            }
+        });
+        Scramble::configure()->withDocumentTransformers(function (OpenApi $openApi) {
+            $openApi->secure(SecurityScheme::http('bearer'));
+        });
         $this->registerGates();
         $this->registerRateLimiters();
         $this->loadDatabaseConfigs();
@@ -55,9 +75,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Get allowed domains from database settings
         try {
-            $allowedDomainsStr = ApiSetting::get('api_docs_allowed_domains', env('API_DOCS_ALLOWED_DOMAINS', ''));
-        } catch (\Throwable $e) {
-            $allowedDomainsStr = env('API_DOCS_ALLOWED_DOMAINS', '');
+            $allowedDomainsStr = ApiSetting::get(
+                'api_docs_allowed_domains',
+                config('app.api_docs_allowed_domains', '')
+            );
+        } catch (\Throwable) {
+            $allowedDomainsStr = config('app.api_docs_allowed_domains', '');
         }
 
         if (empty($allowedDomainsStr)) {
@@ -92,16 +115,6 @@ class AppServiceProvider extends ServiceProvider
                 $key = $apiToken ? 'token:'.$apiToken->id : 'ip:'.$request->ip();
 
                 return Limit::perMinute(60)->by($key);
-            }
-        });
-
-        RateLimiter::for('api-auth', function (Request $request) {
-            try {
-                $limit = max(1, (int) ApiSetting::get('rate_limit_auth_attempts', 5));
-
-                return Limit::perMinute($limit)->by('ip:'.$request->ip());
-            } catch (\Throwable $e) {
-                return Limit::perMinute(5)->by('ip:'.$request->ip());
             }
         });
 
@@ -151,7 +164,10 @@ class AppServiceProvider extends ServiceProvider
     {
         try {
             // Update CORS allowed origins from database
-            $corsOrigins = ApiSetting::get('cors_allowed_origins', env('CORS_ALLOWED_ORIGINS', ''));
+            $corsOrigins = ApiSetting::get(
+                'cors_allowed_origins',
+                implode(',', config('cors.allowed_origins', []))
+            );
 
             if (! empty($corsOrigins)) {
                 $corsArray = array_filter(array_map('trim', explode(',', $corsOrigins)));
@@ -161,7 +177,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             // Update Sanctum token prefix from database
-            $tokenPrefix = ApiSetting::get('sanctum_token_prefix', env('SANCTUM_TOKEN_PREFIX', ''));
+            $tokenPrefix = ApiSetting::get('sanctum_token_prefix', config('sanctum.token_prefix', ''));
             config(['sanctum.token_prefix' => $tokenPrefix ?? '']);
         } catch (\Throwable $e) {
             // Silently fail if database is not available (e.g., during migrations)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ApiSetting;
 use App\Models\ApiToken;
 use Closure;
 use Illuminate\Http\Request;
@@ -18,12 +19,28 @@ class ApiTokenIPMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Get the bearer token from the request
         $bearerToken = $request->bearerToken();
+        $authenticationKey = $this->authenticationRateLimitKey($request, $bearerToken);
+        if (RateLimiter::tooManyAttempts($authenticationKey, $this->maximumAuthenticationAttempts())) {
+            $retryAfter = RateLimiter::availableIn($authenticationKey);
+
+            return response()->json([
+                'message' => 'Too many authentication attempts. Please try again later.',
+            ], 429, ['Retry-After' => (string) $retryAfter]);
+        }
+
+        $ipAuthenticationKey = $this->ipAuthenticationRateLimitKey($request);
+        if (RateLimiter::tooManyAttempts($ipAuthenticationKey, $this->maximumIpAuthenticationAttempts())) {
+            $retryAfter = RateLimiter::availableIn($ipAuthenticationKey);
+
+            return response()->json([
+                'message' => 'Too many authentication attempts. Please try again later.',
+            ], 429, ['Retry-After' => (string) $retryAfter]);
+        }
 
         if (! $bearerToken) {
             // Apply auth rate limiter for missing tokens to prevent brute force
-            $this->hitRateLimiter($request, 'missing_token');
+            $this->hitRateLimiter($request, 'missing_token', null);
 
             return response()->json(['message' => 'No API token provided'], 401);
         }
@@ -38,7 +55,7 @@ class ApiTokenIPMiddleware
 
         if (! $token) {
             // Apply auth rate limiter for invalid tokens
-            $this->hitRateLimiter($request, 'invalid_token:'.$tokenFingerprint);
+            $this->hitRateLimiter($request, 'invalid_token:'.$tokenFingerprint, $bearerToken);
 
             return response()->json(['message' => 'Invalid API token'], 401);
         }
@@ -46,7 +63,7 @@ class ApiTokenIPMiddleware
         // Check if token is expired
         if ($token->isExpired()) {
             // Apply auth rate limiter for expired tokens
-            $this->hitRateLimiter($request, 'expired_token:'.$token->id);
+            $this->hitRateLimiter($request, 'expired_token:'.$token->id, $bearerToken);
 
             return response()->json(['message' => 'API token has expired'], 401);
         }
@@ -54,37 +71,24 @@ class ApiTokenIPMiddleware
         // Check IP restrictions if any
         if (! $token->isValidIp($request->ip())) {
             // Apply auth rate limiter for IP restriction failures
-            $this->hitRateLimiter($request, 'ip_restricted:'.$token->id);
+            $this->hitRateLimiter($request, 'ip_restricted:'.$token->id, $bearerToken);
 
             return response()->json([
                 'message' => 'Access denied from this IP address',
             ], 403);
         }
 
-        // Update last used timestamp
-        $token->markAsUsed();
-
-        // Increment token usage count (if column exists)
-        if (in_array('usage_count', $token->getFillable())) {
-            $token->increment('usage_count');
-        }
-
-        // Check token abilities based on the request
-        $requiredAbility = $this->getRequiredAbility($request);
-        if ($requiredAbility && ! $token->can($requiredAbility)) {
-            // Apply auth rate limiter for permission failures
-            $this->hitRateLimiter($request, 'permission_denied:'.$token->id.':'.$requiredAbility);
-
+        if (! $this->routeDeclaresAbility($request)) {
             return response()->json([
-                'message' => 'API token does not have the required permissions',
+                'message' => 'API endpoint permission is not configured',
             ], 403);
         }
 
         // Set token for access in controllers
         $request->attributes->set('api_token', $token);
 
-        // Clear any rate limiting locks for this token as it's now successful
-        RateLimiter::clear('api-auth:success:'.$token->id);
+        // A valid credential resets the failed-authentication bucket for this IP.
+        RateLimiter::clear($authenticationKey);
 
         return $next($request);
     }
@@ -92,17 +96,41 @@ class ApiTokenIPMiddleware
     /**
      * Track a failed authentication attempt for rate limiting.
      */
-    private function hitRateLimiter(Request $request, string $key): void
+    private function hitRateLimiter(Request $request, string $reason, ?string $bearerToken): void
     {
-        // Ensure the rate limiter for API authentication is triggered
-        // The actual limits are defined in AppServiceProvider
-        RateLimiter::hit('api-auth:'.$key.':'.$request->ip());
-
-        // Also track in general auth bucket
-        RateLimiter::hit('api-auth:'.$request->ip());
+        RateLimiter::hit($this->authenticationRateLimitKey($request, $bearerToken), 60);
+        RateLimiter::hit($this->ipAuthenticationRateLimitKey($request), 60);
 
         // Store info about the failed attempt for auditing if needed
-        $this->logFailedAttempt($request, $key);
+        $this->logFailedAttempt($request, $reason);
+    }
+
+    private function authenticationRateLimitKey(Request $request, ?string $bearerToken): string
+    {
+        $fingerprint = $bearerToken === null
+            ? 'missing'
+            : substr(hash('sha256', $bearerToken), 0, 16);
+
+        return 'api-auth:'.$request->ip().':'.$fingerprint;
+    }
+
+    private function ipAuthenticationRateLimitKey(Request $request): string
+    {
+        return 'api-auth-ip:'.$request->ip();
+    }
+
+    private function maximumAuthenticationAttempts(): int
+    {
+        try {
+            return max(1, (int) ApiSetting::get('rate_limit_auth_attempts', 5));
+        } catch (\Throwable) {
+            return 5;
+        }
+    }
+
+    private function maximumIpAuthenticationAttempts(): int
+    {
+        return max(20, $this->maximumAuthenticationAttempts() * 10);
     }
 
     /**
@@ -132,55 +160,9 @@ class ApiTokenIPMiddleware
         Cache::put($cacheKey, $attempts, now()->addHour());
     }
 
-    /**
-     * Determine the required ability for the request.
-     */
-    private function getRequiredAbility(Request $request): ?string
+    private function routeDeclaresAbility(Request $request): bool
     {
-        // decodedPath(), not path(): the router matches routes against
-        // rawurldecode($path), while path() returns the still-encoded path.
-        // Matching abilities on the raw path lets `POST /api/v1/%74okens`
-        // reach the tokens route while matching none of the patterns below,
-        // so no ability is required at all.
-        $path = $request->decodedPath();
-        $method = $request->method();
-
-        $verb = match ($method) {
-            'GET', 'HEAD' => 'read',
-            'POST' => 'create',
-            'PUT', 'PATCH' => 'update',
-            'DELETE' => 'delete',
-            default => null,
-        };
-
-        if ($verb === null) {
-            return null;
-        }
-
-        // Order matters: submissions and access-links are nested under
-        // `forms/{id}/`, so they have to be matched before the broader forms
-        // pattern or they resolve to a forms:* ability and the narrower
-        // abilities become unreachable.
-        if (preg_match('#^api/v1/forms/[^/]+/submissions#', $path)) {
-            return 'submissions:'.$verb;
-        }
-
-        // Access links are form configuration, so they ride on forms:*.
-        if (preg_match('#^api/v1/forms?/[^/]+/access-links#', $path)) {
-            return $verb === 'read' ? 'forms:read' : 'forms:update';
-        }
-
-        if (preg_match('#^api/v1/forms(/|$)#', $path)) {
-            return 'forms:'.$verb;
-        }
-
-        // Token management is a privileged operation in its own right: without
-        // this, any token could mint an unrestricted one for its user.
-        if (preg_match('#^api/v1/tokens(/|$)#', $path)) {
-            return 'tokens:manage';
-        }
-
-        // Default to null (no specific ability required)
-        return null;
+        return collect($request->route()?->gatherMiddleware() ?? [])
+            ->contains(fn (string $middleware): bool => str_starts_with($middleware, 'api.ability:'));
     }
 }

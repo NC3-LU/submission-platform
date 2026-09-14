@@ -14,7 +14,7 @@
                     You've made too many requests. Please wait a moment and try again.
                 </p>
 
-                <a href="/" class="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
+                <a href="/" class="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-700 hover:bg-sky-700 text-white font-medium rounded-lg transition-colors">
                     Return Home
                 </a>
             </div>

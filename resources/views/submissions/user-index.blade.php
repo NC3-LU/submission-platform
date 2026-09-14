@@ -11,12 +11,12 @@
                 @if($submissions->isEmpty())
                     <div class="text-center py-12">
                         <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-3">
-                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
                         <p class="text-gray-500 dark:text-gray-400">You haven't submitted anything yet.</p>
-                        <a href="{{ route('forms.public_index') }}" class="mt-3 inline-flex items-center text-sm text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium transition-colors">
+                        <a href="{{ route('forms.public_index') }}" class="mt-3 inline-flex items-center text-sm text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium transition-colors">
                             Browse available forms
                             <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
@@ -62,7 +62,7 @@
                                         <div class="flex items-center gap-3">
                                             @if($submission->status === 'draft')
                                                 <a href="{{ route('submissions.edit', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                                   class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium transition-colors">
+                                                   class="text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium transition-colors">
                                                     Continue
                                                 </a>
                                                 <form action="{{ route('submissions.destroy', $submission) }}" method="POST" class="inline">
@@ -76,23 +76,23 @@
                                                 </form>
                                             @elseif($submission->status === 'ongoing')
                                                 <a href="{{ route('submissions.edit', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                                   class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium transition-colors">
+                                                   class="text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium transition-colors">
                                                     Continue
                                                 </a>
                                             @else
                                                 <a href="{{ route('submissions.show', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                                   class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
+                                                   class="text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
                                                     View
                                                 </a>
                                             @endif
 
                                             @can('export', $submission)
                                                 <a href="{{ route('submissions.export.single.pdf', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                                   class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
+                                                   class="text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
                                                     Export PDF
                                                 </a>
                                                 <a href="{{ route('submissions.export.single.json', ['form' => $submission->form, 'submission' => $submission]) }}"
-                                                   class="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
+                                                   class="text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors">
                                                     Export JSON
                                                 </a>
                                             @endcan

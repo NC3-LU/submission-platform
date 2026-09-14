@@ -8,6 +8,10 @@
     </x-slot>
 
     <x-slot name="content">
+        @if(auth()->user()->forms()->exists())
+            <p class="mb-4 text-sm text-amber-800 dark:text-amber-200">Your account owns forms. An administrator must transfer them to a successor before this account can be deleted. Existing responses will be preserved.</p>
+        @endif
+        <x-input-error for="ownership" />
         <div class="max-w-xl text-sm text-gray-600 dark:text-gray-400">
             {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
         </div>
@@ -25,6 +29,10 @@
             </x-slot>
 
             <x-slot name="content">
+        @if(auth()->user()->forms()->exists())
+            <p class="mb-4 text-sm text-amber-800 dark:text-amber-200">Your account owns forms. An administrator must transfer them to a successor before this account can be deleted. Existing responses will be preserved.</p>
+        @endif
+        <x-input-error for="ownership" />
                 {{ __('Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
 
                 <div class="mt-4" x-data="{}" x-on:confirming-delete-user.window="setTimeout(() => $refs.password.focus(), 250)">

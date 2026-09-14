@@ -20,10 +20,7 @@ class FormAccessLinkResource extends JsonResource
             'id' => $this->id,
             'form_id' => $this->form_id,
             'token' => $this->token,
-            'name' => $this->name,
             'expires_at' => $this->expires_at,
-            'max_submissions' => $this->max_submissions,
-            'submission_count' => $this->submission_count,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -68,7 +68,7 @@ class FormAccessMiddleware
 
                     // Verify the access link is still valid
                     $accessLink = FormAccessLink::findValidByToken($sessionAccess['token']);
-                    if (! $accessLink) {
+                    if (! $accessLink || $accessLink->form_id !== $form->id) {
                         $request->session()->forget($sessionKey);
 
                         return redirect()->route('homepage')

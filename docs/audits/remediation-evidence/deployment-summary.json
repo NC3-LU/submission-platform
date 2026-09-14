@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-14",
+  "scope": "Synthetic local Docker rehearsal; no production deployment",
+  "images_built": {
+    "runtime-fpm": "sha256:505b90c1bbe14f4322062aad729bbba546a6f694b05b0a3e501e19ccd3ded695",
+    "runtime-apache": "sha256:2cb0f070e364843b912220131e4396fe0372b8028b6b2ee870066333e715043f"
+  },
+  "image_environment_and_private_data_exclusion": true,
+  "unavailable_database_startup_rejected": true,
+  "compose_validated_without_resolving_real_env_files": true,
+  "worker_stop_signal": "SIGTERM",
+  "worker_shutdown_grace_seconds": 240,
+  "deploy_full_health_and_http": true,
+  "rollback_image_retained_before_build": true,
+  "standalone_encrypted_backup_seconds": 6.33,
+  "isolated_restore_seconds": 50.27,
+  "rollback_from_stopped_app": true,
+  "rollback_via_retained_tag_seconds": 8.92,
+  "rollback_data_and_file_manifest_matches": true,
+  "restored_and_rolled_back_login_download_header_assets": true,
+  "rollback_scope": "Between two Laravel 13 images; actual previous production release requires staging rehearsal"
+}

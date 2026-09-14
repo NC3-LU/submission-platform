@@ -54,6 +54,13 @@ return [
 
     'api_docs_public' => (bool) env('API_DOCS_PUBLIC', false),
 
+    'api_docs_allowed_domains' => env('API_DOCS_ALLOWED_DOMAINS', ''),
+
+    'trusted_hosts' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('TRUSTED_HOSTS', ''))
+    ))),
+
     /*
     |--------------------------------------------------------------------------
     | Application URL

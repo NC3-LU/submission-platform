@@ -3,88 +3,68 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StoreApiTokenRequest;
+use App\Http\Requests\Api\UpdateApiTokenRequest;
+use App\Http\Resources\ApiTokenResource;
 use App\Models\ApiToken;
+use App\Services\ApiTokenService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class ApiTokenController extends Controller
 {
+    public function __construct(private readonly ApiTokenService $tokens) {}
+
     /**
      * Display a listing of the user's API tokens.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
 
         $tokens = ApiToken::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
-            ->get(['id', 'name', 'abilities', 'allowed_ips', 'last_used_at', 'expires_at', 'created_at']);
+            ->get(['id', 'name', 'token', 'abilities', 'allowed_ips', 'usage_count', 'last_used_at', 'expires_at', 'created_at']);
 
-        return response()->json(['data' => $tokens]);
+        return ApiTokenResource::collection($tokens);
     }
 
     /**
      * Store a newly created API token.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreApiTokenRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'abilities' => 'nullable|array',
-            'abilities.*' => ['string', Rule::in(ApiToken::ABILITIES)],
-            'allowed_ips' => 'nullable|string',
-            'expires_at' => 'nullable|date|after:now',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
+        $data = $request->validated();
 
         // Least privilege: an omitted ability list used to mean '*', which let
         // any token mint an unrestricted one.
-        $abilities = $request->abilities ?? ApiToken::DEFAULT_ABILITIES;
+        $abilities = $data['abilities'] ?? ApiToken::DEFAULT_ABILITIES;
 
         if ($denied = $this->abilitiesBeyond($apiToken, $abilities)) {
             return $this->escalationRefused($denied);
         }
 
-        // Generate a secure random token
-        $plainTextToken = Str::random(40);
-        $tokenHash = hash('sha256', $plainTextToken);
-
-        // Create the token record
-        $token = ApiToken::create([
-            'user_id' => $userId,
-            'name' => $request->name,
-            'token' => $tokenHash,
+        $issuedToken = $this->tokens->issue($userId, [
+            'name' => $data['name'],
             'abilities' => $abilities,
-            'allowed_ips' => $request->allowed_ips,
-            'expires_at' => $request->expires_at,
-        ]);
+            'allowed_ips' => $data['allowed_ips'] ?? null,
+            'expires_at' => $data['expires_at'] ?? null,
+        ], actorToken: $apiToken, ipAddress: $request->ip());
+        $token = $issuedToken->token;
 
         // Return the new token with the plain text token (will only be shown once)
         return response()->json([
             'message' => 'API token created successfully',
             'data' => [
-                'id' => $token->id,
-                'name' => $token->name,
-                'token' => $plainTextToken, // This is the only time the token will be visible
-                'abilities' => $token->abilities,
-                'allowed_ips' => $token->allowed_ips,
-                'expires_at' => $token->expires_at,
-                'created_at' => $token->created_at,
+                ...(new ApiTokenResource($token))->resolve($request),
+                'token' => $issuedToken->plainTextToken,
             ],
-        ], 201);
+        ], 201)->header('Cache-Control', 'no-store, private');
     }
 
     /**
@@ -92,7 +72,7 @@ class ApiTokenController extends Controller
      *
      * @param  int  $id
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(UpdateApiTokenRequest $request, $id): JsonResponse
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
@@ -101,34 +81,23 @@ class ApiTokenController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string|max:255',
-            'abilities' => 'nullable|array',
-            'abilities.*' => ['string', Rule::in(ApiToken::ABILITIES)],
-            'allowed_ips' => 'nullable|string',
-            'expires_at' => 'nullable|date|after:now',
-        ]);
+        $data = $request->validated();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        if ($request->has('abilities')
-            && ($denied = $this->abilitiesBeyond($apiToken, $request->abilities ?? []))) {
+        if (array_key_exists('abilities', $data)
+            && ($denied = $this->abilitiesBeyond($apiToken, $data['abilities']))) {
             return $this->escalationRefused($denied);
         }
 
-        // Update the token
-        $token->update($request->only([
-            'name', 'abilities', 'allowed_ips', 'expires_at',
-        ]));
+        $token = $this->tokens->update(
+            $token,
+            $data,
+            actorToken: $apiToken,
+            ipAddress: $request->ip(),
+        );
 
         return response()->json([
             'message' => 'API token updated successfully',
-            'data' => $token->only(['id', 'name', 'abilities', 'allowed_ips', 'expires_at', 'created_at']),
+            'data' => (new ApiTokenResource($token))->resolve($request),
         ]);
     }
 
@@ -137,7 +106,7 @@ class ApiTokenController extends Controller
      *
      * @param  int  $id
      */
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(Request $request, $id): Response
     {
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
@@ -146,11 +115,27 @@ class ApiTokenController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
-        $token->delete();
+        $this->tokens->revoke($token, actorToken: $apiToken, ipAddress: $request->ip());
+
+        return response()->noContent();
+    }
+
+    public function rotate(Request $request, string $token): JsonResponse
+    {
+        $apiToken = ApiToken::fromRequest($request);
+        $target = ApiToken::query()
+            ->where('user_id', $apiToken->user_id)
+            ->findOrFail($token);
+
+        $rotated = $this->tokens->rotate($target, actorToken: $apiToken, ipAddress: $request->ip());
 
         return response()->json([
-            'message' => 'API token deleted successfully',
-        ]);
+            'message' => 'API token rotated successfully',
+            'data' => [
+                ...(new ApiTokenResource($rotated->token))->resolve($request),
+                'token' => $rotated->plainTextToken,
+            ],
+        ])->header('Cache-Control', 'no-store, private');
     }
 
     /**

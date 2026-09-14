@@ -11,9 +11,9 @@ class SubmissionPolicy
     /**
      * Perform pre-authorization checks on the model.
      */
-    public function before(User $user): ?bool
+    public function before(User $user, string $ability): ?bool
     {
-        if ($user->isAdmin()) {
+        if ($user->isAdmin() && $ability !== 'export') {
             return true;
         }
 
@@ -32,7 +32,7 @@ class SubmissionPolicy
     public function view(User $user, Submission $submission): bool
     {
         // Can't view drafts unless you're the owner
-        if ($submission->status === 'draft' && $user->id !== $submission->user_id) {
+        if (in_array($submission->status, ['draft', 'ongoing']) && $user->id !== $submission->user_id) {
             return false;
         }
 
@@ -83,6 +83,12 @@ class SubmissionPolicy
         return false;
     }
 
+    public function manageStatus(User $user, Submission $submission): bool
+    {
+        return $this->view($user, $submission) && ! in_array($submission->status, Submission::EDITABLE_STATUSES)
+            && ($user->id === $submission->form->user_id || $submission->form->appointedUsers()->where('user_id', $user->id)->where('can_edit', true)->exists());
+    }
+
     public function review(User $user, Submission $submission): bool
     {
         // Only reviewable if under review
@@ -110,37 +116,13 @@ class SubmissionPolicy
 
     public function export(User $user, Submission $submission): bool
     {
-        // Can't export drafts
-        if ($submission->status === 'draft') {
-            return false;
-        }
+        return ! in_array($submission->status, Submission::EDITABLE_STATUSES)
+            && ($user->isAdmin() || $this->view($user, $submission));
+    }
 
-        // Form owner can export any submission
-        if ($user->id === $submission->form->user_id) {
-            return true;
-        }
-
-        // Submission owner can export their own submission
-        if ($user->id === $submission->user_id) {
-            return true;
-        }
-
-        // Internal evaluators need edit rights
-        if ($user->role === 'internal_evaluator') {
-            return $submission->form->appointedUsers()
-                ->where('user_id', $user->id)
-                ->where('can_edit', true)
-                ->exists();
-        }
-
-        // External evaluators just need to be appointed
-        if ($user->role === 'external_evaluator') {
-            return $submission->form->appointedUsers()
-                ->where('user_id', $user->id)
-                ->exists();
-        }
-
-        return false;
+    public function deleteAsEvaluator(User $user, Submission $submission): bool
+    {
+        return $user->id === $submission->form->user_id && $this->view($user, $submission);
     }
 
     /**
@@ -148,12 +130,7 @@ class SubmissionPolicy
      */
     public function viewDrafts(User $user, Form $form): bool
     {
-        // Form owner can view all drafts
-        if ($user->id === $form->user_id) {
-            return true;
-        }
-
-        return false;
+        return $user->isAdmin();
     }
 
     /**
@@ -178,37 +155,6 @@ class SubmissionPolicy
      */
     public function generalPolicy(User $user, Submission $submission): bool
     {
-        $form = $submission->form;
-
-        // Form owner can export any submission
-        if ($user->id === $form->user_id) {
-            return true;
-        }
-
-        // Submission owner can export their own submission
-        if ($submission->user_id === $user->id) {
-            return true;
-        }
-
-        // Internal evaluators with edit rights can export
-        if ($user->role === 'internal_evaluator') {
-            return $form->appointedUsers()
-                ->where('user_id', $user->id)
-                ->where('can_edit', true)
-                ->exists();
-        }
-
-        // External evaluators can export if appointed
-        if ($user->role === 'external_evaluator') {
-            return $form->appointedUsers()
-                ->where('user_id', $user->id)
-                ->exists();
-        }
-
-        // Appointed users with edit permissions can export
-        return $form->appointedUsers()
-            ->where('user_id', $user->id)
-            ->where('can_edit', true)
-            ->exists();
+        return $this->view($user, $submission);
     }
 }

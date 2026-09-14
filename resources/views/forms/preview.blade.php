@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ route('forms.edit', $form) }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <a aria-label="Back" href="{{ route('forms.edit', $form) }}" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -19,10 +19,11 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
                 @if($form->header_image)
-                    <div class="mb-6 -mx-6 -mt-6 overflow-hidden rounded-t-xl"
+                    <div class="mb-6 -mx-6 -mt-6 aspect-[3/1] overflow-hidden rounded-t-xl"
                          @if($form->header_theme_color) style="border-top: 4px solid {{ $form->header_theme_color }}" @endif>
                         <img src="{{ $form->header_image_url }}" alt="{{ $form->title }}"
-                             class="w-full h-48 sm:h-64 object-cover"
+                             width="1200" height="400"
+                             class="block h-full w-full object-cover"
                              style="object-position: 50% {{ $form->header_image_position }}%">
                     </div>
                 @endif
@@ -81,7 +82,7 @@
                                         @else
                                             @foreach($options as $option)
                                                 <div class="flex items-center mt-2">
-                                                    <input type="{{ $field->type }}" name="field_{{ $field->id }}" value="{{ trim($option) }}" class="h-4 w-4 text-sky-600 border-gray-300 dark:border-gray-600 focus:ring-sky-500">
+                                                    <input type="{{ $field->type }}" name="field_{{ $field->id }}" value="{{ trim($option) }}" class="h-4 w-4 text-sky-700 border-gray-300 dark:border-gray-600 focus:ring-sky-500">
                                                     <label class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ trim($option) }}</label>
                                                 </div>
                                             @endforeach
@@ -109,7 +110,7 @@
                             x-show="step < totalSteps"
                             @click="step++"
                             type="button"
-                            class="inline-flex items-center px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
+                            class="inline-flex items-center px-4 py-2.5 bg-sky-700 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
                             Next
                         </button>
                         <button

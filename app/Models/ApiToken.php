@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\IpUtils;
 
 class ApiToken extends Model
 {
@@ -40,6 +43,23 @@ class ApiToken extends Model
      */
     public const DEFAULT_ABILITIES = ['forms:read'];
 
+    /**
+     * Abilities that may be delegated by one API token to another.
+     * Token management is deliberately reserved for administrator-issued keys.
+     *
+     * @var array<int, string>
+     */
+    public const DELEGABLE_ABILITIES = [
+        'forms:read',
+        'forms:create',
+        'forms:update',
+        'forms:delete',
+        'submissions:read',
+        'submissions:create',
+        'submissions:update',
+        'submissions:delete',
+    ];
+
     protected $fillable = [
         'user_id',
         'name',
@@ -61,71 +81,61 @@ class ApiToken extends Model
     /**
      * Get the user that owns the token.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     /**
      * Check if the token can perform a given ability.
-     *
-     * @param  string  $ability
-     * @return bool
      */
-    public function can($ability)
+    public function can(string $ability): bool
     {
-        return in_array('*', $this->abilities) ||
-               in_array($ability, $this->abilities);
+        $abilities = (array) $this->abilities;
+
+        return in_array('*', $abilities, true) || in_array($ability, $abilities, true);
     }
 
     /**
      * Check if the token is expired.
-     *
-     * @return bool
      */
-    public function isExpired()
+    public function isExpired(): bool
     {
         return $this->expires_at !== null && now()->gte($this->expires_at);
     }
 
+    public function fingerprint(): string
+    {
+        return substr($this->token, 0, 16);
+    }
+
     /**
      * Check if request IP is allowed for this token.
-     *
-     * @param  string  $ip
-     * @return bool
      */
-    public function isValidIp($ip)
+    public function isValidIp(string $ip): bool
     {
         // If no allowed IPs are set, allow all
         if (empty($this->allowed_ips)) {
             return true;
         }
 
-        $allowedIps = explode(',', $this->allowed_ips);
+        $allowedIps = array_filter(array_map('trim', explode(',', $this->allowed_ips)));
 
-        return in_array($ip, array_map('trim', $allowedIps));
+        return IpUtils::checkIp($ip, $allowedIps);
     }
 
     /**
      * Update the last used timestamp.
-     *
-     * @return bool
      */
-    public function markAsUsed()
+    public function markAsUsed(): bool
     {
-        $this->last_used_at = now();
-        $this->increment('usage_count');
-
-        return $this->save();
+        return $this->increment('usage_count', 1, ['last_used_at' => now()]) > 0;
     }
 
     /**
      * Get the API token from the request attribute.
-     *
-     * @param  Request  $request
-     * @return ApiToken|null
      */
-    public static function fromRequest($request)
+    public static function fromRequest(Request $request): ?self
     {
         return $request->attributes->get('api_token');
     }
@@ -143,29 +153,5 @@ class ApiToken extends Model
         }
 
         return $this->last_used_at->addDays($days)->isPast();
-    }
-
-    /**
-     * Rotate the token with a new value.
-     *
-     * @return string The plaintext token value for one-time display
-     */
-    public function rotate(): string
-    {
-        // Generate new token
-        $plainTextToken = Str::random(40);
-
-        // Hash the token for storage
-        $this->token = hash('sha256', $plainTextToken);
-
-        // Reset usage statistics
-        $this->usage_count = 0;
-        $this->last_used_at = null;
-
-        // Save the changes
-        $this->save();
-
-        // Return the plaintext token for one-time display to the user
-        return $plainTextToken;
     }
 }

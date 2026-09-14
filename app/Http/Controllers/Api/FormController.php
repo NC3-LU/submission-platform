@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\FormResource;
 use App\Models\ApiToken;
 use App\Models\Form;
+use App\Models\FormField;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class FormController extends Controller
 {
@@ -23,18 +25,24 @@ class FormController extends Controller
         $apiToken = ApiToken::fromRequest($request);
         $userId = $apiToken->user_id;
 
+        $filters = $request->validate([
+            'status' => 'sometimes|string|in:draft,published,archived',
+            'visibility' => 'sometimes|string|in:public,authenticated,private',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+
         $query = Form::query()->where('user_id', $userId);
 
         // Apply filters if provided
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
         }
 
-        if ($request->filled('visibility')) {
-            $query->where('visibility', $request->visibility);
+        if (isset($filters['visibility'])) {
+            $query->where('visibility', $filters['visibility']);
         }
 
-        $forms = $query->latest()->paginate($request->per_page ?? 15);
+        $forms = $query->latest()->paginate($filters['per_page'] ?? 15);
 
         return FormResource::collection($forms);
     }
@@ -53,7 +61,7 @@ class FormController extends Controller
             'categories.*.name' => 'required|string|max:255',
             'categories.*.order' => 'required|integer',
             'categories.*.fields' => 'array',
-            'categories.*.fields.*.type' => 'required|string',
+            'categories.*.fields.*.type' => ['required', 'string', Rule::in(FormField::TYPES)],
             'categories.*.fields.*.label' => 'required|string',
             'categories.*.fields.*.required' => 'required|boolean',
             'categories.*.fields.*.options' => 'nullable|string',
@@ -202,8 +210,7 @@ class FormController extends Controller
         // Delete the form using a transaction to ensure all related data is removed
         DB::transaction(function () use ($form) {
             // Delete fields and categories first to maintain database integrity
-            $form->fields()->delete();
-            $form->categories()->delete();
+
             $form->delete();
         });
 

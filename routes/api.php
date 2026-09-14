@@ -24,23 +24,38 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // API v1 Routes
-Route::middleware(['throttle:api', 'api.token.ip'])
+Route::middleware(['api.token.ip', 'throttle:api'])
     ->prefix('v1')
     ->name('api.')
     ->group(function () {
         // API Token Management
+        Route::post('tokens/{token}/rotate', [ApiTokenController::class, 'rotate'])
+            ->name('tokens.rotate')
+            ->middleware('api.ability:tokens:manage');
+
         Route::apiResource('tokens', ApiTokenController::class)
-            ->except(['show']);
+            ->except(['show'])
+            ->middleware('api.ability:tokens:manage');
 
         // Form Management
-        Route::apiResource('forms', FormController::class);
+        Route::apiResource('forms', FormController::class)
+            ->middlewareFor(['index', 'show'], 'api.ability:forms:read')
+            ->middlewareFor('store', 'api.ability:forms:create')
+            ->middlewareFor('update', 'api.ability:forms:update')
+            ->middlewareFor('destroy', 'api.ability:forms:delete');
 
         // Form Access Links
-        Route::apiResource('form.access-links', FormAccessController::class);
+        Route::apiResource('form.access-links', FormAccessController::class)
+            ->middlewareFor(['index', 'show'], 'api.ability:forms:read')
+            ->middlewareFor(['store', 'update', 'destroy'], 'api.ability:forms:update');
 
         // Form Submissions (with specific rate limiting)
         Route::middleware(['throttle:api-submissions'])
             ->group(function () {
-                Route::apiResource('forms.submissions', SubmissionController::class);
+                Route::apiResource('forms.submissions', SubmissionController::class)
+                    ->middlewareFor(['index', 'show'], 'api.ability:submissions:read')
+                    ->middlewareFor('store', 'api.ability:submissions:create')
+                    ->middlewareFor('update', 'api.ability:submissions:update')
+                    ->middlewareFor('destroy', 'api.ability:submissions:delete');
             });
     });

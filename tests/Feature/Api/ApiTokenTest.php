@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\ApiToken;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -73,7 +74,7 @@ class ApiTokenTest extends TestCase
 
         // Verify token is present and plaintext
         $this->assertNotEmpty($response->json('data.token'));
-        $this->assertEquals(40, strlen($response->json('data.token')));
+        $this->assertStringStartsWith('nc3_', $response->json('data.token'));
     }
 
     public function test_can_update_token(): void
@@ -97,8 +98,7 @@ class ApiTokenTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer '.$this->token)
             ->deleteJson("/api/v1/tokens/{$this->apiToken->id}");
 
-        $response->assertStatus(200)
-            ->assertJson(['message' => 'API token deleted successfully']);
+        $response->assertNoContent();
 
         $this->assertDatabaseMissing('api_tokens', ['id' => $this->apiToken->id]);
     }
@@ -164,7 +164,22 @@ class ApiTokenTest extends TestCase
             ->getJson('/api/v1/tokens');
 
         $this->apiToken->refresh();
-        $this->assertGreaterThan($initialCount, $this->apiToken->usage_count);
+        $this->assertSame($initialCount + 1, $this->apiToken->usage_count);
         $this->assertNotNull($this->apiToken->last_used_at);
+    }
+
+    public function test_repeated_failed_authentication_attempts_are_rate_limited(): void
+    {
+        Cache::flush();
+
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $this->withHeader('Authorization', 'Bearer invalid_token_here')
+                ->getJson('/api/v1/tokens')
+                ->assertUnauthorized();
+        }
+
+        $this->withHeader('Authorization', 'Bearer invalid_token_here')
+            ->getJson('/api/v1/tokens')
+            ->assertTooManyRequests();
     }
 }

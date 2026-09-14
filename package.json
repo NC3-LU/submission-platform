@@ -3,9 +3,12 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "test:browser": "playwright test"
     },
     "devDependencies": {
+        "@axe-core/playwright": "^4.13.0",
+        "@playwright/test": "^1.63.0",
         "@tailwindcss/forms": "^0.5.11",
         "@tailwindcss/typography": "^0.5.20",
         "autoprefixer": "^10.5.4",
@@ -16,5 +19,8 @@
     },
     "dependencies": {
         "livewire-sortable": "^1.0.0"
+    },
+    "engines": {
+        "node": "^24.0.0 || ^26.0.0"
     }
 }
