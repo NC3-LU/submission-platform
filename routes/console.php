@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Webhooks;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
@@ -8,3 +9,6 @@ Schedule::command('app:prune-temporary-uploads')->hourly()->withoutOverlapping()
 // Only empty, untouched drafts are removed. Retention of completed responses is an organizational policy.
 Schedule::command('app:prune-empty-drafts --force --days=30 --untouched-only')->daily()->withoutOverlapping();
 Schedule::command('queue:prune-batches --hours=168')->daily()->withoutOverlapping();
+
+Schedule::command('app:prune-integration-artifacts')->hourly()->withoutOverlapping();
+Schedule::call(fn () => app(Webhooks::class)->recoverAndPrune())->name('webhook-recovery')->everyMinute()->withoutOverlapping();

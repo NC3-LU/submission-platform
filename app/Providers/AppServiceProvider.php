@@ -98,6 +98,8 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerRateLimiters(): void
     {
+        RateLimiter::for('api-token-revocations', fn (Request $request) => Limit::perMinute(5)->by('user:'.$request->attributes->get('api_token')?->user_id));
+
         RateLimiter::for('api', function (Request $request) {
             $apiToken = $request->attributes->get('api_token');
 
@@ -117,6 +119,10 @@ class AppServiceProvider extends ServiceProvider
                 return Limit::perMinute(60)->by($key);
             }
         });
+
+        RateLimiter::for('api-webhooks', fn (Request $request) => Limit::perMinute(10)->by('webhooks:'.$request->attributes->get('api_token')?->user_id));
+
+        RateLimiter::for('api-form-mutations', fn (Request $request) => Limit::perMinute(10)->by('form-mutations:'.$request->attributes->get('api_token')?->user_id));
 
         RateLimiter::for('api-submissions', function (Request $request) {
             $apiToken = $request->attributes->get('api_token');

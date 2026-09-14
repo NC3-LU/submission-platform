@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\FormUser;
-use App\Models\ScanResult;
 use App\Models\Submission;
+use App\Services\SubmissionFiles;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\Factory;
@@ -13,7 +13,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubmissionController extends Controller
@@ -260,41 +259,11 @@ class SubmissionController extends Controller
             abort(403, 'Invalid filename.');
         }
 
-        // Malware-scan gate: when blocking is enabled, only serve files whose
-        // asynchronous scan has completed and come back clean. Pending, failed,
-        // or malicious files are withheld (fail-closed).
-        if (config('services.pandora.enabled', false) && config('services.pandora.block_malicious', true)) {
-            $scan = ScanResult::where('submission_id', $submission->id)
-                ->where('filename', $filename)
-                ->orderByDesc('created_at')
-                ->first();
+        $value = $submission->values()->with(['field', 'submission', 'scanResult'])
+            ->whereHas('field', fn ($query) => $query->where('type', 'file'))
+            ->whereIn('value', ["temp-submissions/{$submission->id}/{$filename}", "submissions/{$submission->id}/{$filename}"])
+            ->firstOrFail();
 
-            if (! $scan || $scan->status !== ScanResult::STATUS_CLEAN) {
-                abort(423, 'This file is awaiting a malware scan or has been blocked.');
-            }
-        }
-
-        // Determine the file path based on submission status
-        $path = match ($submission->status) {
-            'draft' => "temp-submissions/{$submission->id}/{$filename}",
-            default => "submissions/{$submission->id}/{$filename}"
-        };
-
-        // Check if the file exists in private storage
-        if (! Storage::disk('private')->exists($path)) {
-            // If file not found in primary location and submission is draft/ongoing,
-            // check the permanent location as fallback
-            if (in_array($submission->status, ['draft'])) {
-                $permanentPath = "submissions/{$submission->id}/{$filename}";
-                if (Storage::disk('private')->exists($permanentPath)) {
-                    return Storage::disk('private')->download($permanentPath);
-                }
-            }
-
-            abort(404, 'File not found.');
-        }
-
-        // Serve the file securely
-        return Storage::disk('private')->download($path);
+        return app(SubmissionFiles::class)->download($value);
     }
 }

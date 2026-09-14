@@ -74,12 +74,28 @@ Before the handover is complete, assign a product owner, technical maintainer, o
 
 ### Repository protection checked on 14 September 2026
 
-GitHub reports that `NC3-LU/submission-platform` is public, its default branch is `master`, and `master` has no classic branch protection. Its only visible repository/organization ruleset is disabled. These were read-only API checks; no repository policy has been changed.
+The initial audit found that `NC3-LU/submission-platform` is public, the original default branch `master` had no classic branch protection. Its only visible repository/organization ruleset is disabled. These were read-only API checks; no repository policy has been changed.
 
 [branch-protection.json](branch-protection.json) is a proposed configuration requiring the new CI checks, one approving reviewer and resolved conversations, with force pushes/deletion disabled. Enable it after these workflows have been merged and the organization has confirmed who can review and handle emergencies. Applying the new check names before they exist would block unrelated merges. An authorized administrator can review the JSON and apply it with:
 
 ```bash
-gh api --method PUT repos/NC3-LU/submission-platform/branches/master/protection --input docs/branch-protection.json
+gh api --method PUT repos/NC3-LU/submission-platform/branches/main/protection --input docs/branch-protection.json
 ```
 
 This is an outstanding repository-setting action, separate from the local code remediation. Recheck the returned policy and a sample pull request before marking it complete.
+
+
+### Default branch migration and integration jobs
+
+Issue #47 renames the repository default branch to `main`. Update existing local clones after the rename:
+
+```bash
+git branch -m master main
+git fetch origin
+git branch -u origin/main main
+git remote set-head origin -a
+```
+
+Use `main` for production checkout/deployment targets and `dev` for ongoing development. GitHub automatically retargets PRs when its branch-rename operation runs. CI watches `main` and `dev`; the release remains an unpublished draft until review is complete. The maintainer confirmed production deployment is manual on the server; there is no external branch-triggered pipeline to update. Run the clone commands above in the server checkout before the next manual deployment, then verify `git branch --show-current` and its upstream both name `main`. This task does not change the running server. A future move of the application and database to Dokploy is documented in [the migration plan](plans/dokploy-migration.md).
+
+The normal worker processes exports and webhooks on the default queue using `INTEGRATION_QUEUE_CONNECTION=database`. Do not configure a synchronous driver for integration jobs. `app:prune-integration-artifacts` runs hourly; webhook recovery runs every minute. Review failed/stalled jobs and `integration_events` for quota, delivery and export failures. Temporary exports expire after 24 hours; webhook delivery history lasts seven days. Integrations use the private storage disk, and the current export writer requires its local filesystem driver. Keep the private disk outside the public web root. Webhooks default to `WEBHOOKS_ENABLED=false`; follow the signature, deduplication, limits and destination contract in [api.md](api.md) when enabling them.

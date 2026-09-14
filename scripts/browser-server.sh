@@ -4,7 +4,7 @@ browser_root=$(mktemp -d /tmp/submission-browser.XXXXXX)
 export APP_ENV=testing APP_DEBUG=false DB_CONNECTION=sqlite DB_DATABASE="$browser_root/browser.sqlite"
 export APP_KEY=base64:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
 export APP_URL=http://127.0.0.1:8767 CACHE_STORE=file SESSION_DRIVER=file SESSION_SECURE_COOKIE=false
-export MAIL_MAILER=log QUEUE_CONNECTION=sync PANDORA_ENABLED=false TRUSTED_HOSTS=127.0.0.1 TRUSTED_PROXIES=
+export MAIL_MAILER=log QUEUE_CONNECTION=database PANDORA_ENABLED=true PANDORA_BLOCK_MALICIOUS=false WEBHOOKS_ENABLED=false TRUSTED_HOSTS=127.0.0.1 TRUSTED_PROXIES=
 export LARAVEL_STORAGE_PATH="$browser_root/storage"
 export APP_CONFIG_CACHE="$browser_root/config.php" APP_ROUTES_CACHE="$browser_root/routes.php" APP_EVENTS_CACHE="$browser_root/events.php"
 export APP_SERVICES_CACHE="$browser_root/services.php" APP_PACKAGES_CACHE="$browser_root/packages.php"

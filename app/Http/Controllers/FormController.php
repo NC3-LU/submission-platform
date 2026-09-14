@@ -6,6 +6,7 @@ use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\User;
+use App\Services\FormDuplicator;
 use App\Services\ImageColorExtractor;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\Factory;
@@ -15,9 +16,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class FormController extends Controller
 {
@@ -208,44 +207,7 @@ class FormController extends Controller
     {
         $this->authorize('duplicate', $form);
 
-        $newForm = DB::transaction(function () use ($form) {
-            $clone = $form->replicate(['id', 'created_at', 'updated_at']);
-            $clone->title = $form->title.' (Copy)';
-            $clone->status = 'draft';
-            $clone->user_id = auth()->id();
-
-            if ($form->header_image && Storage::disk('public')->exists($form->header_image)) {
-                $ext = pathinfo($form->header_image, PATHINFO_EXTENSION);
-                $newPath = 'form-headers/'.Str::uuid().($ext ? '.'.$ext : '');
-                Storage::disk('public')->copy($form->header_image, $newPath);
-                $clone->header_image = $newPath;
-            }
-
-            $clone->save();
-
-            foreach ($form->categories()->orderBy('order')->get() as $category) {
-                $newCategory = $clone->categories()->create([
-                    'name' => $category->name,
-                    'description' => $category->description,
-                    'order' => $category->order,
-                ]);
-
-                foreach ($category->fields()->orderBy('order')->get() as $field) {
-                    $newCategory->fields()->create([
-                        'form_id' => $clone->id,
-                        'label' => $field->label,
-                        'type' => $field->type,
-                        'options' => $field->options,
-                        'required' => $field->required,
-                        'content' => $field->content,
-                        'char_limit' => $field->char_limit,
-                        'order' => $field->order,
-                    ]);
-                }
-            }
-
-            return $clone;
-        });
+        $newForm = app(FormDuplicator::class)->duplicate($form, auth()->user());
 
         return redirect()->route('forms.edit', $newForm)->with('success', 'Form cloned successfully.');
     }

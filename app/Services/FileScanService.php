@@ -100,7 +100,7 @@ class FileScanService
         $startTime = time();
 
         while ((time() - $startTime) < $this->timeout) {
-            $query = ['task_id' => $taskId];
+            $query = ['task_id' => $taskId, 'details' => 1];
             if ($seed) {
                 $query['seed'] = $seed;
             }
@@ -138,6 +138,10 @@ class FileScanService
             // alerts. WARN/ALERT remain the malicious verdicts.
             if (in_array($status, ['CLEAN', 'WARN', 'ALERT', 'OVERWRITE'])) {
                 $isMalicious = in_array($status, ['ALERT', 'WARN']);
+                $workers = $this->workerDetails($taskId, $seed);
+                $data['workers'] = $workers;
+                $data['report_details_available'] = $workers !== [];
+                $data = ScanReport::redact($data);
 
                 Log::info('Pandora scan complete', [
                     'taskId' => $taskId,
@@ -164,5 +168,39 @@ class FileScanService
         ]);
 
         return ['success' => false, 'message' => "Scan timed out after {$this->timeout}s"];
+    }
+
+    private function workerDetails(string $taskId, ?string $seed): array
+    {
+        try {
+            $response = Http::timeout(10)->connectTimeout(3)
+                ->withOptions(['proxy' => '', 'allow_redirects' => false, 'stream' => true])
+                ->get("{$this->pandoraUrl}/worker_status", array_filter([
+                    'task_id' => $taskId, 'seed' => $seed, 'all_workers' => 1, 'details' => 1,
+                ], fn ($value) => $value !== null));
+            $body = $response->toPsrResponse()->getBody();
+            try {
+                if (! $response->successful()) {
+                    return [];
+                }
+                $json = '';
+                while (! $body->eof() && strlen($json) <= 1048576) {
+                    $json .= $body->read(8192);
+                }
+                if (strlen($json) > 1048576) {
+                    return [];
+                }
+                $workers = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
+
+                return is_array($workers) ? array_filter($workers, fn ($worker) => is_array($worker) && isset($worker['status'])) : [];
+            } finally {
+                $body->close();
+            }
+        } catch (\Throwable) {
+            // Detailed reports are supplementary: preserve the completed verdict.
+            Log::warning('Pandora worker details unavailable', ['taskId' => $taskId]);
+
+            return [];
+        }
     }
 }

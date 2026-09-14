@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\FileCleanup;
+use App\Services\Webhooks;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,8 @@ class Submission extends Model
 
     protected static function booted(): void
     {
+        static::created(fn (Submission $submission) => app(Webhooks::class)->submissionChanged($submission, true));
+        static::updated(fn (Submission $submission) => app(Webhooks::class)->submissionChanged($submission, false));
         static::saving(function (Submission $submission) {
             if (! in_array($submission->status, self::STATUSES, true)) {
                 throw ValidationException::withMessages(['status' => 'Invalid submission status.']);

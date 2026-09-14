@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ApiLogMiddleware;
 use App\Http\Middleware\ApiTokenIPMiddleware;
+use App\Http\Middleware\DeprecatedApiRoute;
 use App\Http\Middleware\FormAccessMiddleware;
 use App\Http\Middleware\RemoveServerHeaders;
 use App\Http\Middleware\RequireApiTokenAbility;
@@ -56,6 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // API middleware
         $middleware->alias([
+            'api.deprecated' => DeprecatedApiRoute::class,
             'api.token.ip' => ApiTokenIPMiddleware::class,
             'api.ability' => RequireApiTokenAbility::class,
         ]);

@@ -19,7 +19,7 @@
             'dot' => 'text-emerald-500',
         ],
         'malicious' => [
-            'label' => 'Blocked — malware detected',
+            'label' => config('services.pandora.block_malicious') ? 'Blocked — malware detected' : 'Warning — malware detected',
             'classes' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
             'dot' => 'text-red-500',
         ],

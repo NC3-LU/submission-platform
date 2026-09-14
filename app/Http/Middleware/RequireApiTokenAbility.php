@@ -22,7 +22,7 @@ final class RequireApiTokenAbility
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $token->markAsUsed();
+        $token->markAsUsed($request->ip());
 
         return $next($request);
     }

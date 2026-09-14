@@ -95,6 +95,12 @@ class FormPolicy
     /**
      * Determine whether the user can assign other users to the form.
      */
+    public function manageCollaborators(User $user, Form $form): bool
+    {
+        // Sharing authority stays with the owner; editor access cannot grant it.
+        return $user->id === $form->user_id;
+    }
+
     public function assignUsers(User $user, Form $form): bool
     {
         // Form creator can assign users

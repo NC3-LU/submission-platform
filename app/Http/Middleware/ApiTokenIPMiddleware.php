@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\ApiSetting;
 use App\Models\ApiToken;
+use App\Services\ApiTokenService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -62,6 +63,7 @@ class ApiTokenIPMiddleware
 
         // Check if token is expired
         if ($token->isExpired()) {
+            app(ApiTokenService::class)->recordExpiration($token, $request->ip());
             // Apply auth rate limiter for expired tokens
             $this->hitRateLimiter($request, 'expired_token:'.$token->id, $bearerToken);
 
@@ -162,6 +164,10 @@ class ApiTokenIPMiddleware
 
     private function routeDeclaresAbility(Request $request): bool
     {
+        if (($request->route()?->defaults['api_permission'] ?? null) === 'authenticated') {
+            return true;
+        }
+
         return collect($request->route()?->gatherMiddleware() ?? [])
             ->contains(fn (string $middleware): bool => str_starts_with($middleware, 'api.ability:'));
     }

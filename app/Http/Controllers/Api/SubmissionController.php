@@ -61,7 +61,7 @@ class SubmissionController extends Controller
         $submissions = $query->latest()->paginate($filters['per_page'] ?? 15);
 
         // Load values relationship for each submission
-        $submissions->load('values.field');
+        $submissions->load(['values.field', 'values.submission', 'values.scanResult']);
 
         return SubmissionResource::collection($submissions);
     }
@@ -154,7 +154,7 @@ class SubmissionController extends Controller
                 }
 
                 // Load values for the response
-                $submission->load('values.field');
+                $submission->load(['values.field', 'values.submission', 'values.scanResult']);
 
                 return response()->json([
                     'message' => 'Submission created successfully',
@@ -198,7 +198,7 @@ class SubmissionController extends Controller
         Gate::forUser($apiToken->user)->authorize('view', $submission);
 
         // Load values relationship with fields
-        $submission->load('values.field');
+        $submission->load(['values.field', 'values.submission', 'values.scanResult']);
 
         return new SubmissionResource($submission);
     }

@@ -20,6 +20,7 @@ class FormCategoryResource extends JsonResource
             'id' => $this->id,
             'form_id' => $this->form_id,
             'name' => $this->name,
+            'description' => $this->description,
             'order' => $this->order,
             'fields' => FormFieldResource::collection($this->whenLoaded('fields')),
         ];

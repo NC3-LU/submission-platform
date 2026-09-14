@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 final class ApiTokenEvent extends Model
 {
+    public const ACTIONS = ['created', 'updated', 'rotated', 'revoked', 'used', 'expired'];
+
     public $timestamps = false;
 
     protected $fillable = [

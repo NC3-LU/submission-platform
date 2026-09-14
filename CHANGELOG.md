@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- Form owners and appointed evaluators can export a form's submissions to XLSX, with submission metadata and one column per form field.
+- Token context/self-revocation, lifecycle history and bounded batch revocation APIs (#57, #58, #60).
+- Authorized attachment downloads, independent form duplication and owner-controlled collaborator APIs (#59, #61, #62).
+- Private asynchronous JSON/XLSX exports and opt-in signed webhook management/delivery (#63, #64).
+- Detailed Pandora worker verdicts on authorized submission pages (#49).
+- Browser/accessibility, SQLite/MySQL and container CI checks, plus handover, backup/restore and API documentation.
+
+### Changed
+- Upgrade to Laravel 13 and PHP 8.3+, with Livewire 3.8, PHPUnit 12 and Vite 8.
+- Replace API file-answer storage paths with metadata and authorized URLs; add explicit sharing/export/webhook token abilities.
+- Use plural form access-link routes with temporary deprecated aliases (#65).
+- Rename the default branch to `main` (#47); retain the tested Tailwind 3/PostCSS toolchain.
+
+### Fixed
+- Conditional answers, submission windows, draft privacy, replay protection, immutable submitted form structure and safe file ownership/cleanup.
+- Independent header copies and remapped conditional field IDs when duplicating forms.
+- Keyboard/focus behavior, mobile layouts and submission feedback.
+- Queue/scheduler health, deployment rollback and encrypted backup/restore procedures.
+
+See the [v3.0.0 draft release notes](docs/releases/v3.0.0.md) for compatibility changes and verification. This release is not yet published.
 
 ## [2.1.0] - 2026-07-22
 

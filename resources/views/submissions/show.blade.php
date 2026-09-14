@@ -50,7 +50,7 @@
                                                         && config('services.pandora.block_malicious')
                                                         && $scanStatus !== 'clean';
                                                 @endphp
-                                                <div class="flex items-center gap-2">
+                                                <div class="flex flex-wrap items-center gap-2">
                                                     @if($downloadBlocked)
                                                         <span class="text-gray-600 dark:text-gray-500 font-medium cursor-not-allowed line-through" title="This file cannot be downloaded until it passes the malware scan.">
                                                             {{ basename($field['value']) }}
@@ -64,6 +64,9 @@
                                                         <x-scan-result-badge :scanResult="$scanResult" />
                                                     @endif
                                                 </div>
+                                                @if(config('services.pandora.enabled'))
+                                                    <x-scan-result-details :scanResult="$scanResult" />
+                                                @endif
                                             @else
                                                 <p class="text-gray-600 dark:text-gray-500 italic">No file uploaded</p>
                                             @endif

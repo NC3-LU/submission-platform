@@ -27,6 +27,10 @@ class FormFieldResource extends JsonResource
             'options' => $this->options,
             'validation_rules' => $this->validation_rules,
             'order' => $this->order,
+            'content' => $this->content,
+            'char_limit' => $this->char_limit,
+            'depends_on_field_id' => $this->depends_on_field_id,
+            'depends_on_value' => $this->depends_on_value,
         ];
     }
 }

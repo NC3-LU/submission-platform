@@ -1,0 +1,42 @@
+# API additions and release preparation
+
+Requested after the Laravel 13 remediation was committed and pushed to `dev` (`4dd61e1`). The user added issues #49, #47 and the nine open API issues #57–#65 before the release. The user explicitly chose **leave the release ready for review**: prepare an unpublished draft after implementation and verification; do not publish it.
+
+## Work sequence
+
+- [x] #57 authenticated token context and self-revocation; retain/deprecate `/api/user` compatibly.
+- [x] #58 scoped, filtered and bounded token lifecycle history.
+- [x] #60 atomic bounded batch token revocation, explicit caller preservation and stricter throttling.
+- [x] #65 canonical plural form access-link routes with a documented temporary legacy alias.
+- [x] #49 readable, authorized Pandora verdict details with unchanged scan/download policy.
+- [x] #59 authorized API file downloads and safe file metadata; shared download policy.
+- [x] #61 independent transactional form duplication with managed asset copying.
+- [x] #62 owner-controlled collaborator APIs, explicit sharing ability and audit trail.
+- [x] #63 private asynchronous JSON/XLSX exports with limits, authorization, expiry and audits.
+- [x] #64 opt-in signed webhooks, endpoint ownership, SSRF-safe delivery, bounded retries and audits.
+- [ ] #47 update branch references, merge the verified changes, rename the GitHub default branch to `main`, verify PR targets and CI; document external deployment configuration requirements.
+- [x] Complete API/OpenAPI docs, regression/browser/MySQL/build/audit/container checks and release changelog.
+- [ ] Commit and push verified changes, then prepare an unpublished release draft for the user's review. Do not publish the release.
+
+## Integration notes
+
+- GitHub CI for `dev` commit `4dd61e1` passed every applicable job: SQLite/MySQL, browser/accessibility, frontend, and both container builds (run 34842564604).
+- Latest remote `master` is `397dd7d`. Its only change beyond the audited base is Dependabot's Tailwind 3 → 4 manifest update, without the corresponding PostCSS migration. An isolated build reproduces the failure. Preserve the tested Tailwind 3 toolchain when integrating this release; keep the reason explicit in the merge/changelog.
+- Existing API v1 authentication uses the application's hashed `ApiToken` records and IP/ability middleware. `/api/user` is a separate Sanctum compatibility endpoint; the new context routes must not bypass the established v1 controls or silently remove existing authentication support.
+- Raw issue bodies and the master-build reproduction are saved in `/tmp/submission-platform-release-2026-09-14/` (no production credentials).
+- Use disposable databases/storage and fake external deliveries for tests. No live customer webhook/email/scanner request is part of verification.
+
+## Incremental verification
+
+- Scan detail collection/view and existing scan/download behavior: 31 tests, 93 assertions.
+- API downloads and shared web gate: new file endpoint tests pass; regression suite includes scoped IDs, safe headers, path privacy, warning/block modes.
+- Form duplication plus existing web clone/header behavior: 27 tests, 97 assertions. Conditional field references are remapped; safe managed images are independent; copy failures roll back records and copied files.
+- Collaborator management: 6 tests, 32 assertions (owner/admin sharing authority, bounded membership, audit rollback, no unrelated-account enumeration, ability delegation).
+- Asynchronous exports: 7 tests, 61 assertions (123-row JSON, private XLSX literal strings, policy rechecks, quotas, size limits, expiry and cleanup).
+- Full final verification and release preparation remain pending.
+
+- User clarified production deployment is manual on the server. There is no external branch-triggered pipeline to change. Document server checkout migration to `main`; future application + database migration to Dokploy is separate planned work (`docs/plans/dokploy-migration.md`).
+- Webhook feature/destination/response-limit tests pass. Concurrent MySQL regression reproduced and fixed a webhook quota/account lock inversion using a dedicated quota lock row; batch revocation deletes/audits each target once under concurrent calls. The concurrency probe is added to MySQL CI.
+- Current full SQLite and MySQL suites pass 374 tests / 1,155 assertions (four existing skips), before the two added response-limit unit tests. Four browser/axe workflows pass, including keyboard scan details at desktop/mobile sizes. Composer/npm audits report no vulnerabilities. Final rechecks, container builds and GitHub CI still pending.
+
+- Final local verification: 376 PHP tests, 1,162 SQLite / 1,165 MySQL assertions, four existing skips; standalone MySQL concurrency probe passes; four browser/axe workflows pass; Composer/npm audits clear; PHP formatting and route cache pass; OpenAPI exports without warnings (29 paths, 48 unique operations); Apache/FPM image builds and isolation checks pass.

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\FileCleanup;
+use App\Services\Webhooks;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ class Form extends Model
 
     protected static function booted(): void
     {
+        static::updated(fn (Form $form) => app(Webhooks::class)->formChanged($form));
         static::deleting(function (Form $form) {
             if ($form->header_image && $form->header_image === 'form-headers/'.basename($form->header_image)) {
                 FileCleanup::schedule('public', [$form->header_image]);
@@ -85,6 +87,11 @@ class Form extends Model
     /**
      * Get the submissions associated with the form.
      */
+    public function exports(): HasMany
+    {
+        return $this->hasMany(SubmissionExport::class);
+    }
+
     public function submissions(): HasMany
     {
         return $this->hasMany(Submission::class);

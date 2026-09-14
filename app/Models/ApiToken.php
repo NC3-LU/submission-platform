@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\IpUtils;
 
 class ApiToken extends Model
@@ -28,10 +29,13 @@ class ApiToken extends Model
         'forms:create',
         'forms:update',
         'forms:delete',
+        'forms:share',
         'submissions:read',
         'submissions:create',
         'submissions:update',
         'submissions:delete',
+        'submissions:export',
+        'webhooks:manage',
         'tokens:manage',
     ];
 
@@ -54,10 +58,13 @@ class ApiToken extends Model
         'forms:create',
         'forms:update',
         'forms:delete',
+        'forms:share',
         'submissions:read',
         'submissions:create',
         'submissions:update',
         'submissions:delete',
+        'submissions:export',
+        'webhooks:manage',
     ];
 
     protected $fillable = [
@@ -127,9 +134,27 @@ class ApiToken extends Model
     /**
      * Update the last used timestamp.
      */
-    public function markAsUsed(): bool
+    public function markAsUsed(?string $ipAddress = null): bool
     {
-        return $this->increment('usage_count', 1, ['last_used_at' => now()]) > 0;
+        return DB::transaction(function () use ($ipAddress): bool {
+            $token = static::query()->lockForUpdate()->find($this->id);
+            if (! $token) {
+                return false;
+            }
+            // Per-request metadata already lives in api_logs. Record a new usage session after an idle hour.
+            if ($token->last_used_at === null || $token->last_used_at->lte(now()->subHour())) {
+                ApiTokenEvent::create([
+                    'action' => 'used', 'actor_user_id' => $token->user_id, 'actor_token_id' => $token->id,
+                    'target_user_id' => $token->user_id, 'target_token_id' => $token->id,
+                    'target_token_name' => $token->name, 'target_token_fingerprint' => $token->fingerprint(),
+                    'ip_address' => $ipAddress,
+                ]);
+            }
+            $updated = $token->increment('usage_count', 1, ['last_used_at' => now()]) > 0;
+            $this->setRawAttributes($token->getAttributes(), true);
+
+            return $updated;
+        });
     }
 
     /**

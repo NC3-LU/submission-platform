@@ -76,3 +76,18 @@ test('dashboard, locked forms and keyboard builder operations', async ({ page })
     await page.goto('/admin');
     await accessible(page);
 });
+
+
+test('malware verdict details are readable with keyboard navigation on desktop and mobile', async ({ page }) => {
+    await login(page);
+    for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(`/submissions/forms/${fixture().form}/submissions/${fixture().scanned}`);
+        const details = page.locator('summary').filter({ hasText: 'View scan details' });
+        await details.focus();
+        await page.keyboard.press('Enter');
+        await expect(page.getByText('Synthetic-Test-Signature', { exact: false })).toBeVisible();
+        await expect(page.getByText('Warning — malware detected', { exact: true })).toBeVisible();
+        await accessible(page);
+    }
+});
