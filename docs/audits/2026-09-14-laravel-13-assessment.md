@@ -2,7 +2,7 @@
 
 Assessed **14 September 2026**, against the current working tree including its uncommitted changes.
 
-**Result: technically feasible, with a successful isolated installation and regression trial.** The original project's dependencies and application code remain unchanged. The trial is evidence for an upgrade branch, not a deployed release or a fix for the [application defects](2026-09-14-handover-assessment.md).
+**Result: technically feasible, with a successful isolated installation and regression trial.** The original project's dependencies and application code remain unchanged. The trial is evidence for an upgrade branch, not a deployed release or a fix for the [application defects](2026-09-14-project-assessment.md).
 
 ## Verified target and support
 
@@ -62,7 +62,7 @@ The browser sample retained the same accessibility and form-feedback findings as
 - **Database compatibility:** fix the application's API/database status mismatch and test on MySQL before release. Review data-preserving migrations and all previously deployed pending migrations.
 - **Generated assets and docs:** publish Filament assets matching the installed version, rebuild application assets, address the Scramble model warning, and describe custom bearer authentication in OpenAPI. Resolve the host `public/` bind-mount problem from O1 so the upgrade's assets actually reach production.
 - **Worker deployment:** restart queue workers after deployment and align worker timeout with queue retry timing. Verify serializing and retrying a scan job against the actual database queue and Pandora service.
-- **Dependency ownership:** a cleared audit is time-specific. Keep the scheduled dependency checks and assign someone to act on them after handover.
+- **Dependency ownership:** a cleared audit is time-specific. Keep the scheduled dependency checks and assign someone to act on them throughout maintenance.
 
 The official guide also lists changes to MySQL upserts, custom contracts, manager extensions, queue events, and helper functions. No obvious application use of the listed high-risk custom extension patterns was found in the reviewed source; this is a source-review observation, not blanket compatibility proof. Apply the guide against the final upgrade diff rather than copying a new application skeleton over existing configuration.
 
@@ -72,6 +72,6 @@ The official guide also lists changes to MySQL upserts, custom contracts, manage
 2. Create a dedicated Laravel 13 branch using the candidate requirements. Review dependencies and generated assets; update PHP/runtime documentation. Keep application fixes identifiable in separate commits.
 3. Run the full suite and the new audit regression tests, MySQL tests, API contract checks, and complete browser journeys for each role. Recheck dependency audits and frontend build on the actual CI runtime.
 4. Deploy to staging with production-equivalent proxy, queue, mail, and scanner configuration. Exercise clean/malicious/unavailable scanning, token rotation/revocation, closed forms, and preserved draft sessions.
-5. Rehearse rollback and have the successor perform a deployment from the documented procedure before selecting a production release date.
+5. Rehearse rollback and have an operator perform a deployment from the documented procedure before selecting a production release date.
 
-**Recommendation:** include Laravel 13 in the handover preparation, while prioritizing the confirmed authorization, file ownership, and destructive-deletion defects. The trial removes the main package-compatibility uncertainty; it does not justify skipping staging and restoration checks.
+**Recommendation:** include Laravel 13 in the remediation release, while prioritizing the confirmed authorization, file ownership, and destructive-deletion defects. The trial removes the main package-compatibility uncertainty; it does not justify skipping staging and restoration checks.

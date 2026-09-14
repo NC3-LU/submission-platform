@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-class HandoverRemediationTest extends TestCase
+class RemediationTest extends TestCase
 {
     use RefreshDatabase;
 

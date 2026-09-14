@@ -1,6 +1,6 @@
 # API additions and release preparation
 
-Requested after the Laravel 13 remediation was committed and pushed to `dev` (`4dd61e1`). The user added issues #49, #47 and the nine open API issues #57–#65 before the release. The user explicitly chose **leave the release ready for review**: prepare an unpublished draft after implementation and verification; do not publish it.
+Release scope: the Laravel 13 upgrade, project remediation, issues #49 and #47, and the API additions in #57–#65. Prepare an unpublished release draft for review after implementation and verification.
 
 ## Work sequence
 
@@ -16,7 +16,7 @@ Requested after the Laravel 13 remediation was committed and pushed to `dev` (`4
 - [x] #64 opt-in signed webhooks, endpoint ownership, SSRF-safe delivery, bounded retries and audits.
 - [x] #47 update branch references, merge the verified changes, rename the GitHub default branch to `main`, verify PR targets and CI; document external deployment configuration requirements.
 - [x] Complete API/OpenAPI docs, regression/browser/MySQL/build/audit/container checks and release changelog.
-- [x] Commit and push verified changes, then prepare an unpublished release draft for the user's review. Do not publish the release.
+- [x] Commit and push verified changes, then prepare an unpublished release draft for review.
 
 ## Integration notes
 
@@ -33,11 +33,9 @@ Requested after the Laravel 13 remediation was committed and pushed to `dev` (`4
 - Form duplication plus existing web clone/header behavior: 27 tests, 97 assertions. Conditional field references are remapped; safe managed images are independent; copy failures roll back records and copied files.
 - Collaborator management: 6 tests, 32 assertions (owner/admin sharing authority, bounded membership, audit rollback, no unrelated-account enumeration, ability delegation).
 - Asynchronous exports: 7 tests, 61 assertions (123-row JSON, private XLSX literal strings, policy rechecks, quotas, size limits, expiry and cleanup).
-- Full final verification and release preparation remain pending.
-
-- User clarified production deployment is manual on the server. There is no external branch-triggered pipeline to change. Document server checkout migration to `main`; future application + database migration to Dokploy is separate planned work (`docs/plans/dokploy-migration.md`).
+- Production deployment is manual on the server. There is no external branch-triggered pipeline to change. Server checkout migration to `main` is documented; future application + database migration to Dokploy is separate planned work (`docs/plans/dokploy-migration.md`).
 - Webhook feature/destination/response-limit tests pass. Concurrent MySQL regression reproduced and fixed a webhook quota/account lock inversion using a dedicated quota lock row; batch revocation deletes/audits each target once under concurrent calls. The concurrency probe is added to MySQL CI.
-- Intermediate full SQLite and MySQL suites passed 374 tests / 1,155 assertions (four existing skips), before the two added response-limit unit tests. Four browser/axe workflows pass, including keyboard scan details at desktop/mobile sizes. Composer/npm audits report no vulnerabilities. Final rechecks, container builds and GitHub CI still pending.
+- Intermediate full SQLite and MySQL suites passed 374 tests / 1,155 assertions (four existing skips), before the two added response-limit unit tests. Four browser/axe workflows pass, including keyboard scan details at desktop/mobile sizes. Composer/npm audits report no vulnerabilities.
 
 - Final local verification: 376 PHP tests, 1,162 SQLite / 1,165 MySQL assertions, four existing skips; standalone MySQL concurrency probe passes; four browser/axe workflows pass; Composer/npm audits clear; PHP formatting and route cache pass; OpenAPI exports without warnings (29 paths, 48 unique operations); Apache/FPM image builds and isolation checks pass.
 
@@ -46,5 +44,6 @@ Requested after the Laravel 13 remediation was committed and pushed to `dev` (`4
 - Implemented issues #49 and #57–#65; committed as `6270942`, integrated with the former default branch as `176e97c` without changing the verified tree.
 - Pushed the verified commit to both `dev` and `main`. GitHub renamed the default branch and automatically retargeted open PR #68 to `main`; the old remote branch is gone. Local upstreams and `origin/HEAD` follow the new name. Production deployment remains manual, with the server checkout update documented for its next deployment.
 - GitHub CI passed all applicable jobs on [dev](https://github.com/NC3-LU/submission-platform/actions/runs/34848690034) and [main](https://github.com/NC3-LU/submission-platform/actions/runs/34849007437), including the MySQL concurrency probe. Dependency review is correctly skipped on push. GitHub reports no open dependency alerts after the default-branch update.
-- Prepared the [unpublished v3.0.0 draft](https://github.com/NC3-LU/submission-platform/releases/tag/untagged-0dfff96e45b468b8b0b5) with release notes and `openapi.json`. `draft=true`, `published_at=null`. Publication remains for the user's review; no production deployment or Dokploy migration was performed.
+- Prepared the [unpublished v3.0.0 draft](https://github.com/NC3-LU/submission-platform/releases/tag/untagged-0dfff96e45b468b8b0b5) with release notes and `openapi.json`. Publication remains subject to review; no production deployment or Dokploy migration was performed.
 - Removed the disposable MySQL test container and its anonymous volume. Test logs and build artifacts remain under `/tmp/submission-platform-release-2026-09-14/`; production data/configuration were not used.
+- A later browser CI run caught reduced error-text contrast during the section fade when validation focused a hidden field. A deterministic regression reproduced zero effective opacity at focus; revealed sections and conditional fields now appear immediately. All four browser workflows pass locally with the focus regression in place. Final commit and CI results are recorded in the release draft.

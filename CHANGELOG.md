@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Authorized attachment downloads, independent form duplication and owner-controlled collaborator APIs (#59, #61, #62).
 - Private asynchronous JSON/XLSX exports and opt-in signed webhook management/delivery (#63, #64).
 - Detailed Pandora worker verdicts on authorized submission pages (#49).
-- Browser/accessibility, SQLite/MySQL and container CI checks, plus handover, backup/restore and API documentation.
+- Browser/accessibility, SQLite/MySQL and container CI checks, plus operations, backup/restore and API documentation.
 
 ### Changed
 - Upgrade to Laravel 13 and PHP 8.3+, with Livewire 3.8, PHPUnit 12 and Vite 8.

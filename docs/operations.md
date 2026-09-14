@@ -1,4 +1,4 @@
-# Operations and handover
+# Operations
 
 This release upgrades the application to Laravel 13, PHP 8.3+, Livewire 3.8 and compatible Filament 3/Scramble versions. Use Node 24 LTS for builds. Dependencies are installed from committed lockfiles; production asset publication extracts the actual image assets. See the [official Laravel upgrade guide](https://laravel.com/docs/13.x/upgrade) and [Node support schedule](https://nodejs.org/en/about/previous-releases).
 
@@ -6,7 +6,7 @@ This release upgrades the application to Laravel 13, PHP 8.3+, Livewire 3.8 and 
 
 `docker-compose.yml` runs a self-contained Apache application behind the external `dokploy-network`; create that network before local use. Its optional `pandora` profile includes the scanner stack. `docker-compose.prod.yml` is a standalone production definition with PHP-FPM bound to `127.0.0.1:9000` and host Apache serving the host `public/` directory. Keep the pinned compose project and existing `dbdata`/`storage_data` volume names. Never use `down -v` for an existing environment.
 
-Production host Apache must serve only `public/`, deny access to hidden files and proxy PHP to the loopback FPM endpoint using the container path `/var/www/html/public/index.php`. Verify HTTPS, redirects, request-size limits and cache headers on the actual host. Application `.env` is mounted read-only; `docker-compose.env` supplies compose database/build values. Neither secrets nor runtime storage/caches belong in image layers. Database, mail, encryption and backup keys must live in the organization's secret store, with successor access verified.
+Production host Apache must serve only `public/`, deny access to hidden files and proxy PHP to the loopback FPM endpoint using the container path `/var/www/html/public/index.php`. Verify HTTPS, redirects, request-size limits and cache headers on the actual host. Application `.env` is mounted read-only; `docker-compose.env` supplies compose database/build values. Neither secrets nor runtime storage/caches belong in image layers. Database, mail, encryption and backup keys must live in the organization's secret store, with operator access verified.
 
 Set `APP_DEBUG=false`, the actual `APP_URL`, secure session cookies, explicit trusted hosts and only the real proxy addresses. Proxy trust must match the deployed network so IP restrictions and quotas use the intended client IP. Keep the existing `APP_KEY`: changing it invalidates encrypted application data, sessions and two-factor secrets. Explicit existing cache prefixes and cookie names continue to apply across Laravel 13.
 
@@ -36,7 +36,7 @@ Schedule backups through the approved operations system. Choose the frequency an
 Restore only into fresh, isolated resources for a drill:
 
 ```bash
-export RESTORE_PROJECT=submission-restore-handover
+export RESTORE_PROJECT=submission-restore-review
 export RESTORE_DIR=/protected/new-restore-directory
 export RESTORE_IMAGE=submission-platform:release-apache
 export BACKUP_PASSPHRASE_FILE=/protected/backup-passphrase
@@ -55,22 +55,22 @@ Run `queue:work --tries=3 --sleep=3 --timeout=180 --max-time=3600` and `schedule
 
 Hourly maintenance removes unreferenced temporary uploads older than the configured period (48 hours by default) and retries committed file deletions. Daily maintenance removes only untouched empty drafts older than 30 days and old queue batch metadata. Completed responses, answered drafts and failed jobs are not silently pruned. Investigate failed jobs with `queue:failed`, correct the cause, then retry individual IDs; use `queue:forget ID` only after resolving or deliberately accepting that failure. Do not blindly retry every restored job, which can repeat notifications or external actions.
 
-Monitor disk capacity, oldest queued-job age, failed scans/jobs, scheduler/worker heartbeat, failed deployments, certificate expiry, backup freshness and restore-drill results. Ensure monitoring notifications reach a named successor. `security.txt` must be renewed before its expiry.
+Monitor disk capacity, oldest queued-job age, failed scans/jobs, scheduler/worker heartbeat, failed deployments, certificate expiry, backup freshness and restore-drill results. Ensure monitoring notifications reach the responsible operations contact. `security.txt` must be renewed before its expiry.
 
-## Ownership transfer and departure
+## Account and form ownership
 
-First inventory form owners, assigned evaluators, API-token owners/integrations and infrastructure/secret-store access. Transfer ownership using verified existing successor accounts:
+First inventory form owners, assigned evaluators, API-token owners/integrations and infrastructure/secret-store access. Transfer ownership using verified existing evaluator or administrator accounts:
 
 ```bash
-php artisan app:transfer-form-ownership departing@example.test successor@example.test --dry-run
-php artisan app:transfer-form-ownership departing@example.test successor@example.test
+php artisan app:transfer-form-ownership current-owner@example.test new-owner@example.test --dry-run
+php artisan app:transfer-form-ownership current-owner@example.test new-owner@example.test
 ```
 
-The command preserves forms and answers. Account deletion is blocked while it owns forms, including administrative deletion. Deleting a submitter removes the account link while preserving response contents; this is not automatic erasure of personal data inside answers. Tokens and access assignments require their own review: issue replacement integration credentials to the appropriate long-term owner, verify the integration, then revoke the departing account's credentials and remove obsolete assignments. Never transfer plaintext personal tokens between people.
+The command preserves forms and answers. Account deletion is blocked while it owns forms, including administrative deletion. Deleting a submitter removes the account link while preserving response contents; this is not automatic erasure of personal data inside answers. Tokens and access assignments require their own review: issue replacement integration credentials to the appropriate long-term owner, verify the integration, then revoke the previous owner's credentials and remove obsolete assignments. Never transfer plaintext personal tokens between people.
 
 Forms with responses have immutable question structures. Duplicate the form to create a revised version; deliberately deleting a whole form remains destructive and removes its responses and owned attachments.
 
-Before the handover is complete, assign a product owner, technical maintainer, operations owner and backup contact; verify their repository/CI, deployment, DNS/TLS, mail, scanning, backup and secret-store access. Have a successor perform a real approved backup restore and a staging deploy/rollback. Confirm branch protection and required CI checks on the repository host. The responsible organizational owner must approve form-specific privacy/retention periods and public legal/licence statements. These external ownership and production validations cannot be established by local automated tests.
+Before production rollout, assign a product owner, technical maintainer, operations owner and backup contact; verify their repository/CI, deployment, DNS/TLS, mail, scanning, backup and secret-store access. Have an operator perform a real approved backup restore and a staging deploy/rollback. Confirm branch protection and required CI checks on the repository host. The responsible organizational owner must approve form-specific privacy/retention periods and public legal/licence statements. These external ownership and production validations cannot be established by local automated tests.
 
 ### Repository protection checked on 14 September 2026
 
@@ -96,6 +96,6 @@ git branch -u origin/main main
 git remote set-head origin -a
 ```
 
-Use `main` for production checkout/deployment targets and `dev` for ongoing development. GitHub automatically retargets PRs when its branch-rename operation runs. CI watches `main` and `dev`; the release remains an unpublished draft until review is complete. The maintainer confirmed production deployment is manual on the server; there is no external branch-triggered pipeline to update. Run the clone commands above in the server checkout before the next manual deployment, then verify `git branch --show-current` and its upstream both name `main`. This task does not change the running server. A future move of the application and database to Dokploy is documented in [the migration plan](plans/dokploy-migration.md).
+Use `main` for production checkout/deployment targets and `dev` for ongoing development. GitHub automatically retargets PRs when its branch-rename operation runs. CI watches `main` and `dev`; the release remains an unpublished draft until review is complete. Production deployment is manual on the server; there is no external branch-triggered pipeline to update. Run the clone commands above in the server checkout before the next manual deployment, then verify `git branch --show-current` and its upstream both name `main`. A future move of the application and database to Dokploy is documented in [the migration plan](plans/dokploy-migration.md).
 
 The normal worker processes exports and webhooks on the default queue using `INTEGRATION_QUEUE_CONNECTION=database`. Do not configure a synchronous driver for integration jobs. `app:prune-integration-artifacts` runs hourly; webhook recovery runs every minute. Review failed/stalled jobs and `integration_events` for quota, delivery and export failures. Temporary exports expire after 24 hours; webhook delivery history lasts seven days. Integrations use the private storage disk, and the current export writer requires its local filesystem driver. Keep the private disk outside the public web root. Webhooks default to `WEBHOOKS_ENABLED=false`; follow the signature, deduplication, limits and destination contract in [api.md](api.md) when enabling them.

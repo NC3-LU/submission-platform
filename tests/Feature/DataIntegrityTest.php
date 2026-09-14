@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-class HandoverDataIntegrityTest extends TestCase
+class DataIntegrityTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -26,17 +26,17 @@ class HandoverDataIntegrityTest extends TestCase
         $this->assertDatabaseHas('submissions', ['id' => $submission->id, 'user_id' => null, 'status' => 'submitted']);
     }
 
-    public function test_transfer_command_preserves_form_and_answers_and_allows_departing_owner_deletion(): void
+    public function test_transfer_command_preserves_form_and_answers_and_allows_previous_owner_deletion(): void
     {
         $owner = User::factory()->create(['role' => 'internal_evaluator']);
-        $successor = User::factory()->create(['role' => 'internal_evaluator']);
+        $newOwner = User::factory()->create(['role' => 'internal_evaluator']);
         $form = Form::factory()->create(['user_id' => $owner->id]);
         $submission = Submission::factory()->submitted()->create(['form_id' => $form->id]);
-        $this->artisan('app:transfer-form-ownership', ['from' => $owner->email, 'to' => $successor->email, '--dry-run' => true])->assertSuccessful();
+        $this->artisan('app:transfer-form-ownership', ['from' => $owner->email, 'to' => $newOwner->email, '--dry-run' => true])->assertSuccessful();
         $this->assertEquals($owner->id, $form->fresh()->user_id);
-        $this->artisan('app:transfer-form-ownership', ['from' => $owner->email, 'to' => $successor->email])->assertSuccessful();
+        $this->artisan('app:transfer-form-ownership', ['from' => $owner->email, 'to' => $newOwner->email])->assertSuccessful();
         (new DeleteUser)->delete($owner);
-        $this->assertEquals($successor->id, $form->fresh()->user_id);
+        $this->assertEquals($newOwner->id, $form->fresh()->user_id);
         $this->assertDatabaseHas('submissions', ['id' => $submission->id]);
     }
 

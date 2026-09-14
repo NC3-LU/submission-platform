@@ -9,14 +9,14 @@ Time: 00:00.851, Memory: 66.50 MB
 
 There were 13 failures:
 
-1) Tests\Feature\HandoverAuditProbeTest::test_forged_temp_path_must_not_move_another_submissions_file
+1) Tests\Feature\ProjectAuditProbeTest::test_forged_temp_path_must_not_move_another_submissions_file
 Unable to find a file or directory at path [submissions/01a09f82-fba8-7372-bde9-5bddb623d9bc/audit-secret.pdf].
 Failed asserting that false is true.
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemAdapter.php:135
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:51
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:51
 
-2) Tests\Feature\HandoverAuditProbeTest::test_browser_edit_flag_must_not_bypass_closed_form
+2) Tests\Feature\ProjectAuditProbeTest::test_browser_edit_flag_must_not_bypass_closed_form
 Failed asserting that a row in the table [submissions] does not match the attributes {
     "form_id": 1,
     "status": "submitted"
@@ -30,9 +30,9 @@ Found similar results: [
 ].
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:79
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:60
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:60
 
-3) Tests\Feature\HandoverAuditProbeTest::test_submissions_must_stop_when_open_form_becomes_private
+3) Tests\Feature\ProjectAuditProbeTest::test_submissions_must_stop_when_open_form_becomes_private
 Failed asserting that a row in the table [submissions] does not match the attributes {
     "form_id": 1,
     "status": "submitted"
@@ -46,9 +46,9 @@ Found similar results: [
 ].
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:79
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:69
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:69
 
-4) Tests\Feature\HandoverAuditProbeTest::test_stale_draft_must_not_overwrite_submitted_answers
+4) Tests\Feature\ProjectAuditProbeTest::test_stale_draft_must_not_overwrite_submitted_answers
 Failed asserting that two strings are identical.
 --- Expected
 +++ Actual
@@ -56,9 +56,9 @@ Failed asserting that two strings are identical.
 -'original'
 +'overwritten after submission'
 
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:81
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:81
 
-5) Tests\Feature\HandoverAuditProbeTest::test_required_checkbox_must_have_selection
+5) Tests\Feature\ProjectAuditProbeTest::test_required_checkbox_must_have_selection
 Failed asserting that a row in the table [submissions] does not match the attributes {
     "form_id": 1,
     "status": "submitted"
@@ -72,33 +72,33 @@ Found similar results: [
 ].
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:79
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:100
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:100
 
-6) Tests\Feature\HandoverAuditProbeTest::test_json_export_must_preserve_checkbox_selections
+6) Tests\Feature\ProjectAuditProbeTest::test_json_export_must_preserve_checkbox_selections
 Failed asserting that true is identical to 'Alpha, Beta'.
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/AssertableJsonString.php:243
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:880
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:108
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:108
 
-7) Tests\Feature\HandoverAuditProbeTest::test_api_must_not_reveal_someone_elses_draft
+7) Tests\Feature\ProjectAuditProbeTest::test_api_must_not_reveal_someone_elses_draft
 Expected response status code [403] but received 200.
 Failed asserting that 200 is identical to 403.
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:141
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:120
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:120
 
-8) Tests\Feature\HandoverAuditProbeTest::test_rate_limit_response_must_be_429
+8) Tests\Feature\ProjectAuditProbeTest::test_rate_limit_response_must_be_429
 Expected response status code [429] but received 500.
 Failed asserting that 500 is identical to 429.
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:136
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:136
 
-9) Tests\Feature\HandoverAuditProbeTest::test_deleting_owner_must_not_destroy_others_submissions
+9) Tests\Feature\ProjectAuditProbeTest::test_deleting_owner_must_not_destroy_others_submissions
 Failed asserting that a row in the table [submissions] matches the attributes {
     "id": "01a09f82-fd32-721c-a9aa-e1b558e83762"
 }.
@@ -106,9 +106,9 @@ Failed asserting that a row in the table [submissions] matches the attributes {
 The table is empty.
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:43
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:145
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:145
 
-10) Tests\Feature\HandoverAuditProbeTest::test_deleting_used_field_must_preserve_submitted_answers
+10) Tests\Feature\ProjectAuditProbeTest::test_deleting_used_field_must_preserve_submitted_answers
 Failed asserting that a row in the table [submission_values] matches the attributes {
     "id": 1
 }.
@@ -116,16 +116,16 @@ Failed asserting that a row in the table [submission_values] matches the attribu
 The table is empty.
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:43
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:154
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:154
 
-11) Tests\Feature\HandoverAuditProbeTest::test_api_form_deletion_must_remove_owned_files
+11) Tests\Feature\ProjectAuditProbeTest::test_api_form_deletion_must_remove_owned_files
 Found unexpected file or directory at path [submissions/01a09f82-fd67-72c1-9ecd-5539e1f03fae/audit-orphan.pdf].
 Failed asserting that true is false.
 
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemAdapter.php:187
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:167
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:167
 
-12) Tests\Feature\HandoverAuditProbeTest::test_api_checkbox_must_accept_same_selection_shape_as_browser
+12) Tests\Feature\ProjectAuditProbeTest::test_api_checkbox_must_accept_same_selection_shape_as_browser
 Expected response status code [201] but received 422.
 Failed asserting that 422 is identical to 201.
 
@@ -143,13 +143,13 @@ The following errors occurred during the last request:
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175
 /tmp/submission-platform-audit-2026-09-14/app/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:26
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:174
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:174
 
-13) Tests\Feature\HandoverAuditProbeTest::test_json_export_query_count_should_not_grow_per_submission
+13) Tests\Feature\ProjectAuditProbeTest::test_json_export_query_count_should_not_grow_per_submission
 One submission: 9 SQL queries; five submissions: 21 SQL queries
 Failed asserting that 21 is equal to 12 or is less than 12.
 
-/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/HandoverAuditProbeTest.php:195
+/tmp/submission-platform-audit-2026-09-14/app/tests/Feature/ProjectAuditProbeTest.php:195
 
 FAILURES!
 Tests: 14, Assertions: 20, Failures: 13.

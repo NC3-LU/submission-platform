@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-class HandoverAuditProbeTest extends TestCase
+class ProjectAuditProbeTest extends TestCase
 {
     use RefreshDatabase;
 

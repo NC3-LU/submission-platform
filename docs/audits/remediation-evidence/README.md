@@ -1,6 +1,6 @@
 # Remediation verification — 14 September 2026
 
-These results follow the fixes in [the remediation report](../2026-09-14-remediation.md). They are separate from the historical assessment's failing probes. Tests use synthetic data and isolated storage/databases. No real environment files, backup payloads or production secrets are included.
+These results follow the fixes in [the remediation report](../2026-09-14-remediation.md). They are separate from the historical assessment's failing probes. Tests use synthetic data and isolated storage/databases. No real environment files, backup payloads or production secrets are included. Test and temporary resource labels are normalized in the retained logs; measurements and outcomes are unchanged.
 
 ## Automated checks
 
@@ -18,4 +18,4 @@ These results follow the fixes in [the remediation report](../2026-09-14-remedia
 
 Scripts under `scripts/` and the [operations runbook](../../operations.md) describe replay and prerequisites. Backup encryption passphrases, decrypted snapshots, full private files and disposable database credentials are intentionally excluded. Temporary local resource names and image hashes identify the rehearsal only; they are not deployment targets.
 
-The recorded recovery duration applies to a tiny fixture. It is not a recovery objective or a production-scale benchmark. Browser samples are not a complete accessibility assessment. Live mail/Pandora integration, organizational ownership and a successor's independent restore remain external handover gates.
+The recorded recovery duration applies to a tiny fixture. It is not a recovery objective or a production-scale benchmark. Browser samples are not a complete accessibility assessment. Live mail/Pandora integration, organizational ownership and an independent operator restore remain production readiness checks.

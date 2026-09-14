@@ -5,7 +5,7 @@ $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use App\Models\{User,Form,Submission,ApiToken};
 $owner=User::factory()->create(['name'=>'Audit Maintainer','email'=>'audit-admin@nc3.lu','role'=>'admin','password'=>bcrypt('SyntheticAuditPassword123!')]);
 $user=User::factory()->create(['name'=>'Audit Submitter','email'=>'audit-user@example.test','role'=>'user','password'=>bcrypt('SyntheticAuditPassword123!')]);
-$form=Form::factory()->published()->public()->create(['title'=>'Handover audit — public report','description'=>'Synthetic form for testing submission flow.','user_id'=>$owner->id]);
+$form=Form::factory()->published()->public()->create(['title'=>'Platform audit — public report','description'=>'Synthetic form for testing submission flow.','user_id'=>$owner->id]);
 $cat=$form->categories()->create(['name'=>'Contact details','description'=>'Please provide your contact information.','order'=>1]);
 $f1=$cat->fields()->create(['form_id'=>$form->id,'type'=>'text','label'=>'Your name','required'=>true,'order'=>1]);
 $f2=$cat->fields()->create(['form_id'=>$form->id,'type'=>'select','label'=>'Include details?','options'=>'Yes,No','required'=>false,'order'=>2]);

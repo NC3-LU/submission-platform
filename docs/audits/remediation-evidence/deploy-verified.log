@@ -1,4 +1,4 @@
- Image submission-handover:deployment-verified Building 
+ Image submission-platform-review:deployment-verified Building
 #1 [internal] load local bake definitions
 #1 reading from stdin 593B done
 #1 DONE 0.0s
@@ -138,15 +138,15 @@
 #39 exporting attestation manifest sha256:4dd8ee20be997facc0fdb42ec1ca8837b928048ee29c8d375070dcbf5508b4da 0.1s done
 #39 exporting manifest list sha256:0c69db663fd233d392166b6f8bb08454b9340d813fab9bbc90777d326c2b6745
 #39 exporting manifest list sha256:0c69db663fd233d392166b6f8bb08454b9340d813fab9bbc90777d326c2b6745 0.1s done
-#39 naming to docker.io/library/submission-handover:deployment-verified
-#39 naming to docker.io/library/submission-handover:deployment-verified 0.0s done
-#39 unpacking to docker.io/library/submission-handover:deployment-verified
-#39 unpacking to docker.io/library/submission-handover:deployment-verified 3.2s done
+#39 naming to docker.io/library/submission-platform-review:deployment-verified
+#39 naming to docker.io/library/submission-platform-review:deployment-verified 0.0s done
+#39 unpacking to docker.io/library/submission-platform-review:deployment-verified
+#39 unpacking to docker.io/library/submission-platform-review:deployment-verified 3.2s done
 #39 DONE 7.5s
 
 #40 resolving provenance for metadata file
 #40 DONE 0.0s
- Image submission-handover:deployment-verified Built 
+ Image submission-platform-review:deployment-verified Built
 Rollback image: sha256:ddb3244a697ef9a9a5c8794aff5f4ac4a0ff0a400d6b6a26e159c92ea10994de
 
    INFO  Maintenance mode options updated.  
@@ -186,7 +186,7 @@ Published and verified assets from the release image.
 
    INFO  Application is now live.  
 
-Deployment verified. Release image: submission-handover:deployment-verified; rollback image: sha256:ddb3244a697ef9a9a5c8794aff5f4ac4a0ff0a400d6b6a26e159c92ea10994de
+Deployment verified. Release image: submission-platform-review:deployment-verified; rollback image: sha256:ddb3244a697ef9a9a5c8794aff5f4ac4a0ff0a400d6b6a26e159c92ea10994de
 real 91.02
 user 1.40
 sys 1.16

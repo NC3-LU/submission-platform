@@ -42,10 +42,22 @@ test('conditional fields, validation focus, checkbox selections and receipt', as
     await page.getByRole('button', { name: 'Next', exact: true }).click();
     await page.getByLabel('Report details', { exact: false }).fill('Synthetic browser report');
     await page.getByLabel('Security', { exact: true }).check();
+    await page.locator(`#field_${seed.name_field}`).evaluate(field => {
+        window.focusedFieldOpacity = new Promise(resolve => {
+            field.addEventListener('focus', () => requestAnimationFrame(() => {
+                let opacity = 1;
+                for (let node = field; node; node = node.parentElement) {
+                    opacity *= Number(getComputedStyle(node).opacity);
+                }
+                resolve(opacity);
+            }), { once: true });
+        });
+    });
     await page.getByRole('button', { name: 'Submit', exact: true }).click();
     await expect(page.locator(`#field_${seed.name_field}`)).toBeVisible();
     await expect(page.locator(`#field_${seed.name_field}`)).toBeFocused();
     await expect(page.getByRole('alert')).toContainText('Your name');
+    expect(await page.evaluate(() => window.focusedFieldOpacity), 'The invalid field must be fully visible when focused').toBe(1);
     await accessible(page);
     await page.locator(`#field_${seed.name_field}`).fill('Browser submitter');
     await page.getByRole('button', { name: 'Next', exact: true }).click();

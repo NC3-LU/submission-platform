@@ -1,6 +1,6 @@
-# Handover remediation and Laravel 13 upgrade
+# Project remediation and Laravel 13 upgrade
 
-**14 September 2026 — local implementation and verification.** This follows the [original assessment](2026-09-14-handover-assessment.md). Historical assessment files describe the earlier state and remain unchanged. The existing uncommitted API/security work was preserved. No production database, deployment or real application environment file was changed.
+**14 September 2026 — local implementation and verification.** This follows the [original assessment](2026-09-14-project-assessment.md). Historical assessment files describe the earlier state. The existing uncommitted API/security work was preserved. No production database, deployment or real application environment file was changed.
 
 The application now uses **Laravel 13.31.0**, PHP **8.3+**, Livewire **3.8.8**, Scramble **0.13.43**, PHPUnit **12.5.35** and Vite **8.3.0**. Filament stays on the compatible 3.x line. CI and Docker use Node 24; local browser/build verification used Node 26.8.1. Dependency lockfiles are updated, and Composer/npm report no known advisories as of this check. See the [Laravel 13 upgrade guide](https://laravel.com/docs/13.x/upgrade).
 
@@ -45,7 +45,7 @@ The application now uses **Laravel 13.31.0**, PHP **8.3+**, Livewire **3.8.8**, 
 
 The four existing skips are three disabled Jetstream API-token feature tests and the registration-disabled branch while registration is enabled. The custom API-token tests run. No coverage percentage, screen-reader certification, cross-browser guarantee or realistic-load result is claimed.
 
-Reproducible browser fixtures and checks are in `tests/Browser/`, `scripts/browser-server.sh` and `playwright.config.js`. Retained verification logs are in [remediation-evidence](remediation-evidence/README.md). The original audit's failing probes have become passing normal tests in `tests/Feature/HandoverRemediationTest.php`, with additional data-integrity, contract, recovery and scanner coverage.
+Reproducible browser fixtures and checks are in `tests/Browser/`, `scripts/browser-server.sh` and `playwright.config.js`. Retained verification logs are in [remediation-evidence](remediation-evidence/README.md). The original audit's failing probes have become passing normal tests in `tests/Feature/RemediationTest.php`, with additional data-integrity, contract, recovery and scanner coverage.
 
 ## Release behavior to review
 
@@ -57,15 +57,15 @@ Use the [operations runbook](../operations.md) for deployment, backup, rollback 
 - Backups briefly stop the HTTP/queue/scheduler services for consistency. Full deployment health rejects unresolved failed jobs and stale worker/scheduler heartbeats. Review these operational changes before rollout.
 - Two generated `bootstrap/cache` files are staged for removal from version control; their local generated copies remain ignored. Other changes remain available for normal review and commit.
 
-## External handover gates
+## Production readiness checks
 
 These are not marked complete by local code/tests:
 
 1. Merge/release the reviewed changes and run CI on GitHub. After the new checks exist, enable the proposed [branch protection](../branch-protection.json). A read-only API check found `master` unprotected and the only visible ruleset disabled.
-2. Have the successor deploy and roll back on the actual staging topology, verify host Apache/FPM routing, HTTPS, trusted hosts/proxies, secure cookies and production-sized migrations.
+2. Have an operator deploy and roll back on the actual staging topology, verify host Apache/FPM routing, HTTPS, trusted hosts/proxies, secure cookies and production-sized migrations.
 3. Restore a real approved backup independently, including private files, public images and encryption keys. Agree recovery time/data-loss targets and verify off-host copies and decryption-secret access.
 4. Demonstrate real mail delivery and Pandora clean/malicious/unavailable outcomes on controlled staging, including queue retries, download blocking and operator alerts. Local scanner tests use HTTP/notification fakes.
 5. Assign product, technical, operations and backup owners; transfer forms and integration credentials; verify repository/hosting/DNS/TLS/mail/scanner/secret-store access and monitoring destinations.
 6. Obtain organizational approval for privacy/retention and licensing statements. Complete manual accessibility and representative load checks appropriate to actual usage.
 
-The departure date remains planning context. Local remediation is ready for review; these operational and organizational gates determine final handover readiness.
+Local remediation is ready for review; the operational and organizational checks above determine production readiness.

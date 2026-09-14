@@ -4,7 +4,7 @@
 
 The NC3 Submission Platform is a form management system built by the Luxembourg House of Cybersecurity for the secure submission and handling of structured reports. It combines a no-code form builder, flexible access controls, malware scanning of uploads, collaborative review workflows and a REST API.
 
-See the [CHANGELOG](CHANGELOG.md) for release history, [API contract](docs/api.md), and [handover remediation](docs/plans/2026-09-14-remediation.md).
+See the [CHANGELOG](CHANGELOG.md) for release history, [API contract](docs/api.md), and [project remediation](docs/plans/2026-09-14-remediation.md).
 
 ## Key Features
 
@@ -17,7 +17,7 @@ See the [CHANGELOG](CHANGELOG.md) for release history, [API contract](docs/api.m
 - Availability windows (`available_from` / `available_until`) so a form only accepts submissions within a period
 - Authenticated drafts and autosave; guest responses persist only on submission
 - Question structure locks once responses exist; duplicate a form to revise it
-- CLI ownership transfer preserves forms and responses when maintainers leave
+- CLI ownership transfer preserves forms and responses when account ownership changes
 - Custom workflow support [WIP]
 
 ### Access Control
@@ -88,7 +88,7 @@ docker network create dokploy-network  # Once, for the Dokploy compose topology
 docker compose up -d --build          # MySQL + Apache application
 ```
 
-Production uses `docker-compose.prod.yml` with host Apache and PHP-FPM. Read [operations and handover](docs/operations.md) before running `scripts/deploy.sh`; an encrypted backup and health URL are required.
+Production uses `docker-compose.prod.yml` with host Apache and PHP-FPM. Read [operations](docs/operations.md) before running `scripts/deploy.sh`; an encrypted backup and health URL are required.
 
 ### Pandora Configuration (Optional)
 

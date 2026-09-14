@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class TransferFormOwnership extends Command
 {
-    protected $signature = 'app:transfer-form-ownership {from : Departing owner email} {to : Successor email} {--dry-run : Show the forms without changing ownership}';
+    protected $signature = 'app:transfer-form-ownership {from : Current owner email} {to : New owner email} {--dry-run : Show the forms without changing ownership}';
 
     protected $description = 'Transfer all forms to a verified evaluator or administrator while preserving responses';
 
@@ -18,7 +18,7 @@ class TransferFormOwnership extends Command
             $from = User::where('email', $this->argument('from'))->lockForUpdate()->first();
             $to = User::where('email', $this->argument('to'))->lockForUpdate()->first();
             if (! $from || ! $to || $from->is($to) || ! $to->hasVerifiedEmail() || ! in_array($to->role, ['admin', 'internal_evaluator', 'external_evaluator'])) {
-                $this->error('Choose two distinct existing accounts; the successor must be a verified evaluator or administrator.');
+                $this->error('Choose two distinct existing accounts; the new owner must be a verified evaluator or administrator.');
 
                 return self::FAILURE;
             }
@@ -29,7 +29,7 @@ class TransferFormOwnership extends Command
                     $form->update(['user_id' => $to->id]);
                 }
             }
-            $this->info($forms->count().($this->option('dry-run') ? ' forms would be transferred.' : ' forms transferred. Review and revoke the departing account’s API tokens and access before deleting it.'));
+            $this->info($forms->count().($this->option('dry-run') ? ' forms would be transferred.' : ' forms transferred. Review and revoke the previous owner’s API tokens and access before deleting it.'));
 
             return self::SUCCESS;
         });

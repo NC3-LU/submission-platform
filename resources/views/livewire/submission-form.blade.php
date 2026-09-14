@@ -118,11 +118,9 @@
     <div wire:offline role="status" class="mb-4 rounded-lg bg-amber-50 p-3 text-amber-900">You are offline. Keep this page open; saving and submitting will work after the connection returns.</div>
 
     <!-- Form Fields -->
+    {{-- Keep revealed fields fully visible when validation moves keyboard focus. --}}
     @foreach($form->categories as $index => $category)
         <div x-show="$wire.currentStep === {{ $index + 1 }}"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
              class="space-y-5"
              wire:key="submission-category-{{ $category->id }}">
             @foreach($category->fields as $field)
@@ -132,9 +130,6 @@
                 <div wire:key="submission-field-{{ $field->id }}"
                      @if($field->depends_on_field_id)
                          x-show="visible({{ $field->id }})"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100"
                      @endif
                 >
                 @if($field->type === 'header')

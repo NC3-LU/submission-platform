@@ -3,8 +3,8 @@ Running 3 tests using 1 worker
 
 (node:3886410) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 tests/Browser/handover.spec.js:19:1 › public pages and form remain accessible on desktop and mobile (16.1s)
-  ✓  2 tests/Browser/handover.spec.js:36:1 › conditional fields, validation focus, checkbox selections and receipt (2.7s)
-  ✓  3 tests/Browser/handover.spec.js:57:1 › dashboard, locked forms and keyboard builder operations (4.8s)
+  ✓  1 tests/Browser/workflows.spec.js:19:1 › public pages and form remain accessible on desktop and mobile (16.1s)
+  ✓  2 tests/Browser/workflows.spec.js:36:1 › conditional fields, validation focus, checkbox selections and receipt (2.7s)
+  ✓  3 tests/Browser/workflows.spec.js:57:1 › dashboard, locked forms and keyboard builder operations (4.8s)
 
   3 passed (35.4s)

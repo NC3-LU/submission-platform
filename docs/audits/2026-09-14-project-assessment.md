@@ -1,10 +1,10 @@
-# Submission Platform: handover assessment
+# Submission Platform: project assessment
 
-Assessment date: **14 September 2026**. Departure context: **31 October 2026**.
+Assessment date: **14 September 2026**.
 
-**Verdict: a useful, tested application with several security and data-integrity defects that should be resolved before handover.** A rewrite is not indicated. Protect stored submissions, make authorization consistent, and prove recovery and deployment before spending time on architectural restructuring.
+**Verdict: a useful, tested application with several security and data-integrity defects that should be resolved before the next release.** A rewrite is not indicated. Protect stored submissions, make authorization consistent, and prove recovery and deployment before spending time on architectural restructuring.
 
-**Offboarding dependency:** transfer form ownership before deleting the departing maintainer's application account. Account deletion currently cascades to owned forms and other users' submissions (D1).
+**Account deletion dependency:** transfer form ownership before deleting an owner account. Account deletion currently cascades to owned forms and other users' submissions (D1).
 
 The [Laravel 13 assessment](2026-09-14-laravel-13-assessment.md) includes a successful isolated upgrade trial. It does not replace the fixes below.
 
@@ -30,7 +30,7 @@ Browser checks used Chromium at 1440×1000 and a 390×844 mobile viewport. Seven
 | Performance | Partly assessed | Small frontend bundles and streamed exports; measured query amplification in JSON export. No capacity claim. |
 | Tests / CI | Good foundation, important gaps | 255 tests, 601 assertions, four skips; no failing existing tests. SQLite-only CI misses production-specific contracts. |
 | Deployment / operations | Needs rehearsal | Production asset delivery, migration failure behavior, queues, restoration, and monitoring need verification. |
-| Documentation / ownership | Incomplete for handover | Setup and feature documentation exist; ownership transfer and operations runbooks are missing. |
+| Documentation / ownership | Incomplete for operations | Setup and feature documentation exist; ownership transfer and operations runbooks are missing. |
 | Framework lifecycle | Upgrade feasible | Laravel 13.31.0 trial passes existing suite and sampled browser checks; see separate assessment. |
 
 ## Verification results
@@ -56,7 +56,7 @@ Evidence and replay instructions are in [evidence/README.md](evidence/README.md)
 
 ## Priority findings
 
-Priority indicates recommended sequencing, not a formal CVSS score. **P0:** address immediately. **P1:** resolve before handover. **P2:** schedule during handover preparation, with an owner for anything deferred.
+Priority indicates recommended sequencing, not a formal CVSS score. **P0:** address immediately. **P1:** resolve before the next release. **P2:** schedule during release preparation, with an owner for anything deferred.
 
 ### S1 · P0 · Forged upload paths can move another submission's file
 
@@ -80,7 +80,7 @@ The synthetic guest probe submitted a path beginning with `temp-submissions/../s
 
 **Reproduced.** [DeleteUser.php](../../app/Actions/Jetstream/DeleteUser.php#L16) directly deletes the user. The [forms foreign key](../../database/migrations/2024_10_08_141558_create_forms_table.php#L25) cascades deletion through forms and submissions. The admin editor also exposes a user delete action. There is no documented ownership-transfer process.
 
-**Fix / acceptance:** implement and rehearse ownership transfer or deactivation before offboarding; block destructive deletion while the account owns retained records. Verify another maintainer can administer transferred forms and tokens and that submission counts, values, files, and scan records remain intact. Address account deletion through both self-service and admin paths.
+**Fix / acceptance:** implement and rehearse ownership transfer or deactivation before deleting an account; block destructive deletion while the account owns retained records. Verify another maintainer can administer transferred forms and tokens and that submission counts, values, files, and scan records remain intact. Address account deletion through both self-service and admin paths.
 
 ### D2 · P1 · Editing a used form can destroy historical answers
 
@@ -108,11 +108,11 @@ Reachability varies: form descriptions use the application's escaping Markdown h
 
 **Fix / acceptance:** define one versioned release artifact and explicitly deliver matching public assets to the host, or serve them from the built image. Rehearse deployment from a clean checkout and verify the rendered manifest, CSS/JS responses, and application revision agree. Include the host Apache/FastCGI configuration in the runbook.
 
-### O2 · P1 · Recovery cannot be handed over from the repository alone
+### O2 · P1 · Recovery is not established by repository documentation alone
 
 **Documentation and configuration gap; existing external backups may exist.** The deployment script tells operators to restore from backup but supplies neither a backup procedure nor a tested restore/rollback procedure. The [entrypoint](../../docker/entrypoint.sh#L49) also allows migration failure to continue; the deployment script subsequently retries migration, but a direct container restart can run an outdated schema. `/up` is application liveness, with no additional database, queue, or scanner health listeners found.
 
-**Fix / acceptance:** a successor must independently restore a disposable environment from a real approved backup, including DB, private files, public header images, and the relevant encryption key. Record recovery time and tolerated data loss, backup locations/access, application version, integrity checks, and rollback steps. Verify failed migrations and broken dependencies fail a deployment health gate. Do not treat preservation of Docker volume names as backup evidence.
+**Fix / acceptance:** an operator must independently restore a disposable environment from a real approved backup, including DB, private files, public header images, and the relevant encryption key. Record recovery time and tolerated data loss, backup locations/access, application version, integrity checks, and rollback steps. Verify failed migrations and broken dependencies fail a deployment health gate. Do not treat preservation of Docker volume names as backup evidence.
 
 ### S5 · P1 · Docker build context can include runtime data
 
@@ -185,7 +185,7 @@ The only registered schedule is `inspire`. Empty-draft pruning exists as a manua
 
 ### M1 · P2 · API documentation and operational guidance need consolidation
 
-The generated OpenAPI document has no bearer security scheme despite the custom authentication middleware. Scramble 0.13 reports that `SubmissionValueResource` does not declare its model. README's Vite 5 description differs from the Vite 8 lock; Docker instructions omit the external network/host setup needed by the supplied deployments. Architectural notes refer to removed workflow components. The README appropriately marks custom workflows as work in progress; they should not become an implicit handover commitment.
+The generated OpenAPI document has no bearer security scheme despite the custom authentication middleware. Scramble 0.13 reports that `SubmissionValueResource` does not declare its model. README's Vite 5 description differs from the Vite 8 lock; Docker instructions omit the external network/host setup needed by the supplied deployments. Architectural notes refer to removed workflow components. The README appropriately marks custom workflows as work in progress; they should not become an implicit release commitment.
 
 The privacy document starts by describing `lhc.lu`, contains generic retention language, and does not clearly describe this platform's report/upload/scanner lifecycle. `composer.json` still carries skeleton MIT metadata while the repository license is AGPL-3.0. `public/.well-known/security.txt` expired on 31 December 2025. These are documentation/policy review items, not findings of legal noncompliance.
 
@@ -206,24 +206,24 @@ Existing CI has pinned action revisions, formatting, dependency review, PHP test
 - Responsive form rendering, working conditional select visibility, useful field grouping, upload indicators, and explicit destructive-action confirmations.
 - Streamed/chunked exports, spreadsheet formula protection, pinned production volume names, and building images before stopping the current deployment.
 
-## Suggested remediation and handover sequence
+## Suggested remediation sequence
 
-This is an ordering proposal using 31 October as context, not a fixed effort estimate.
+This sequence prioritizes data integrity, security and operational readiness.
 
 1. **Protect records and close access defects:** S1, S2, D1, D2, S3. Agree the ownership/status/permission matrix before changing behavior.
 2. **Establish a reproducible release:** settle and commit the existing working changes; address S4, S5, O1, and D3. Apply dependency/security fixes on a reviewable branch. The Laravel 13 trial provides a feasible candidate.
 3. **Restore correct user workflows:** checkbox round trips, API throttling and cleanup, previews, actionable errors, and accessibility. Add the corresponding regression journeys.
 4. **Prove operation and recovery:** restore from backup, deploy and roll back on staging, test real mail/scanning/queue failures, and document the result.
-5. **Have the successor operate it:** a maintainer unfamiliar with the implementation should set it up, publish a form, process a report, diagnose a failed scan, deploy, and restore using only the documentation.
+5. **Validate the operating instructions:** a maintainer unfamiliar with the implementation should set it up, publish a form, process a report, diagnose a failed scan, deploy, and restore using only the documentation.
 
-Avoid using the final handover period for a simultaneous Filament/Livewire major rewrite or unfinished workflow feature expansion. Separate small domain services for authorization, field validation, persistence, and cleanup where that directly removes the duplicated behavior found here.
+Avoid combining remediation with a Filament/Livewire major rewrite or unfinished workflow feature expansion. Separate small domain services for authorization, field validation, persistence, and cleanup where that directly removes the duplicated behavior found here.
 
-## Handover acceptance checklist
+## Release acceptance checklist
 
 - [ ] Named product owner, technical maintainer, operations contact, and backup maintainers; remaining findings have owners and accepted deadlines.
 - [ ] Role × form visibility × assignment × submission status matrix agreed and enforced across API, Livewire, downloads, and exports.
 - [ ] P0/P1 defects resolved or explicitly accepted by the accountable owner with a documented mitigation.
-- [ ] Departing account's forms and integration ownership transferred; account/session/token revocation rehearsed without deleting retained reports.
+- [ ] Account and integration ownership changes preserve data; account/session/token revocation rehearsed without deleting retained reports.
 - [ ] Current code, new migrations, configuration examples, and tests committed; a clean clone reproduces the release.
 - [ ] MySQL fresh install and upgrade from representative data pass; schema changes preserve historical answers/statuses.
 - [ ] Core browser journeys pass for guest, submitter, evaluator, form owner, and administrator, including denied actions and mobile/keyboard paths.
@@ -232,6 +232,6 @@ Avoid using the final handover period for a simultaneous Filament/Livewire major
 - [ ] Production release has matching assets and healthy app/database/queue/scanner checks; proxy, HTTPS, secure cookies, and trusted hosts/proxies are verified in deployment.
 - [ ] Backup and restore have been independently exercised, including attachments, public images, and encryption keys; recovery time and data-loss tolerance are recorded.
 - [ ] Monitoring, failure notification destinations, queue retry, retention, incident response, and rollback procedures have named owners.
-- [ ] Repository, hosting, DNS, certificates, SMTP, Pandora, CI credentials, service accounts, and dependency alerts no longer depend on one departing employee.
+- [ ] Repository, hosting, DNS, certificates, SMTP, Pandora, CI credentials, service accounts, and dependency alerts have documented organizational owners and backup contacts.
 - [ ] Privacy/retention statements, security contact expiry, API docs, known limitations, and licensing metadata are reviewed by the relevant owners.
-- [ ] Successor completes a documented operating rehearsal; unresolved production assumptions above are closed with evidence.
+- [ ] An operator completes a documented operating rehearsal; unresolved production assumptions above are closed with evidence.

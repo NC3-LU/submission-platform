@@ -1,4 +1,4 @@
- Image submission-handover:deployment-verified Building 
+ Image submission-platform-review:deployment-verified Building
 #1 [internal] load local bake definitions
 #1 reading from stdin 593B done
 #1 DONE 0.0s
@@ -197,14 +197,14 @@
 #39 exporting attestation manifest sha256:034fe7c5fc49ad9ee112169d38e2434cfcc56baa474f1cbcc8cc1b39867864b3 0.1s done
 #39 exporting manifest list sha256:2cb0f070e364843b912220131e4396fe0372b8028b6b2ee870066333e715043f
 #39 exporting manifest list sha256:2cb0f070e364843b912220131e4396fe0372b8028b6b2ee870066333e715043f 0.1s done
-#39 naming to docker.io/library/submission-handover:deployment-verified done
-#39 unpacking to docker.io/library/submission-handover:deployment-verified
-#39 unpacking to docker.io/library/submission-handover:deployment-verified 3.9s done
+#39 naming to docker.io/library/submission-platform-review:deployment-verified done
+#39 unpacking to docker.io/library/submission-platform-review:deployment-verified
+#39 unpacking to docker.io/library/submission-platform-review:deployment-verified 3.9s done
 #39 DONE 7.5s
 
 #40 resolving provenance for metadata file
 #40 DONE 0.0s
- Image submission-handover:deployment-verified Built 
+ Image submission-platform-review:deployment-verified Built
 Rollback image: submission-platform:pre-deploy-20260914T120731Z
 
    INFO  Application is now in maintenance mode.  
@@ -244,7 +244,7 @@ Published and verified assets from the release image.
    INFO  Application is now live.  
 
 curl: (56) Recv failure: Connection reset by peer
-Deployment verified. Release image: submission-handover:deployment-verified; rollback image: submission-platform:pre-deploy-20260914T120731Z
+Deployment verified. Release image: submission-platform-review:deployment-verified; rollback image: submission-platform:pre-deploy-20260914T120731Z
 real 90.59
 user 1.37
 sys 1.17
