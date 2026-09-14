@@ -5,6 +5,10 @@ source scripts/compose-common.sh
 : "${BACKUP_DIR:?Set BACKUP_DIR to a protected directory outside the web/project root}"
 : "${BACKUP_PASSPHRASE_FILE:?Set BACKUP_PASSPHRASE_FILE to a protected file containing the backup encryption passphrase}"
 command -v gpg >/dev/null
+[[ -f "$BACKUP_PASSPHRASE_FILE" && -r "$BACKUP_PASSPHRASE_FILE" && -s "$BACKUP_PASSPHRASE_FILE" ]] || {
+    echo 'Backup encryption requires a readable, non-empty passphrase file. Services were not changed.' >&2
+    exit 1
+}
 BACKUP_DIR=$(realpath -m "$BACKUP_DIR")
 case "$BACKUP_DIR/" in "$(pwd -P)/"*) echo 'Backups must be outside the project/web root.' >&2; exit 1;; esac
 mkdir -p "$BACKUP_DIR"

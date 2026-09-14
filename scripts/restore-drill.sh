@@ -37,8 +37,9 @@ rm "$RESTORE_DIR/snapshot.tar"
 (cd "$RESTORE_DIR" && sha256sum --check SHA256SUMS)
 restore_password=$(openssl rand -hex 24)
 printf 'MYSQL_ROOT_PASSWORD=%s\nMYSQL_DATABASE=restored\n' "$restore_password" > "$RESTORE_DIR/mysql.env"
-# A dedicated bridge permits the loopback-only HTTP port used for verification.
-docker network create "$RESTORE_PROJECT" >/dev/null
+# Restored code and data must not reach production services or external receivers.
+# The Docker host can still access the private container address for verification.
+docker network create --internal "$RESTORE_PROJECT" >/dev/null
 docker volume create "${RESTORE_PROJECT}-db" >/dev/null
 docker volume create "${RESTORE_PROJECT}-storage" >/dev/null
 docker run -d --name "${RESTORE_PROJECT}-db" --network "$RESTORE_PROJECT" --env-file "$RESTORE_DIR/mysql.env" -v "${RESTORE_PROJECT}-db:/var/lib/mysql" mysql:8.0 >/dev/null
@@ -54,36 +55,51 @@ tar --no-same-owner -xzf "$RESTORE_DIR/public.tar.gz" -C "$RESTORE_DIR/public"
 find "$RESTORE_DIR/public" -type d -exec chmod 755 {} +
 find "$RESTORE_DIR/public" -type f -exec chmod 644 {} +
 docker run --rm --entrypoint tar -v "${RESTORE_PROJECT}-storage:/restore" -v "$RESTORE_DIR:/snapshot:ro" "$RESTORE_IMAGE" -xzf /snapshot/storage.tar.gz -C /restore
-cp "$RESTORE_DIR/app.env" "$RESTORE_DIR/isolated.env"
-cat >> "$RESTORE_DIR/isolated.env" <<EOF
-
+# Mount the original .env for Laravel to parse quoted values such as APP_KEY.
+# Explicit Docker environment values override it, including URL-based connections.
+cat > "$RESTORE_DIR/isolated.env" <<EOF
 APP_ENV=staging
 APP_URL=http://localhost
 APP_DEBUG=false
+APP_MAINTENANCE_DRIVER=file
 DB_CONNECTION=mysql
+DB_URL=
+DB_SOCKET=
 DB_HOST=${RESTORE_PROJECT}-db
 DB_PORT=3306
 DB_DATABASE=restored
 DB_USERNAME=root
 DB_PASSWORD=$restore_password
+MYSQL_ATTR_SSL_CA=
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=database
+DB_QUEUE_CONNECTION=mysql
+INTEGRATION_QUEUE_CONNECTION=database
+QUEUE_FAILED_DRIVER=database-uuids
+FILESYSTEM_DISK=local
+LOG_CHANNEL=single
 MAIL_MAILER=log
+MAIL_LOG_CHANNEL=single
 PANDORA_ENABLED=false
+WEBHOOKS_ENABLED=false
 SESSION_SECURE_COOKIE=false
 TRUSTED_HOSTS=
 TRUSTED_PROXIES=
 RUN_MIGRATIONS=false
 EOF
-app_options=(--network "$RESTORE_PROJECT" --env-file "$RESTORE_DIR/isolated.env" -v "${RESTORE_PROJECT}-storage:/var/www/html/storage" -v "$RESTORE_DIR/public:/var/www/html/public" -v "$RESTORE_DIR/public/storage:/var/www/html/storage/app/public" -v "$RESTORE_DIR/data-manifest.json:/snapshot-manifest.json:ro")
+app_options=(--network "$RESTORE_PROJECT" --env-file "$RESTORE_DIR/isolated.env" -v "$RESTORE_DIR/app.env:/var/www/html/.env:ro" -v "${RESTORE_PROJECT}-storage:/var/www/html/storage" -v "$RESTORE_DIR/public:/var/www/html/public" -v "$RESTORE_DIR/public/storage:/var/www/html/storage/app/public" -v "$RESTORE_DIR/data-manifest.json:/snapshot-manifest.json:ro")
 # The archive contains durable app data, not runtime framework directories.
 docker run --rm "${app_options[@]}" --entrypoint sh "$RESTORE_IMAGE" -c 'mkdir -p storage/framework/cache/data storage/framework/views storage/framework/sessions storage/logs'
 docker run --rm "${app_options[@]}" --entrypoint php "$RESTORE_IMAGE" artisan migrate --force
 docker run --rm "${app_options[@]}" --entrypoint php "$RESTORE_IMAGE" artisan app:data-manifest --verify=/snapshot-manifest.json
-docker run -d --name "${RESTORE_PROJECT}-app" "${app_options[@]}" -p 127.0.0.1::80 "$RESTORE_IMAGE" >/dev/null
-restore_address=$(docker port "${RESTORE_PROJECT}-app" 80)
+docker run -d --name "${RESTORE_PROJECT}-app" "${app_options[@]}" "$RESTORE_IMAGE" >/dev/null
+restore_address=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${RESTORE_PROJECT}-app"):80
 for attempt in {1..60}; do
     if curl --fail --silent --max-time 5 "http://$restore_address/up" >/dev/null; then break; fi
     [[ $attempt != 60 ]] || { echo 'Restore application did not become ready.' >&2; exit 1; }
     sleep 2
 done
 echo "Restore integrity and HTTP readiness verified: http://$restore_address"
+echo 'This address is private to the Docker host/network. Use an SSH tunnel for remote browser verification.'
 # Keep the resources for manual login/download verification. Cleanup commands are in docs/operations.md.
