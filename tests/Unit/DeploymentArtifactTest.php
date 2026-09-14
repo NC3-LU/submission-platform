@@ -29,6 +29,8 @@ class DeploymentArtifactTest extends TestCase
 #!/usr/bin/env python3
 import os, pathlib, shutil, subprocess, sys
 args = sys.argv[1:]
+if args[0] == 'compose':
+    args = args[5:]
 root = pathlib.Path(os.environ['ARTIFACT_TEST_ROOT'])
 if args[0] == 'create':
     print('synthetic-container')
@@ -44,6 +46,8 @@ elif args[0] == 'run':
 elif args[0] == 'images':
     print('[]')
 elif args[0] == 'exec' and 'sh' in args:
+    if 'MYSQL_ROOT_PASSWORD' in args[-1]:
+        sys.exit(78)
     print('synthetic SQL')
 PY);
         file_put_contents($this->root.'/bin/gpg', <<<'PY'
@@ -87,7 +91,7 @@ PY);
         $this->assertSame('existing upload', file_get_contents($this->root.'/project/public/storage/keep.txt'));
     }
 
-    public function test_backup_of_a_source_artifact_does_not_require_git_metadata(): void
+    public function test_backup_of_a_source_artifact_uses_database_owner_without_git_metadata(): void
     {
         $process = $this->runScript('backup.sh');
         $this->assertSame(0, $process->getExitCode(), $process->getErrorOutput());

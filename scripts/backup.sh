@@ -11,6 +11,9 @@ command -v gpg >/dev/null
 }
 BACKUP_DIR=$(realpath -m "$BACKUP_DIR")
 case "$BACKUP_DIR/" in "$(pwd -P)/"*) echo 'Backups must be outside the project/web root.' >&2; exit 1;; esac
+# Check the configured database owner before pausing writers. Root bootstrap
+# credentials can differ from the credentials stored in an existing volume.
+"${COMPOSE[@]}" exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysql -u"$MYSQL_USER" "$MYSQL_DATABASE" -NBe "SELECT 1"' >/dev/null
 mkdir -p "$BACKUP_DIR"
 backup_tmp=$(mktemp -d "$BACKUP_DIR/.snapshot.XXXXXX")
 backup_file="$BACKUP_DIR/submission-$(date -u +%Y%m%dT%H%M%SZ).tar.gpg"
@@ -25,7 +28,7 @@ trap cleanup EXIT
 "${COMPOSE[@]}" exec -T app php artisan down --retry=60
 # Stop HTTP workers too: maintenance mode alone does not drain in-flight uploads.
 "${COMPOSE[@]}" stop --timeout 240 app queue scheduler
-"${COMPOSE[@]}" exec -T db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysqldump -uroot --single-transaction --quick --routines --triggers --events --no-tablespaces --set-gtid-purged=OFF "$MYSQL_DATABASE"' > "$backup_tmp/database.sql"
+"${COMPOSE[@]}" exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysqldump -u"$MYSQL_USER" --single-transaction --quick --routines --triggers --events --no-tablespaces --set-gtid-purged=OFF "$MYSQL_DATABASE"' > "$backup_tmp/database.sql"
 "${COMPOSE[@]}" run --rm --no-deps --entrypoint tar app -C /var/www/html/storage -czf - app > "$backup_tmp/storage.tar.gz"
 # Public includes release assets and host-mounted header images.
 tar -C public -czf "$backup_tmp/public.tar.gz" .
