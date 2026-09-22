@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Enforce this before PHP initialization as well as the long-running process.
+# Compose also sets the hard limit; this covers other ways of starting the image.
+ulimit -S -c 0
+ulimit -H -c 0
+
 mkdir -p storage/app/private storage/app/public storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache
 
 # Recreate the public/storage symlink on every start. public/ lives in the

@@ -133,6 +133,8 @@ jobs:
         target: [runtime-fpm, runtime-apache]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Verify core limits and rendered container safety settings
+        run: python3 tests/Support/test_container_safety.py -v
       - run: docker build --target ${{ matrix.target }} -t submission-ci:test .
       - name: Verify isolated image and built assets
         run: |
