@@ -1,5 +1,11 @@
+x-core-limits: &core_limits
+  core:
+    soft: 0
+    hard: 0
+
 services:
   db:
+    ulimits: *core_limits
     image: mysql:8.0.36-debian
     container_name: nc3_db
     restart: unless-stopped
@@ -24,6 +30,7 @@ services:
       start_period: 60s
 
   app:
+    ulimits: *core_limits
     build:
       context: .
       dockerfile: Dockerfile
@@ -34,6 +41,8 @@ services:
       - "80"
     restart: unless-stopped
     environment: &app_env
+      # Compatibility for hosts whose virtual CPU lacks XSAVEC. See operations.md.
+      GLIBC_TUNABLES: ${GLIBC_TUNABLES:-glibc.cpu.hwcaps=-XSAVEC}
       APP_NAME: ${APP_NAME}
       APP_ENV: ${APP_ENV:-production}
       APP_KEY: ${APP_KEY}
@@ -80,10 +89,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "--max-time", "5", "http://127.0.0.1/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Queue worker — processes background jobs (e.g. async malware scans).
   # Without this, database-queued jobs never run.
   queue: &worker
+    ulimits: *core_limits
     stop_signal: SIGTERM
     stop_grace_period: 240s
     build:
@@ -118,6 +134,7 @@ services:
   # Or in Dokploy: add COMPOSE_PROFILES=pandora to environment variables
 
   redis:
+    ulimits: *core_limits
     image: redis:7.4.9
     profiles: [pandora]
     working_dir: /cache
@@ -139,6 +156,7 @@ services:
     restart: unless-stopped
 
   kvrocks:
+    ulimits: *core_limits
     image: apache/kvrocks:2.15.0
     profiles: [pandora]
     user: root
@@ -154,6 +172,7 @@ services:
     restart: unless-stopped
 
   kvrocks-indexing:
+    ulimits: *core_limits
     image: apache/kvrocks:2.15.0
     profiles: [pandora]
     user: root
@@ -171,6 +190,7 @@ services:
     restart: unless-stopped
 
   clamav:
+    ulimits: *core_limits
     image: clamav/clamav:1.5.2
     profiles: [pandora]
     volumes:
@@ -191,6 +211,7 @@ services:
     restart: unless-stopped
 
   pandora:
+    ulimits: *core_limits
     image: ghcr.io/pandora-analysis/pandora:v1.12.2
     profiles: [pandora]
     depends_on:

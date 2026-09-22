@@ -10,6 +10,16 @@ Production host Apache must serve only `public/`, deny access to hidden files an
 
 Set `APP_DEBUG=false`, the actual `APP_URL`, secure session cookies, explicit trusted hosts and only the real proxy addresses. Proxy trust must match the deployed network so IP restrictions and quotas use the intended client IP. Keep the existing `APP_KEY`: changing it invalidates encrypted application data, sessions and two-factor secrets. Explicit existing cache prefixes and cookie names continue to apply across Laravel 13.
 
+## Crash dumps and virtual CPU compatibility
+
+Both Compose definitions set the soft and hard core-file limits to zero for every service, including the optional scanner services. The application entrypoint also disables core dumps before running PHP setup, so images started outside Compose get the same protection. Recreate containers to apply changed Compose limits; rebuilding is needed to include the entrypoint guard in an existing image. A plain restart does not apply changed Compose configuration. Verify `docker inspect CONTAINER --format '{{json .HostConfig.Ulimits}}'` and the process's `/proc/1/limits` inside the container.
+
+The Debian/Apache stack defaults `GLIBC_TUNABLES` to `glibc.cpu.hwcaps=-XSAVEC`. On 22 September 2026, repeated Apache SIGILL crashes on the test host generated 5,349 core files and exhausted its root disk. A retained dump stopped at an `xsavec` instruction in glibc's dynamic loader while the guest CPU no longer advertised XSAVEC. A change in virtual CPU capabilities is suspected; no hypervisor migration was confirmed. The tunable disables this loader optimization. It is deliberately absent from the Alpine/musl production stack. If setting additional glibc tunables, retain the XSAVEC mask in the colon-separated value until the host CPU baseline is verified. The virtualization provider must keep guest CPU features stable across host moves; see [QEMU's CPU model guidance](https://www.qemu.org/docs/master/system/qemu-cpu-models.html).
+
+The Apache service checks HTTP `/up`, so a running parent with unusable workers is reported unhealthy. Docker health checks do not automatically restart unhealthy containers. Keep host disk-space and application availability monitoring enabled for active deployments. Disabling core dumps prevents this source of disk exhaustion; it does not bound uploads, logs, image caches or other host storage.
+
+For a recurrence, first contain dumping and preserve one representative dump in a restricted location outside the web root. Dumps can contain credentials and submission data: never commit or upload them as CI artifacts. Remove only positively identified crash files through the container filesystem, never Docker's overlay internals or application volumes. Investigate SIGILL and CPU features before restarting repeatedly. Run `python3 tests/Support/test_container_safety.py -v` to verify the entrypoint and both rendered Compose definitions.
+
 ## Build, deploy and roll back
 
 Build both relevant targets before release:

@@ -29,8 +29,14 @@
 # applicationsnc3lu_storage_data - the volumes production already uses.
 name: applicationsnc3lu
 
+x-core-limits: &core_limits
+  core:
+    soft: 0
+    hard: 0
+
 services:
   db:
+    ulimits: *core_limits
     image: mysql:8.0.36-debian
     container_name: nc3_db
     restart: unless-stopped
@@ -55,6 +61,7 @@ services:
       start_period: 60s
 
   app:
+    ulimits: *core_limits
     image: ${APP_IMAGE:-submission-platform:local}
     build:
       context: .
@@ -101,6 +108,7 @@ services:
       - app_network
 
   queue: &worker
+    ulimits: *core_limits
     image: ${APP_IMAGE:-submission-platform:local}
     stop_signal: SIGTERM
     stop_grace_period: 240s
@@ -145,6 +153,7 @@ services:
   # app_network so the app resolves http://pandora:6100. Config lives in
   # docker/pandora/ (rsynced with the code).
   redis:
+    ulimits: *core_limits
     image: redis:7.4.9
     working_dir: /cache
     command:
@@ -167,6 +176,7 @@ services:
     restart: unless-stopped
 
   kvrocks:
+    ulimits: *core_limits
     image: apache/kvrocks:2.15.0
     user: root
     volumes:
@@ -183,6 +193,7 @@ services:
     restart: unless-stopped
 
   kvrocks-indexing:
+    ulimits: *core_limits
     image: apache/kvrocks:2.15.0
     user: root
     volumes:
@@ -201,6 +212,7 @@ services:
     restart: unless-stopped
 
   clamav:
+    ulimits: *core_limits
     image: clamav/clamav:1.5.2
     volumes:
       - clamav-socket:/var/run/clamav
@@ -222,6 +234,7 @@ services:
     restart: unless-stopped
 
   pandora:
+    ulimits: *core_limits
     image: ghcr.io/pandora-analysis/pandora:v1.12.2
     depends_on:
       redis:
