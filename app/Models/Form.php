@@ -99,7 +99,7 @@ class Form extends Model
 
     public function categories(): HasMany
     {
-        return $this->hasMany(FormCategory::class);
+        return $this->hasMany(FormCategory::class)->orderBy('order');
     }
 
     public function creator(): BelongsTo

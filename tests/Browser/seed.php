@@ -5,6 +5,7 @@ use App\Models\Form;
 use App\Models\ScanResult;
 use App\Models\Submission;
 use App\Models\User;
+use App\Services\FormDuplicator;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Storage;
 
@@ -40,4 +41,15 @@ $file = $scanned->values()->create(['form_field_id' => $fileField->id, 'value' =
 ScanResult::create(['submission_id' => $scanned->id, 'submission_value_id' => $file->id, 'filename' => 'scan-fixture.pdf', 'scanner_used' => 'pandora', 'status' => 'malicious', 'is_malicious' => true,
     'scan_results' => ['workers' => ['clamav' => ['status' => 'ALERT', 'details' => ['signature' => 'Synthetic-Test-Signature', 'long_detail' => str_repeat('detail', 100)]]]]]);
 ApiToken::create(['user_id' => $owner->id, 'name' => 'audit', 'token' => hash('sha256', 'browser-audit-token'), 'abilities' => ['forms:read']]);
-echo json_encode(['scanned' => $scanned->id, 'builder' => $builder->id, 'form' => $form->id, 'name_field' => $f1->id, 'select_field' => $f2->id, 'conditional_field' => $f3->id, 'empty' => $empty->id, 'private' => $private->id]);
+
+$sectionOrder = Form::factory()->published()->private()->create(['title' => 'Section navigation fixture', 'user_id' => $owner->id]);
+foreach ([1, 3, 2] as $step) {
+    $category = $sectionOrder->categories()->create(['name' => 'Navigation section '.$step, 'order' => $step * 10]);
+    $category->fields()->create(['form_id' => $sectionOrder->id, 'label' => 'Navigation question '.$step, 'type' => 'text', 'required' => $step === 2, 'order' => 1]);
+}
+$sectionOrderCopy = app(FormDuplicator::class)->duplicate($sectionOrder, $owner);
+$sectionOrderCopy->update(['status' => 'published']);
+$sectionOrder->accessLinks()->create(['token' => 'browser-section-order-token']);
+$sectionOrderCopy->accessLinks()->create(['token' => 'browser-section-order-copy-token']);
+
+echo json_encode(['scanned' => $scanned->id, 'builder' => $builder->id, 'form' => $form->id, 'name_field' => $f1->id, 'select_field' => $f2->id, 'conditional_field' => $f3->id, 'empty' => $empty->id, 'private' => $private->id, 'section_order' => $sectionOrder->id, 'section_order_copy' => $sectionOrderCopy->id]);
