@@ -66,6 +66,45 @@ test('conditional fields, validation focus, checkbox selections and receipt', as
     await expect(page.getByText('Reference:', { exact: false })).toBeVisible();
 });
 
+for (const copy of [false, true]) {
+    for (const preview of [false, true]) {
+        test(`saved section order survives navigation in ${preview ? 'preview' : 'access link'}${copy ? ' for a duplicated form' : ''}`, async ({ page }) => {
+            if (preview) {
+                await login(page);
+                await page.goto(`/forms/${fixture()[copy ? 'section_order_copy' : 'section_order']}/preview`);
+            } else {
+                await page.goto(`/forms/access/browser-section-order${copy ? '-copy' : ''}-token`);
+                await expect(page).toHaveURL(/\/submit$/);
+            }
+
+            const assertStep = async step => {
+                await expect(page.getByText(`Navigation question ${step}`, { exact: false })).toBeVisible();
+                for (const other of [1, 2, 3].filter(value => value !== step)) {
+                    await expect(page.getByText(`Navigation question ${other}`, { exact: false })).toBeHidden();
+                }
+            };
+            await assertStep(1);
+            await page.getByRole('button', { name: 'Next', exact: true }).click();
+            await assertStep(2);
+            await page.getByRole('button', { name: 'Next', exact: true }).click();
+            await assertStep(3);
+            await page.getByRole('button', { name: 'Previous', exact: true }).click();
+            await assertStep(2);
+
+            if (!preview) {
+                await page.getByLabel('Navigation question 2', { exact: false }).fill('Second section answer');
+                await page.getByRole('button', { name: 'Next', exact: true }).click();
+                await assertStep(3);
+                await page.getByRole('button', { name: 'Previous', exact: true }).click();
+                await assertStep(2);
+                await expect(page.getByLabel('Navigation question 2', { exact: false })).toHaveValue('Second section answer');
+            }
+            await page.getByRole('button', { name: 'Previous', exact: true }).click();
+            await assertStep(1);
+        });
+    }
+}
+
 test('dashboard, locked forms and keyboard builder operations', async ({ page }) => {
     await login(page);
     await accessible(page);
