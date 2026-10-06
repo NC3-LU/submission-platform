@@ -633,6 +633,7 @@ class SubmissionForm extends Component
     {
         if ($this->currentStep < $this->totalSteps) {
             $this->currentStep++;
+            $this->dispatch('scroll-to-top');
         }
     }
 
