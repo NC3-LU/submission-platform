@@ -108,7 +108,7 @@
                         <div></div>
                         <button
                             x-show="step < totalSteps"
-                            @click="step++"
+                            @click="step++; $nextTick(() => requestAnimationFrame(() => window.scrollTo({ top: 0 })))"
                             type="button"
                             class="inline-flex items-center px-4 py-2.5 bg-sky-700 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors">
                             Next
