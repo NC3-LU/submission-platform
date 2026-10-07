@@ -4,6 +4,20 @@ All notable changes to the NC3 Submission Platform are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.0.1] - 2026-10-07
+
+### Fixed
+- Preserve saved section order during form navigation, answer updates, and validation, including previews and duplicated forms.
+- Scroll to the top when advancing to the next section in both form submissions and previews.
+- Prevent container crash dumps from exhausting host storage by disabling core dumps before application startup and across Compose services (#77).
+
+### Changed
+- Add HTTP readiness checks and a configurable compatibility default for Apache deployments on hosts without XSAVEC support.
+- Improve the README and add wiki guides for respondents, form owners, evaluators, developers, and operators.
+
+### Security
+- Update CommonMark to 2.10.3, source-map-js to 1.2.2, and the build-time selector parser to 7.1.6 to address dependency advisories while retaining Tailwind CSS 3.
+
 ## [3.0.0] - 2026-09-14
 
 ### Added
@@ -111,6 +125,8 @@ See the [v3.0.0 release notes](docs/releases/v3.0.0.md) for compatibility change
 
 - Initial release.
 
+[3.0.1]: https://github.com/NC3-LU/submission-platform/releases/tag/v3.0.1
+[3.0.0]: https://github.com/NC3-LU/submission-platform/releases/tag/v3.0.0
 [2.1.0]: https://github.com/NC3-LU/submission-platform/releases/tag/v2.1.0
 [2.0.0]: https://github.com/NC3-LU/submission-platform/releases/tag/v2.0.0
 [1.2.1]: https://github.com/NC3-LU/submission-platform/releases/tag/v1.2.1
