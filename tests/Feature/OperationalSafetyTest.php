@@ -76,7 +76,9 @@ class OperationalSafetyTest extends TestCase
         Cache::forget('health:queue');
         DB::table('jobs')->insert(['queue' => 'default', 'payload' => '{}', 'attempts' => 0, 'reserved_at' => null, 'available_at' => now()->timestamp, 'created_at' => now()->timestamp]);
 
-        $this->artisan('queue:work', ['connection' => 'database', '--stop-when-empty' => true, '--sleep' => 1])->assertSuccessful();
+        // This worker shares PHPUnit's memory, rather than an isolated worker
+        // process. Keep suite memory usage from deciding this heartbeat test.
+        $this->artisan('queue:work', ['connection' => 'database', '--stop-when-empty' => true, '--sleep' => 1, '--memory' => 0])->assertSuccessful();
 
         $this->assertGreaterThanOrEqual(now()->subSeconds(5)->timestamp, Cache::get('health:queue', 0));
         $this->assertDatabaseHas('jobs', ['attempts' => 0, 'reserved_at' => null]);

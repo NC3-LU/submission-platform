@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - Add HTTP readiness checks and a configurable compatibility default for Apache deployments on hosts without XSAVEC support.
 - Improve the README and add wiki guides for respondents, form owners, evaluators, developers, and operators.
+- Include Dependabot updates for Laravel 13.33, Scramble 0.13.45, Sail 1.68, Vite 8.3.1, Autoprefixer 10.6.1, and the CI artifact uploader (#75, #78, #80).
 
 ### Security
 - Update CommonMark to 2.10.3, source-map-js to 1.2.2, and the build-time selector parser to 7.1.6 to address dependency advisories while retaining Tailwind CSS 3.
