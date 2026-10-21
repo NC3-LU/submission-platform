@@ -92,3 +92,17 @@ The scheduler removes expired integration exports, old unreferenced temporary up
 Background export files expire 24 hours after request. Webhook delivery history expires after seven days. Integration audit metadata has no automatic expiry. These technical defaults do not define the organization's overall records policy.
 
 Next: [Operations runbook](https://github.com/NC3-LU/submission-platform/blob/main/docs/operations.md) · [Troubleshooting](https://github.com/NC3-LU/submission-platform/wiki/Troubleshooting)
+
+## PHP security baseline
+
+The Composer, PHP-FPM and Apache Docker stages pin the official PHP 8.3.36
+images by digest. This release fixes CVE-2026-109618 and CVE-2026-109619;
+see the [PHP announcement](https://www.php.net/archive/2026.php#2026-10-21-5).
+CI checks the PHP version inside each completed runtime image.
+
+Rebuild both runtime targets when updating these pins. Replace the web, queue
+and scheduler containers together, then check `php -v`, `php artisan app:health`
+and the application URL. Rebuilding an image alone does not update running
+containers. Keep persistent volumes and database migration policy unchanged.
+If validation fails, keep the service in maintenance rather than restoring a
+vulnerable PHP image to an exposed route.

@@ -136,6 +136,8 @@ jobs:
       - name: Verify core limits and rendered container safety settings
         run: python3 tests/Support/test_container_safety.py -v
       - run: docker build --target ${{ matrix.target }} -t submission-ci:test .
+      - name: Verify fixed PHP runtime
+        run: docker run --rm --network none --entrypoint php submission-ci:test -r 'exit(PHP_VERSION === "8.3.36" ? 0 : 1);'
       - name: Verify isolated image and built assets
         run: |
           docker run --rm --entrypoint sh submission-ci:test -c 'test ! -e .env && test ! -e public/hot && test -s public/build/manifest.json && test -z "$(find storage/app -type f -print -quit)"'
