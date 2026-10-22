@@ -32,7 +32,7 @@ RUN npm ci --no-audit --no-progress
 RUN NODE_ENV=production npm run build
 
 # Stage 2: Install PHP dependencies with Composer (PHP 8.3)
-FROM php:8.3-cli-alpine AS composer-builder
+FROM php:8.3.36-cli-alpine@sha256:bb27e1707a571d43413b6e3ad2f670fb9665782162779d26cb01be499f6ceef5 AS composer-builder
 ARG PROXY
 ENV http_proxy=$PROXY \
     HTTP_PROXY=$PROXY \
@@ -81,7 +81,7 @@ RUN mkdir -p storage/app/private storage/app/public storage/framework/sessions s
 # ---------------------------------------------------------------------------
 
 # Stage 3a: Production runtime (php-fpm)
-FROM php:8.3-fpm-alpine AS runtime-fpm
+FROM php:8.3.36-fpm-alpine@sha256:3ea3c3f8ee03269b77f5c2bda5879b44ba152cb13aafead8b67c4332f829aa2d AS runtime-fpm
 ARG PROXY
 ENV http_proxy=$PROXY \
     HTTP_PROXY=$PROXY \
@@ -130,7 +130,7 @@ ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]
 
 # Stage 3b: Test / Dokploy runtime (self-contained Apache). Must remain last.
-FROM php:8.3-apache AS runtime-apache
+FROM php:8.3.36-apache@sha256:d89e8b3d2033c3179dcd9999d913670eb12a07410a95e60205c64e7d0fac7aef AS runtime-apache
 ARG PROXY
 ENV http_proxy=$PROXY \
     HTTP_PROXY=$PROXY \
