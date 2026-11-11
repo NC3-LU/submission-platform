@@ -66,6 +66,21 @@ test('conditional fields, validation focus, checkbox selections and receipt', as
     await expect(page.getByText('Reference:', { exact: false })).toBeVisible();
 });
 
+test('checkbox ticks made while an earlier tick is still saving are kept', async ({ page }) => {
+    await page.route('**/livewire/update', async route => {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await route.continue();
+    });
+    await page.goto(`/forms/${fixture().form}/submit`);
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await page.getByLabel('Security', { exact: true }).check();
+    await page.getByLabel('Usability', { exact: true }).check();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+    await expect(page.getByLabel('Security', { exact: true })).toBeChecked();
+    await expect(page.getByLabel('Usability', { exact: true })).toBeChecked();
+});
+
 test('checkbox questions stop accepting options at their maximum selections', async ({ page }) => {
     const seed = fixture();
     const option = index => page.locator(`#field_${seed.limited_field}_${index}`);

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - Optional maximum number of selections for checkbox questions, set in the form builder and enforced for browser and API submissions.
 
+### Fixed
+- Keep checkbox selections that a respondent makes while an earlier selection on the same question is still being saved.
+
 ## [3.0.1] - 2026-10-07
 
 ### Fixed
