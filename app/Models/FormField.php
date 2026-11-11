@@ -28,7 +28,7 @@ class FormField extends Model
         static::deleting(fn (FormField $record) => $record->form->ensureStructureEditable());
     }
 
-    protected $fillable = ['form_id', 'form_category_id', 'type', 'order', 'label', 'options', 'required', 'content', 'char_limit', 'depends_on_field_id', 'depends_on_value'];
+    protected $fillable = ['form_id', 'form_category_id', 'type', 'order', 'label', 'options', 'required', 'content', 'char_limit', 'max_selections', 'depends_on_field_id', 'depends_on_value'];
 
     /**
      * Get the form that owns the field.
