@@ -25,7 +25,7 @@ Use the preview while designing. Saving even a draft response creates a response
 | File | A supporting attachment |
 | Header or description | Instructions or context; these do not collect answers |
 
-Mark questions as required only when the answer is necessary. Text questions can have character limits. Conditional rules can show a follow-up question when a particular earlier answer is selected.
+Mark questions as required only when the answer is necessary. Text questions can have character limits. Multiple-choice checkbox questions can set a maximum number of selections. Conditional rules can show a follow-up question when a particular earlier answer is selected.
 
 Descriptions support Markdown, so you can use paragraphs, lists, emphasis, and links. An optional form banner accepts JPG, PNG, or WebP up to 4 MB; its position and accent colour can be adjusted after saving. Banners are public assets, so use an image suitable for public display.
 

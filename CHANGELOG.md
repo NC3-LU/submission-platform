@@ -4,6 +4,11 @@ All notable changes to the NC3 Submission Platform are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Optional maximum number of selections for checkbox questions, set in the form builder and enforced for browser and API submissions.
+
 ## [3.0.1] - 2026-10-07
 
 ### Fixed
