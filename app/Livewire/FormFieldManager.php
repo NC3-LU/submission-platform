@@ -34,6 +34,7 @@ class FormFieldManager extends Component
         'required' => false,
         'content' => '',
         'char_limit' => null,
+        'max_selections' => null,
         'depends_on_field_id' => null,
         'depends_on_value' => null,
     ];
@@ -441,6 +442,7 @@ class FormFieldManager extends Component
             $fieldData['options'] = null;
             $fieldData['required'] = false;
             $fieldData['char_limit'] = null;
+            $fieldData['max_selections'] = null;
         } else {
             $fieldData['label'] = $this->newField['label'];
             $fieldData['options'] = $this->newField['options'];
@@ -452,6 +454,9 @@ class FormFieldManager extends Component
             } else {
                 $fieldData['char_limit'] = null;
             }
+            $fieldData['max_selections'] = $this->newField['type'] === 'checkbox' && filled($this->newField['max_selections'] ?? null)
+                ? (int) $this->newField['max_selections']
+                : null;
         }
 
         // Conditional visibility
@@ -471,6 +476,7 @@ class FormFieldManager extends Component
         $this->newField['content'] = '';
         $this->newField['required'] = false;
         $this->newField['char_limit'] = null;
+        $this->newField['max_selections'] = null;
     }
 
     private function fieldValidationRules($prefix = 'newField'): array
@@ -496,6 +502,9 @@ class FormFieldManager extends Component
             }
             if (in_array($this->{$prefix}['type'], ['text', 'textarea'])) {
                 $rules[$prefix.'.char_limit'] = 'nullable|integer|min:1';  // Add this
+            }
+            if ($this->{$prefix}['type'] === 'checkbox') {
+                $rules[$prefix.'.max_selections'] = 'nullable|integer|min:1|max:1000';
             }
             $rules[$prefix.'.required'] = 'boolean';
         }
@@ -637,6 +646,7 @@ class FormFieldManager extends Component
             'options' => $field->options ?? '',
             'content' => $field->content ?? '',
             'char_limit' => $field->char_limit ?? null,
+            'max_selections' => $field->max_selections,
             'depends_on_field_id' => $field->depends_on_field_id,
             'depends_on_value' => $field->depends_on_value,
         ]);
@@ -660,6 +670,7 @@ class FormFieldManager extends Component
             $this->fieldBeingEdited['options'] = null;
             $this->fieldBeingEdited['required'] = false;
             $this->fieldBeingEdited['char_limit'] = null;
+            $this->fieldBeingEdited['max_selections'] = null;
         } else {
             $this->fieldBeingEdited['content'] = null;
             if (! in_array($this->fieldBeingEdited['type'], ['select', 'checkbox', 'radio'])) {
@@ -669,6 +680,9 @@ class FormFieldManager extends Component
             if (! in_array($this->fieldBeingEdited['type'], ['text', 'textarea'])) {
                 $this->fieldBeingEdited['char_limit'] = null;
             }
+            $this->fieldBeingEdited['max_selections'] = $this->fieldBeingEdited['type'] === 'checkbox' && filled($this->fieldBeingEdited['max_selections'] ?? null)
+                ? (int) $this->fieldBeingEdited['max_selections']
+                : null;
         }
 
         // Explicit payload: `fieldBeingEdited` is client-controlled and both
@@ -686,6 +700,7 @@ class FormFieldManager extends Component
             'required' => $this->fieldBeingEdited['required'],
             'content' => $this->fieldBeingEdited['content'],
             'char_limit' => $this->fieldBeingEdited['char_limit'],
+            'max_selections' => $this->fieldBeingEdited['max_selections'],
             'depends_on_field_id' => $dependsOn,
             'depends_on_value' => $dependsOn ? ($this->fieldBeingEdited['depends_on_value'] ?? null) : null,
         ]);

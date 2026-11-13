@@ -52,4 +52,8 @@ $sectionOrderCopy->update(['status' => 'published']);
 $sectionOrder->accessLinks()->create(['token' => 'browser-section-order-token']);
 $sectionOrderCopy->accessLinks()->create(['token' => 'browser-section-order-copy-token']);
 
-echo json_encode(['scanned' => $scanned->id, 'builder' => $builder->id, 'form' => $form->id, 'name_field' => $f1->id, 'select_field' => $f2->id, 'conditional_field' => $f3->id, 'empty' => $empty->id, 'private' => $private->id, 'section_order' => $sectionOrder->id, 'section_order_copy' => $sectionOrderCopy->id]);
+$selectionLimit = Form::factory()->published()->public()->create(['title' => 'Selection limit fixture', 'user_id' => $owner->id]);
+$limitedField = $selectionLimit->categories()->create(['name' => 'Priorities', 'order' => 1])
+    ->fields()->create(['form_id' => $selectionLimit->id, 'type' => 'checkbox', 'label' => 'Top challenges', 'options' => 'Cost,Skills,Time,Tooling,Guidance', 'max_selections' => 3, 'order' => 1]);
+
+echo json_encode(['scanned' => $scanned->id, 'builder' => $builder->id, 'form' => $form->id, 'name_field' => $f1->id, 'select_field' => $f2->id, 'conditional_field' => $f3->id, 'empty' => $empty->id, 'private' => $private->id, 'section_order' => $sectionOrder->id, 'section_order_copy' => $sectionOrderCopy->id, 'selection_limit' => $selectionLimit->id, 'limited_field' => $limitedField->id]);
