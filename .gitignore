@@ -35,3 +35,4 @@ CLAUDE.md
 /.browser
 /test-results
 /playwright-report
+.history/
