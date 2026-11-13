@@ -135,7 +135,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Verify core limits and rendered container safety settings
         run: python3 tests/Support/test_container_safety.py -v
-      - run: docker build --target ${{ matrix.target }} -t submission-ci:test .
+      - run: >
+          docker build --target ${{ matrix.target }}
+          --label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          --label org.opencontainers.image.revision=${{ github.sha }}
+          -t submission-ci:test .
       - name: Verify fixed PHP runtime
         run: |
           docker run --rm --network none --entrypoint php submission-ci:test -r 'exit(PHP_VERSION === "8.3.36" ? 0 : 1);'
@@ -146,6 +150,45 @@ jobs:
             echo 'Startup incorrectly accepted an unavailable database'
             exit 1
           fi
+      - name: Save tested image
+        if: matrix.target == 'runtime-apache' && github.event_name == 'push'
+        run: docker save submission-ci:test | gzip > image.tar.gz
+      - name: Keep tested image for publishing
+        if: matrix.target == 'runtime-apache' && github.event_name == 'push'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tested-image
+          path: image.tar.gz
+          retention-days: 1
+          compression-level: 0
+
+  publish:
+    name: Publish image
+    if: github.event_name == 'push'
+    needs: [php, frontend, browser, containers]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download tested image
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: tested-image
+      - name: Load tested image
+        run: docker load --input image.tar.gz
+      - name: Log in to the container registry
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Push commit and branch tags
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          for tag in "${GITHUB_REF_NAME}-${GITHUB_SHA}" "${GITHUB_REF_NAME}"; do
+            docker tag submission-ci:test "${image}:${tag}"
+            docker push "${image}:${tag}"
+          done
 
   dependency-review:
     name: Dependency review
