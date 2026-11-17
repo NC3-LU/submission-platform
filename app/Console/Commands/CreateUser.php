@@ -35,7 +35,7 @@ class CreateUser extends Command
         }
 
         try {
-            $user = User::create([
+            $user = (new User)->forceFill([
                 'name' => $name,
                 'email' => $email,
                 'password' => Hash::make($password),
@@ -43,6 +43,7 @@ class CreateUser extends Command
                 'remember_token' => Str::random(10),
                 'role' => $role,
             ]);
+            $user->save();
 
             $this->info('User created successfully!');
             $this->table(
