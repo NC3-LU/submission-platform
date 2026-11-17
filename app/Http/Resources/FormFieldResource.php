@@ -29,6 +29,7 @@ class FormFieldResource extends JsonResource
             'order' => $this->order,
             'content' => $this->content,
             'char_limit' => $this->char_limit,
+            'max_selections' => $this->max_selections,
             'depends_on_field_id' => $this->depends_on_field_id,
             'depends_on_value' => $this->depends_on_value,
         ];

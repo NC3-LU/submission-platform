@@ -265,6 +265,9 @@
                                             @if($field['char_limit'])
                                                 <span class="text-xs text-gray-600">Max {{ $field['char_limit'] }} chars</span>
                                             @endif
+                                            @if($field['max_selections'] ?? null)
+                                                <span class="text-xs text-gray-600">Max {{ $field['max_selections'] }} selections</span>
+                                            @endif
                                         </div>
                                     @endif
                                 </div>
@@ -579,6 +582,17 @@
                                             </div>
                                         @endif
 
+                                        @if($fieldBeingEdited['type'] === 'checkbox')
+                                            <div>
+                                                <label for="edit-field-max-selections" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Maximum selections</label>
+                                                <input type="number" id="edit-field-max-selections" wire:model.defer="fieldBeingEdited.max_selections"
+                                                       min="1" placeholder="No limit"
+                                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Respondents cannot tick more options than this</p>
+                                                @error('fieldBeingEdited.max_selections') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                                            </div>
+                                        @endif
+
                                         @if(in_array($fieldBeingEdited['type'], ['text', 'textarea']))
                                             <div>
                                                 <label for="edit-field-char-limit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Character Limit</label>
@@ -826,6 +840,17 @@
                                                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                                                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate options with commas</p>
                                                         @error('newField.options') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                                                    </div>
+                                                @endif
+
+                                                @if($newField['type'] === 'checkbox')
+                                                    <div>
+                                                        <label for="field-max-selections" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Maximum selections</label>
+                                                        <input type="number" id="field-max-selections" wire:model.live="newField.max_selections"
+                                                               min="1" placeholder="No limit"
+                                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Respondents cannot tick more options than this</p>
+                                                        @error('newField.max_selections') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                                                     </div>
                                                 @endif
 

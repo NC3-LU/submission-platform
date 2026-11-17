@@ -66,6 +66,47 @@ test('conditional fields, validation focus, checkbox selections and receipt', as
     await expect(page.getByText('Reference:', { exact: false })).toBeVisible();
 });
 
+test('checkbox ticks made while an earlier tick is still saving are kept', async ({ page }) => {
+    await page.route('**/livewire/update', async route => {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await route.continue();
+    });
+    await page.goto(`/forms/${fixture().form}/submit`);
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await page.getByLabel('Security', { exact: true }).check();
+    await page.getByLabel('Usability', { exact: true }).check();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+    await expect(page.getByLabel('Security', { exact: true })).toBeChecked();
+    await expect(page.getByLabel('Usability', { exact: true })).toBeChecked();
+});
+
+test('checkbox questions stop accepting options at their maximum selections', async ({ page }) => {
+    const seed = fixture();
+    const option = index => page.locator(`#field_${seed.limited_field}_${index}`);
+    const settled = () => page.waitForLoadState('networkidle');
+    await page.goto(`/forms/${seed.selection_limit}/submit`);
+    for (const index of [0, 1, 2]) {
+        await expect(option(index)).toBeEnabled();
+        await option(index).check();
+        await settled();
+    }
+    await expect(page.getByText('3/3 selected', { exact: true })).toBeVisible();
+    await expect(option(3)).toBeDisabled();
+    await expect(option(4)).toBeDisabled();
+    await expect(option(0)).toBeEnabled();
+    await accessible(page);
+    await option(0).uncheck();
+    await settled();
+    await expect(page.getByText('2/3 selected', { exact: true })).toBeVisible();
+    await expect(option(3)).toBeEnabled();
+    await option(3).check();
+    await settled();
+    await expect(option(0)).toBeDisabled();
+    await page.getByRole('button', { name: 'Submit', exact: true }).click();
+    await expect(page).toHaveURL(/thank-you/);
+});
+
 for (const copy of [false, true]) {
     for (const preview of [false, true]) {
         test(`saved section order survives navigation in ${preview ? 'preview' : 'access link'}${copy ? ' for a duplicated form' : ''}`, async ({ page }) => {

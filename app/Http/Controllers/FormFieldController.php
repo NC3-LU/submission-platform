@@ -74,6 +74,9 @@ class FormFieldController extends Controller
             if (in_array($request->input('type'), ['text', 'textarea'])) {
                 $rules['char_limit'] = 'nullable|integer|min:1';
             }
+            if ($request->input('type') === 'checkbox') {
+                $rules['max_selections'] = 'nullable|integer|min:1|max:1000';
+            }
 
             // For non-structural fields, a category must be selected and belong to this form
             $rules['form_category_id'] = [
@@ -94,12 +97,16 @@ class FormFieldController extends Controller
             $data['label'] = null;
             $data['options'] = null;
             $data['required'] = false;  // Headers and descriptions are never required
+            $data['max_selections'] = null;
         } else {
             // Non-structural fields should not store content
             $data['content'] = null;
             // Ensure options is null when not applicable
             if (! in_array($request->type, ['select', 'checkbox', 'radio'])) {
                 $data['options'] = null;
+            }
+            if ($request->type !== 'checkbox') {
+                $data['max_selections'] = null;
             }
         }
 
@@ -135,6 +142,9 @@ class FormFieldController extends Controller
             if (in_array($request->input('type'), ['text', 'textarea'])) {
                 $rules['char_limit'] = 'nullable|integer|min:1';
             }
+            if ($request->input('type') === 'checkbox') {
+                $rules['max_selections'] = 'nullable|integer|min:1|max:1000';
+            }
 
             // For non-structural fields, a category must be selected and belong to this form
             $rules['form_category_id'] = [
@@ -154,10 +164,14 @@ class FormFieldController extends Controller
             $data['label'] = null;
             $data['options'] = null;
             $data['required'] = false;  // Headers and descriptions are never required
+            $data['max_selections'] = null;
         } else {
             $data['content'] = null;
             if (! in_array($request->type, ['select', 'checkbox', 'radio'])) {
                 $data['options'] = null;
+            }
+            if ($request->type !== 'checkbox') {
+                $data['max_selections'] = null;
             }
         }
 

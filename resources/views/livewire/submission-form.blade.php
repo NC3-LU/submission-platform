@@ -1,6 +1,6 @@
 {{-- Alpine reveals x-show targets on an animation frame, after $nextTick. --}}
 <div x-data="{
-    schema: @js($form->fields->keyBy('id')->map(fn ($field) => $field->only(['id', 'type', 'options', 'depends_on_field_id', 'depends_on_value']))),
+    schema: @js($form->fields->keyBy('id')->map(fn ($field) => $field->only(['id', 'type', 'options', 'max_selections', 'depends_on_field_id', 'depends_on_value']))),
     visible(id, seen = []) {
         const field = this.schema[id];
         if (!field || seen.includes(id)) return false;
@@ -11,6 +11,13 @@
         if (parent.type !== 'checkbox') return String(value ?? '') === field.depends_on_value;
         const options = (parent.options || '').split(',').map(option => option.trim());
         return Object.entries(value || {}).some(([index, selected]) => (selected === true &amp;&amp; options[index] === field.depends_on_value) || selected === field.depends_on_value);
+    },
+    selectedCount(id) {
+        return Object.values(this.$wire.fieldValues[id] || {}).filter(selected => selected === true).length;
+    },
+    selectionLocked(id, index) {
+        const limit = this.schema[id]?.max_selections;
+        return Boolean(limit) &amp;&amp; this.$wire.fieldValues[id]?.[index] !== true &amp;&amp; this.selectedCount(id) >= limit;
     }
 }"
      x-on:scroll-to-top="$nextTick(() => requestAnimationFrame(() => window.scrollTo({ top: 0 })))"
@@ -193,7 +200,8 @@
                                                    id="field_{{ $field->id }}_{{ $loop->index }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
                                                    wire:model.live="fieldValues.{{ $field->id }}.{{ $loop->index }}"
                                                    value="{{ trim($option) }}"
-                                                   class="rounded focus:ring-sky-500 h-4 w-4 text-sky-700 border-gray-300 dark:border-gray-600 transition-colors">
+                                                   @if($field->max_selections) x-bind:disabled="selectionLocked({{ $field->id }}, {{ $loop->index }})" @endif
+                                                   class="rounded focus:ring-sky-500 h-4 w-4 text-sky-700 border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                         @else
                                             <input type="radio"
                                                    id="field_{{ $field->id }}_{{ $loop->index }}" aria-invalid="{{ $errors->has('fieldValues.'.$field->id) ? 'true' : 'false' }}" aria-describedby="error_{{ $field->id }}"
@@ -205,6 +213,11 @@
                                     </label>
                                 @endforeach
                             </fieldset>
+                            @if($field->type === 'checkbox' && $field->max_selections)
+                                <p class="mt-1 text-xs tabular-nums text-gray-600 dark:text-gray-500" aria-live="polite">
+                                    <span x-text="selectedCount({{ $field->id }})">0</span>/{{ $field->max_selections }} selected
+                                </p>
+                            @endif
 
                         @elseif($field->type === 'file')
                             <div class="mt-1 space-y-3">

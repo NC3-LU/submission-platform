@@ -154,6 +154,12 @@ class SubmissionForm extends Component
             $this->loadOrCreateDraft();
         }
 
+        foreach ($this->form->fields as $field) {
+            if ($field->type === 'checkbox' && ! isset($this->fieldValues[$field->id])) {
+                $this->fieldValues[$field->id] = array_fill(0, count($field->options_array), false);
+            }
+        }
+
         // We don't need to process checkbox values here as it would convert arrays back to strings
         // which breaks the UI state for checkboxes
     }

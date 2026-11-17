@@ -69,6 +69,9 @@ final class SubmissionAnswers
                         if ($required && $this->selections($field, $value) === []) {
                             $fail('Select at least one option for '.$field->label.'.');
                         }
+                        if ($field->max_selections && count($this->selections($field, $value)) > $field->max_selections) {
+                            $fail('Select no more than '.$field->max_selections.' options for '.$field->label.'.');
+                        }
                         foreach ((array) $value as $index => $item) {
                             $boolean = is_bool($item) || in_array($item, [0, 1, '0', '1'], true);
                             if (($boolean && ! array_key_exists($index, $field->options_array)) || (! $boolean && ! in_array($item, $field->options_array, true))) {

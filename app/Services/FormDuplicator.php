@@ -42,7 +42,7 @@ final class FormDuplicator
                 $fieldCopies = [];
                 foreach ($fields as $field) {
                     $fieldCopies[$field->id] = $copy->fields()->create([
-                        ...$field->only(['type', 'order', 'label', 'options', 'required', 'content', 'char_limit', 'depends_on_value']),
+                        ...$field->only(['type', 'order', 'label', 'options', 'required', 'content', 'char_limit', 'max_selections', 'depends_on_value']),
                         'form_category_id' => $categoryIds[$field->form_category_id] ?? null,
                     ]);
                 }
