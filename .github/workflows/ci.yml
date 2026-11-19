@@ -215,14 +215,22 @@ jobs:
           fi
           payload=$(printf '{"ref":"%s","head_commit":{"id":"%s","message":"Image %s"},"commits":[]}' \
             "$GITHUB_REF" "$GITHUB_SHA" "${GITHUB_REF_NAME}-${GITHUB_SHA}")
-          status=$(curl --silent --max-time 60 --output /dev/null --write-out '%{http_code}' \
+          response=$(mktemp)
+          status=$(curl --silent --max-time 60 --output "$response" --write-out '%{http_code}' \
             --request POST \
             --header 'X-GitHub-Event: push' \
             --header 'Content-Type: application/json' \
             --data "$payload" \
             "$DEPLOY_URL") || true
           echo "Deploy request returned HTTP ${status:-none}"
-          [ "$status" = "200" ]
+          if [ "$status" != "200" ]; then
+            token="${DEPLOY_URL##*/}"
+            body=$(head -c 2000 "$response" | tr '\r\n' '  ')
+            body="${body//"$token"/***}"
+            echo "Response: ${body:0:200}"
+            echo "Link: ${#DEPLOY_URL} characters, fingerprint $(printf '%s' "$DEPLOY_URL" | sha256sum | cut -c1-12)"
+            exit 1
+          fi
 
   dependency-review:
     name: Dependency review
