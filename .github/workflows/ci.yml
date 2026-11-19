@@ -143,6 +143,12 @@ jobs:
       - name: Verify fixed PHP runtime
         run: |
           docker run --rm --network none --entrypoint php submission-ci:test -r 'exit(PHP_VERSION === "8.3.36" ? 0 : 1);'
+      - name: Verify server versions are not exposed
+        run: |
+          docker run --rm --network none --entrypoint php submission-ci:test -r 'exit(ini_get("expose_php") ? 1 : 0);'
+          if [ "${{ matrix.target }}" = "runtime-apache" ]; then
+            docker run --rm --network none --entrypoint sh submission-ci:test -c 'grep -qs "^ServerTokens Prod$" /etc/apache2/conf-enabled/zz-server-tokens.conf'
+          fi
       - name: Verify isolated image and built assets
         run: |
           docker run --rm --entrypoint sh submission-ci:test -c 'test ! -e .env && test ! -e public/hot && test -s public/build/manifest.json && test -z "$(find storage/app -type f -print -quit)"'
