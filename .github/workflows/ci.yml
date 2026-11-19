@@ -196,6 +196,34 @@ jobs:
             docker push "${image}:${tag}"
           done
 
+  deploy-beta:
+    name: Deploy beta
+    if: github.event_name == 'push' && github.ref_name == 'dev'
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: beta
+    permissions: {}
+    steps:
+      - name: Request deployment
+        env:
+          DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+        run: |
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "::notice::Deployment is not configured for this environment."
+            exit 0
+          fi
+          payload=$(printf '{"ref":"%s","head_commit":{"id":"%s","message":"Image %s"},"commits":[]}' \
+            "$GITHUB_REF" "$GITHUB_SHA" "${GITHUB_REF_NAME}-${GITHUB_SHA}")
+          status=$(curl --silent --max-time 60 --output /dev/null --write-out '%{http_code}' \
+            --request POST \
+            --header 'X-GitHub-Event: push' \
+            --header 'Content-Type: application/json' \
+            --data "$payload" \
+            "$DEPLOY_URL") || true
+          echo "Deploy request returned HTTP ${status:-none}"
+          [ "$status" = "200" ]
+
   dependency-review:
     name: Dependency review
     if: github.event_name == 'pull_request'
