@@ -30,6 +30,7 @@ services:
 
   app:
     ulimits: *core_limits
+    image: ${APP_IMAGE:-submission-platform:local-apache}
     build:
       context: .
       dockerfile: Dockerfile
@@ -104,6 +105,7 @@ services:
     ulimits: *core_limits
     stop_signal: SIGTERM
     stop_grace_period: 240s
+    image: ${APP_IMAGE:-submission-platform:local-apache}
     build:
       context: .
       dockerfile: Dockerfile
