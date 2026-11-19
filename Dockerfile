@@ -111,6 +111,7 @@ RUN docker-php-ext-install -j2 pdo_mysql mbstring exif pcntl bcmath gd zip && \
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY docker/php/security.ini /usr/local/etc/php/conf.d/security.ini
 
 COPY --from=composer-builder /app /var/www/html
 COPY --from=node-builder /app/public/build /var/www/html/public/build
@@ -164,11 +165,14 @@ RUN docker-php-ext-install -j2 pdo_mysql mbstring exif pcntl bcmath gd zip && \
 RUN a2enmod rewrite && \
     sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf && \
-    sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+    sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf && \
+    printf 'ServerTokens Prod\nServerSignature Off\n' > /etc/apache2/conf-available/zz-server-tokens.conf && \
+    a2enconf zz-server-tokens
 
 # Configure opcache
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY docker/php/security.ini /usr/local/etc/php/conf.d/security.ini
 
 # Copy application files
 COPY --from=composer-builder /app /var/www/html
