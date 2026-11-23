@@ -143,6 +143,12 @@ jobs:
       - name: Verify fixed PHP runtime
         run: |
           docker run --rm --network none --entrypoint php submission-ci:test -r 'exit(PHP_VERSION === "8.3.36" ? 0 : 1);'
+      - name: Verify server versions are not exposed
+        run: |
+          docker run --rm --network none --entrypoint php submission-ci:test -r 'exit(ini_get("expose_php") ? 1 : 0);'
+          if [ "${{ matrix.target }}" = "runtime-apache" ]; then
+            docker run --rm --network none --entrypoint sh submission-ci:test -c 'grep -qs "^ServerTokens Prod$" /etc/apache2/conf-enabled/zz-server-tokens.conf'
+          fi
       - name: Verify isolated image and built assets
         run: |
           docker run --rm --entrypoint sh submission-ci:test -c 'test ! -e .env && test ! -e public/hot && test -s public/build/manifest.json && test -z "$(find storage/app -type f -print -quit)"'
@@ -173,7 +179,7 @@ jobs:
       packages: write
     steps:
       - name: Download tested image
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: tested-image
       - name: Load tested image
@@ -189,6 +195,42 @@ jobs:
             docker tag submission-ci:test "${image}:${tag}"
             docker push "${image}:${tag}"
           done
+
+  deploy-beta:
+    name: Deploy beta
+    if: github.event_name == 'push' && github.ref_name == 'dev'
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: beta
+    permissions: {}
+    steps:
+      - name: Request deployment
+        env:
+          DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+        run: |
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "::notice::Deployment is not configured for this environment."
+            exit 0
+          fi
+          payload=$(printf '{"ref":"%s","head_commit":{"id":"%s","message":"Image %s"},"commits":[]}' \
+            "$GITHUB_REF" "$GITHUB_SHA" "${GITHUB_REF_NAME}-${GITHUB_SHA}")
+          response=$(mktemp)
+          status=$(curl --silent --max-time 60 --output "$response" --write-out '%{http_code}' \
+            --request POST \
+            --header 'X-GitHub-Event: push' \
+            --header 'Content-Type: application/json' \
+            --data "$payload" \
+            "$DEPLOY_URL") || true
+          echo "Deploy request returned HTTP ${status:-none}"
+          if [ "$status" != "200" ]; then
+            token="${DEPLOY_URL##*/}"
+            body=$(head -c 2000 "$response" | tr '\r\n' '  ')
+            body="${body//"$token"/***}"
+            echo "Response: ${body:0:200}"
+            echo "Link: ${#DEPLOY_URL} characters, fingerprint $(printf '%s' "$DEPLOY_URL" | sha256sum | cut -c1-12)"
+            exit 1
+          fi
 
   dependency-review:
     name: Dependency review
